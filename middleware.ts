@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAdminSession } from "@/lib/auth";
 
 const protectedPrefixes = ["/admin", "/data-pulls"];
 const protectedApiPrefixes = ["/api/ingest", "/api/export"];
@@ -11,13 +12,14 @@ function isProtectedApiPath(pathname: string) {
   return protectedApiPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Protect Web Pages (Redirect to actual UI login page)
   if (isProtectedPath(pathname)) {
-    const adminSession = request.cookies.get("admin_session")?.value;
-    if (adminSession !== "true") {
+    const token = request.cookies.get("admin_session")?.value;
+    const email = await verifyAdminSession(token);
+    if (!email) {
       const loginUrl = new URL("/admin-login", request.url);
       loginUrl.searchParams.set("from", pathname);
       return NextResponse.redirect(loginUrl);
@@ -27,8 +29,15 @@ export function middleware(request: NextRequest) {
 
   // 2. Protect API Routes (Return 401 JSON without WWW-Authenticate header to prevent browser popups)
   if (isProtectedApiPath(pathname)) {
-    const expectedUser = process.env.ADMIN_BASIC_USER || "creativelab.co.th@gmail.com";
-    const expectedPassword = process.env.ADMIN_BASIC_PASSWORD || "I@M_Cr3LabTH_F4M";
+    const expectedUser = process.env.ADMIN_BASIC_USER;
+    const expectedPassword = process.env.ADMIN_BASIC_PASSWORD;
+
+    if (!expectedUser || !expectedPassword) {
+      return new NextResponse(JSON.stringify({ error: "Admin credentials are not configured on the server." }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
 
     const header = request.headers.get("authorization");
     if (header?.startsWith("Basic ")) {

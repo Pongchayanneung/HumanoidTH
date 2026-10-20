@@ -76,7 +76,6 @@ export default async function ProfilePage() {
               <select name="role" defaultValue="USER">
                 <option value="USER">User (Read-only)</option>
                 <option value="RESEARCHER">Researcher</option>
-                <option value="ADMIN">Administrator</option>
               </select>
             </label>
             <button type="submit" className="primary" style={{ marginTop: "6px" }}>
@@ -87,11 +86,6 @@ export default async function ProfilePage() {
           <div style={{ borderTop: "1px solid var(--border)", paddingTop: "14px", marginTop: "14px" }}>
             <span className="muted" style={{ fontSize: "12px" }}>Quick Simulators:</span>
             <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
-              <form action={loginAsUser.bind(null, "creativelab.co.th@gmail.com", "ADMIN")}>
-                <button type="submit" className="button" style={{ fontSize: "11px", minHeight: "28px" }}>
-                  Login as Administrator
-                </button>
-              </form>
               <form action={loginAsUser.bind(null, "researcher@example.com", "RESEARCHER")}>
                 <button type="submit" className="button" style={{ fontSize: "11px", minHeight: "28px" }}>
                   Login as Researcher

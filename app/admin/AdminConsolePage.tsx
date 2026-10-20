@@ -61,6 +61,7 @@ export default async function AdminConsolePage({ searchParams }: { searchParams:
       list: "Admin records",
       editor: "Record editor",
       empty: "No records found for this collection.",
+      recordNotFound: "This record was not found. It may have already been changed or removed by someone else.",
       dbOffline: "Database connection failed. CMS content cannot be mocked because this page edits live records.",
       sourceRecord: "Source Record",
       robotModel: "Robot Model",
@@ -77,6 +78,7 @@ export default async function AdminConsolePage({ searchParams }: { searchParams:
       list: "รายการในคอลเลกชัน",
       editor: "ตัวแก้ไขข้อมูล",
       empty: "ไม่พบรายการในคอลเลกชันนี้",
+      recordNotFound: "ไม่พบรายการนี้ อาจถูกแก้ไขหรือลบไปแล้วโดยผู้อื่น",
       dbOffline: "การเชื่อมต่อฐานข้อมูลล้มเหลว หน้านี้แก้ไขข้อมูลจริงจึงไม่สามารถใช้ข้อมูลตัวอย่างได้",
       sourceRecord: "บันทึกแหล่งข้อมูล",
       robotModel: "โมเดลหุ่นยนต์",
@@ -143,7 +145,7 @@ export default async function AdminConsolePage({ searchParams }: { searchParams:
     errorMessage = error instanceof Error ? error.message : "Unknown database error";
   }
 
-  const selectedItem = isNew ? null : records.find((record) => record.id === selectedId) ?? records[0] ?? null;
+  const selectedItem = isNew ? null : records.find((record) => record.id === selectedId) ?? null;
 
   const collectionTabs = [
     { key: "submitted-data" as const, label: "Review Queue" },
@@ -277,7 +279,7 @@ export default async function AdminConsolePage({ searchParams }: { searchParams:
 
           {!selectedItem && !isNew && (
             <div className="empty" style={{ paddingTop: "28px" }}>
-              {localT.empty}
+              {localT.recordNotFound}
             </div>
           )}
 

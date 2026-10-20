@@ -25,6 +25,9 @@ export async function GET(req: NextRequest) {
     case "pull_jobs":
       data = await prisma.sourcePullJob.findMany();
       break;
+    case "owned_inventory":
+      data = await prisma.ownedInventory.findMany();
+      break;
     default:
       data = await prisma.sourceRecord.findMany();
   }

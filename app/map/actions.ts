@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/require-admin";
 
 export type ContributionMapPoint = {
   id: string;
@@ -16,70 +17,9 @@ export type ContributionMapPoint = {
   detailsList: string[];
 };
 
-function getFallbackClusters(): ContributionMapPoint[] {
-  return [
-    {
-      id: "kmutt_fibo",
-      title: "KMUTT Institute of Field Robotics (FIBO)",
-      organization: "King Mongkut's University of Technology Thonburi",
-      locationLabel: "Bangkok, Thailand",
-      latitude: 13.6521,
-      longitude: 100.4942,
-      summary: "Thailand's premier robotics institute. Actively researching human-robot interaction, medical humanoid assistants, and open-source humanoid locomotion control.",
-      contributorType: "University",
-      contributionCount: 12,
-      detailsList: ["FIBO Humanoid Walker", "Medical Service Robot Cabinet", "HRI Emotion Modeling Dataset"]
-    },
-    {
-      id: "chula_robo",
-      title: "Chulalongkorn LIRA Lab",
-      organization: "Chulalongkorn University",
-      locationLabel: "Bangkok, Thailand",
-      latitude: 13.7367,
-      longitude: 100.5331,
-      summary: "Leading research group in social humanoids and medical exoskeleton systems. Developed several generations of eldercare companion robots.",
-      contributorType: "University",
-      contributionCount: 8,
-      detailsList: ["CU Elder Companion", "Chula Exoskeleton Knee v2", "Thai Speech Interaction Model"]
-    },
-    {
-      id: "vistec_brain",
-      title: "VISTEC Brain Computer Interface Lab",
-      organization: "Vidyasirimedhi Institute of Science and Technology",
-      locationLabel: "Rayong, Thailand",
-      latitude: 12.9818,
-      longitude: 101.4429,
-      summary: "State-of-the-art bio-inspired locomotion and neural control mapping. Focuses on humanoid hand dexterity and reinforcement learning models.",
-      contributorType: "University",
-      contributionCount: 5,
-      detailsList: ["Biomimetic Humanoid Hand", "Dextrous Gripper Control System"]
-    },
-    {
-      id: "cmu_robotics",
-      title: "Chiang Mai University Robotics Lab",
-      organization: "Chiang Mai University",
-      locationLabel: "Chiang Mai, Thailand",
-      latitude: 18.8025,
-      longitude: 98.9516,
-      summary: "Developing agricultural service humanoids and navigation platforms for northern Thailand health and tourism sectors.",
-      contributorType: "University",
-      contributionCount: 4,
-      detailsList: ["Lanna Tour Guide Robot", "Autonomous Hospital Trolley"]
-    },
-    {
-      id: "ct_asia",
-      title: "CT Asia Robotics (Dinsaw)",
-      organization: "CT Asia Co., Ltd.",
-      locationLabel: "Bangkok, Thailand",
-      latitude: 13.7845,
-      longitude: 100.5892,
-      summary: "Commercial pioneer of companion humanoids in Southeast Asia. Developer of the Dinsaw robot series, deployed in hospitals across Thailand and Japan.",
-      contributorType: "Enterprise",
-      contributionCount: 9,
-      detailsList: ["Dinsaw Mini companion", "Dinsaw 4 Eldercare Assist", "Commercial Hospital Reception Deployment"]
-    }
-  ];
-}
+export type ClusterResult =
+  | { status: "ready"; clusters: ContributionMapPoint[] }
+  | { status: "unavailable"; reason: string };
 
 export async function analyzeClustersWithGemini(): Promise<ContributionMapPoint[]> {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -246,48 +186,37 @@ Return the response as a JSON object matching the requested schema.
   return clusters;
 }
 
-export async function fetchContributionClusters(): Promise<ContributionMapPoint[]> {
+export async function fetchContributionClusters(): Promise<ClusterResult> {
   try {
     const cached = await prisma.statsCache.findUnique({
       where: { key: "map_contribution_clusters" }
     });
     if (cached && cached.valueJson && Array.isArray(cached.valueJson)) {
-      return cached.valueJson as unknown as ContributionMapPoint[];
+      return { status: "ready", clusters: cached.valueJson as unknown as ContributionMapPoint[] };
     }
   } catch (e) {
     console.error("Cache fetch failed:", e);
+    return { status: "unavailable", reason: "Database connection failed while reading cached map data." };
   }
 
   try {
-    return await analyzeClustersWithGemini();
+    const clusters = await analyzeClustersWithGemini();
+    return { status: "ready", clusters };
   } catch (e) {
-    console.error("Gemini cluster analysis failed, using fallback mock seeds:", e);
-    return getFallbackClusters();
+    console.error("Gemini cluster analysis failed:", e);
+    return {
+      status: "unavailable",
+      reason: e instanceof Error ? e.message : "AI cluster analysis failed."
+    };
   }
 }
 
 export async function reanalyzeClustersWithGemini() {
+  await requireAdmin();
   try {
     await analyzeClustersWithGemini();
   } catch (e) {
-    console.error("Reanalysis action encountered an error, writing high-fidelity mock seeds:", e);
-    // If analyzeClustersWithGemini fails or apiKey check fails, write mock seeds to StatsCache so we always have data
-    const fallbacks = getFallbackClusters();
-    try {
-      await prisma.statsCache.upsert({
-        where: { key: "map_contribution_clusters" },
-        update: {
-          valueJson: fallbacks as any,
-          updatedAt: new Date()
-        },
-        create: {
-          key: "map_contribution_clusters",
-          valueJson: fallbacks as any
-        }
-      });
-    } catch (dbErr) {
-      console.error("Failed to write fallback to statsCache database:", dbErr);
-    }
+    console.error("Reanalysis action failed:", e);
   }
   revalidatePath("/map");
 }

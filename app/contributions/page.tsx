@@ -182,9 +182,9 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           Verification Status
           <select name="status" defaultValue={status || ""}>
             <option value="">All Statuses</option>
-            <option value="VERIFIED">Verified</option>
-            <option value="UNVERIFIED">Unverified</option>
-            <option value="FLAGGED">Flagged</option>
+            <option value="NEEDS_REVIEW">Needs review</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
           </select>
         </label>
 

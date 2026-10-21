@@ -10,6 +10,6 @@ These reports describe the inherited HumanoidTH application and the repairs prop
 
 The technical and design audits were reviewed on 20 October 2026; the function summary was prepared on 22 October. Each report distinguishes source observations, historical test results and checks still required. Supporting contest and fork research reports are maintained separately.
 
-The [Hack Day fix plan](../Hack-day-planning/hack-day-fix-plan.md) assigns priorities, owners and acceptance checks. A finding remains open until its repair or temporary restriction has been tested and recorded.
+The [technical fix implementation Hack Day plan](../Hack-day-planning/technical-fix-implementation-hack-day-plan.md) assigns priorities, owners and acceptance checks. A finding remains open until its repair or temporary restriction has been tested and recorded.
 
 [Back to Hackathon preparation](../README.md)

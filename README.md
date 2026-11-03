@@ -4,6 +4,10 @@
 <img width="1672" height="941" alt="ChatGPT Image Jul 3, 2026, 06_45_37 AM" src="https://github.com/user-attachments/assets/c9281d22-6d95-4956-90f7-3039bad08947" />
 </p>
 
+## Hackathon preparation
+
+See [our Hackathon preparation documents](docs/Hackathon-preparation/README.md) for the feature proposal and technical design, both Hack Day plans and the baseline audits.
+
 <p align="center">
   <a href="https://github.com/taechasith/HumanoidTH/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=F59E0B" alt="License" />

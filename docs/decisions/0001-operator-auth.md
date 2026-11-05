@@ -1,6 +1,6 @@
 # ADR 0001: one configured operator with PostgreSQL sessions
 
-Date: 2026-11-05 (Asia/Bangkok). Status: approved; implementation in progress.
+Date: 2026-11-05 (Asia/Bangkok). Status: approved; locally implemented and verified.
 
 ## User decisions
 
@@ -21,4 +21,6 @@ Date: 2026-11-05 (Asia/Bangkok). Status: approved; implementation in progress.
 
 ## Evidence and operating notes
 
-See [implementation plan](../superpowers/plans/2026-11-05-issue-4-operator-auth.md). Implementation verification, setup/rotation commands and remaining limits will be added after actual tests. No production operation or hosted readiness is claimed here.
+See the [approved implementation plan](../superpowers/plans/2026-11-05-issue-4-operator-auth.md), [operator operating notes](../operator-auth.md) and [verification record](../verification/2026-11-05-issue-4.md). The integrated work passed 50 combined unit/real-PostgreSQL tests with zero skipped, 9 independent integration checks and 10 dedicated Chromium browser checks. Production build, final post-merge typecheck and Prisma validation, migration and schema parity checks passed. Independent source/fix/acceptance review found no remaining local blocker. These local checks do not establish hosted readiness.
+
+The operating notes record the approved four-hour session and shared five-attempt/15-minute window, their rationale and risks, session/logout/revoke-all behavior, rotation requirements, migration ordering, rollback constraint and review triggers. They include the integrated CLI commands and verified `.env`/provider hash handling. No production database operation, deployment or hosted-readiness claim is made.

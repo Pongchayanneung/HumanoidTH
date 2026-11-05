@@ -44,7 +44,11 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
       }
     }
   }[lang];
-  const errorMessage = error ? localT.errors[error as keyof typeof localT.errors] || localT.errors.unavailable : undefined;
+  const errorMessage = error
+    ? Object.hasOwn(localT.errors, error)
+      ? localT.errors[error as keyof typeof localT.errors]
+      : localT.errors.unavailable
+    : undefined;
 
   return (
     <div className="login-wrapper admin-login-page">

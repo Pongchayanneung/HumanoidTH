@@ -98,3 +98,12 @@ test("unrecognized error input never becomes reflected login output", async () =
   assert.match(html, /Sign-in is unavailable/);
   assert.doesNotMatch(html, /private-database-error/);
 });
+
+for (const error of ["__proto__", "constructor", "toString", "hasOwnProperty"]) {
+  test(`inherited error key ${error} renders the generic login error`, async () => {
+    const Page = loadPage("app/admin-login/page.tsx");
+    const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ error }) }));
+    assert.match(html, /Sign-in is unavailable right now/);
+    assert.match(html, /role="alert"/);
+  });
+}

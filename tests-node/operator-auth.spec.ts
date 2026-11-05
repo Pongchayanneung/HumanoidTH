@@ -222,5 +222,7 @@ test("login handles inherited error keys and remains usable on mobile", async ({
   await page.getByRole("button", { name: "Hide password", exact: true }).click();
   await expect(password).toHaveAttribute("type", "password");
   await password.clear();
+  await page.locator(".splash-screen").waitFor({ state: "detached" });
+  await page.getByRole("heading", { name: "Operator sign-in", exact: true }).scrollIntoViewIfNeeded();
   await page.screenshot({ path: testInfo.outputPath("operator-login-mobile.png") });
 });

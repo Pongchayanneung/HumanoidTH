@@ -250,3 +250,22 @@ model OwnedInventory {
 
   @@index([robotModelId])
 }
+
+// Authentication authority is separate from legacy User records.
+model OperatorAuthState {
+  id                String   @id
+  activeFingerprint String
+  activeEpoch       String
+  windowStartedAt   DateTime
+  attemptCount      Int      @default(0)
+}
+
+model OperatorSession {
+  tokenHash         String    @id
+  configFingerprint String
+  createdAt         DateTime
+  expiresAt         DateTime
+  revokedAt         DateTime?
+
+  @@index([expiresAt])
+}

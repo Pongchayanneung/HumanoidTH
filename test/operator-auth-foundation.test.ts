@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 
-// T0 scaffolding checks: T1 replaces unavailable-only behavior with lifecycle tests.
+// Subprocess proves the public import graph remains lazy and fail-closed.
 test("auth imports without database configuration and fails closed before activation", () => {
   const env = { ...process.env };
   for (const name of Object.keys(env)) {
     if (name === "DATABASE_URL" || name.startsWith("OPERATOR_")) delete env[name];
   }
-  const child = spawnSync(process.execPath, ["--import", "tsx", "--input-type=module", "-e", `
+  const child = spawnSync(process.execPath, ["--conditions=react-server", "--import", "tsx", "--input-type=module", "-e", `
     import assert from "node:assert/strict";
     const core = await import("./lib/operator-auth/index.ts");
     const web = await import("./lib/operator-auth/web.ts");

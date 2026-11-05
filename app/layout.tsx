@@ -5,7 +5,6 @@ import SidebarNav from "./components/SidebarNav";
 import LanguageSelector from "./components/LanguageSelector";
 import MobileHeader from "./components/MobileHeader";
 import MobileTabNav from "./components/MobileTabNav";
-import DataPullFab from "./components/DataPullFab";
 import FirstTimeLoader from "./components/FirstTimeLoader";
 import { getTranslation } from "@/lib/translations";
 import { defaultSeoDescription, getSiteUrl, siteName } from "@/lib/seo";
@@ -150,7 +149,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           </aside>
           <main className="main motion-page">{children}</main>
-          <DataPullFab />
           <MobileTabNav currentLang={lang} />
         </div>
       </body>

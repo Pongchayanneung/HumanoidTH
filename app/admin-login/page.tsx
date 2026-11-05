@@ -1,40 +1,50 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { getTranslation } from "@/lib/translations";
+import Link from "next/link";
 import AdminLoginForm from "./AdminLoginForm";
 
-type SearchParams = Promise<{ error?: string; from?: string }>;
+type SearchParams = Promise<{ error?: string }>;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Admin Login",
   robots: { index: false, follow: false }
-};export default async function AdminLoginPage({ searchParams }: { searchParams: SearchParams }) {
+};
+
+export default async function AdminLoginPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const error = params.error;
-  const from = params.from || "/";
 
   const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
-  getTranslation(lang);
+  const lang = cookieStore.get("lang")?.value === "th" ? "th" : "en";
 
   const localT = {
     en: {
-      title: "Administrator Authentication",
-      desc: "Enter your credentials to access secure system configuration and data ingestion tools.",
-      email: "Email Address",
-      password: "Security Password",
-      btn: "Authorize Session",
-      errorMsg: "Invalid credentials. Please verify your admin email and password."
+      title: "Operator sign-in",
+      desc: "Sign in to verify your operator session. Data inspection and management workflows remain unavailable.",
+      email: "Email address", password: "Password", btn: "Sign in", pending: "Signing in…",
+      show: "Show password", hide: "Hide password", back: "Return to overview",
+      errors: {
+        invalid_credentials: "Email or password is incorrect.",
+        throttled: "Too many sign-in attempts. Please try again later.",
+        unavailable: "Sign-in is unavailable right now. Please try again later.",
+        forbidden_origin: "Open the configured site and try signing in again."
+      }
     },
     th: {
-      title: "การยืนยันตัวตนผู้ดูแลระบบ",
-      desc: "กรุณาระบุข้อมูลเพื่อเข้าสู่การจัดการระบบหลักและเครื่องมือดึงข้อมูลผ่าน API",
-      email: "อีเมลผู้ดูแลระบบ",
-      password: "รหัสผ่านความปลอดภัย",
-      btn: "ยืนยันสิทธิ์การเข้าใช้งาน",
-      errorMsg: "ข้อมูลการเข้าสู่ระบบไม่ถูกต้อง กรุณาตรวจสอบอีเมลและรหัสผ่านอีกครั้ง"
+      title: "เข้าสู่ระบบผู้ดูแล",
+      desc: "เข้าสู่ระบบเพื่อยืนยันเซสชันผู้ดูแล การตรวจดูและจัดการข้อมูลยังไม่เปิดให้ใช้งาน",
+      email: "อีเมล", password: "รหัสผ่าน", btn: "เข้าสู่ระบบ", pending: "กำลังเข้าสู่ระบบ…",
+      show: "แสดงรหัสผ่าน", hide: "ซ่อนรหัสผ่าน", back: "กลับหน้าภาพรวม",
+      errors: {
+        invalid_credentials: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+        throttled: "มีการพยายามเข้าสู่ระบบมากเกินไป โปรดลองอีกครั้งภายหลัง",
+        unavailable: "การเข้าสู่ระบบยังไม่พร้อมใช้งาน โปรดลองอีกครั้งภายหลัง",
+        forbidden_origin: "โปรดเปิดเว็บไซต์ที่กำหนดแล้วลองเข้าสู่ระบบอีกครั้ง"
+      }
     }
   }[lang];
+  const errorMessage = error ? localT.errors[error as keyof typeof localT.errors] || localT.errors.unavailable : undefined;
 
   return (
     <div className="login-wrapper admin-login-page">
@@ -49,10 +59,10 @@ export const metadata: Metadata = {
           align-items: center;
           justify-content: center;
           padding: 28px 20px;
-          position: fixed;
+          position: relative;
           top: 0;
           left: 0;
-          z-index: 9999;
+          z-index: 1;
           font-family: var(--font-sans);
         }
 
@@ -61,7 +71,7 @@ export const metadata: Metadata = {
           display: flex;
           flex-direction: column;
           gap: 14px;
-          max-height: calc(100dvh - 56px);
+          min-width: 0;
           width: min(100%, 430px);
         }
 
@@ -142,7 +152,7 @@ export const metadata: Metadata = {
           color: #ffffff;
           padding: 10px 14px;
           font-size: 14px;
-          outline: none;
+          outline-offset: 2px;
           transition: all 0.2s ease;
         }
 
@@ -215,6 +225,10 @@ export const metadata: Metadata = {
           margin-top: 10px;
         }
 
+        .login-btn:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
+        .login-btn:disabled { cursor: wait; opacity: 0.75; }
+        .login-form [role="status"] { color: #a3c2b5; font-size: 13px; }
+
         .login-btn:hover {
           background: #34d399;
           transform: translateY(-1px);
@@ -270,16 +284,17 @@ export const metadata: Metadata = {
 
       <div className="login-stack">
         <div className="login-card">
-          <h2 className="login-title">{localT.title}</h2>
+          <h1 className="login-title">{localT.title}</h1>
           <p className="login-desc">{localT.desc}</p>
 
-          {error && (
-            <div className="login-error">
-              {localT.errorMsg}
+          {errorMessage && (
+            <div className="login-error" id="login-error" role="alert">
+              {errorMessage}
             </div>
           )}
 
-          <AdminLoginForm from={from} emailLabel={localT.email} passwordLabel={localT.password} buttonLabel={localT.btn} />
+          <AdminLoginForm emailLabel={localT.email} passwordLabel={localT.password} buttonLabel={localT.btn} pendingLabel={localT.pending} showPasswordLabel={localT.show} hidePasswordLabel={localT.hide} hasError={Boolean(errorMessage)} invalidCredentials={error === "invalid_credentials"} />
+          <Link href="/" style={{ color: "#a3c2b5", display: "inline-block", marginTop: 18 }}>{localT.back}</Link>
         </div>
       </div>
     </div>

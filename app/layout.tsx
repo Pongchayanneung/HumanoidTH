@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { IBM_Plex_Sans_Thai, Inter } from "next/font/google";
+import { IBM_Plex_Sans, IBM_Plex_Sans_Thai } from "next/font/google";
 import SidebarNav from "./components/SidebarNav";
 import LanguageSelector from "./components/LanguageSelector";
 import MobileHeader from "./components/MobileHeader";
@@ -11,9 +11,10 @@ import { getTranslation } from "@/lib/translations";
 import { defaultSeoDescription, getSiteUrl, siteName } from "@/lib/seo";
 import "./globals.css";
 
-const inter = Inter({
+const ibmPlexSans = IBM_Plex_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-ibm-plex-sans",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -129,7 +130,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   };
 
   return (
-    <html lang={lang} className={`${inter.variable} ${ibmPlexSansThai.variable}`}>
+    <html lang={lang} className={`${ibmPlexSans.variable} ${ibmPlexSansThai.variable}`}>
       <body>
         <script
           type="application/ld+json"

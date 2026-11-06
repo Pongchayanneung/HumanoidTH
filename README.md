@@ -61,6 +61,12 @@ I built this platform using a modern, scalable, and developer-friendly stack:
 
 Follow these simple steps to spin up the Thailand Humanoid Atlas on your local machine:
 
+### ✅ Supported setup
+- Node.js `>=20.11` (engines). Checked on Node 26.9.0 only.
+- PostgreSQL 14 or newer, direct `postgresql://` connection (Prisma Accelerate proxy URLs do not work with `@prisma/adapter-pg`). Checked on 16.15.
+- pnpm. No pnpm version has completed install plus `pnpm run <script>` end to end on this revision yet. pnpm 11.10.0 blocks the Prisma build scripts and then fails every `pnpm run`; the underlying commands work when called directly (for example `./node_modules/.bin/prisma migrate deploy`).
+- Use a disposable local database for development. `DATABASE_URL` is never committed; keep it in your own `.env` or export it inline.
+
 ### 📥 1. Clone the repository and install dependencies
 ```bash
 # Clone the repository
@@ -70,6 +76,7 @@ cd HumanoidTH
 # Install dependencies using pnpm
 pnpm install
 ```
+`pnpm install` runs `prisma generate`, which does not need `DATABASE_URL`. Every other Prisma command does.
 
 ### ⚙️ 2. Configure Environment Variables
 Create a local `.env` file by copying the template:
@@ -92,12 +99,14 @@ GEMINI_API_KEY="your-gemini-api-key"
 # Generate Prisma client files
 pnpm db:generate
 
-# Push the schema to your local PostgreSQL
-pnpm db:push
+# Apply the committed migrations to your local PostgreSQL
+npx prisma migrate deploy
 
-# Run seed script to populate sample robots, perspectives, and contributions
-pnpm db:seed
+# Optional: populate robots, perspectives, and contributions (disposable local database only)
+ATLAS_ALLOW_SEED=1 pnpm db:seed
 ```
+> [!WARNING]
+> Seeding is refused unless `ATLAS_ALLOW_SEED=1` is set and `DATABASE_URL` points at `localhost`, `127.0.0.1` or `[::1]`. Running it resets the review status of seeded source records, re-grants the ADMIN role to the seed admin, and appends duplicate pull-job and submission rows. `pnpm dev` and restarts never seed.
 
 ### 🟢 4. Run Development Server
 ```bash
@@ -267,7 +276,7 @@ This project is fully optimized for **Vercel** out-of-the-box using the provided
 ### 🔑 Vercel Environment Variables
 Set these variables in your Vercel project settings:
 ```env
-DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=..."
+DATABASE_URL="postgresql://user:password@host:5432/dbname?schema=public"
 NEXT_PUBLIC_APP_URL="https://your-project.vercel.app"
 ADMIN_BASIC_USER="creativelab.co.th@gmail.com"
 ADMIN_BASIC_PASSWORD="use-a-strong-password"
@@ -288,16 +297,16 @@ The platform provides a suite of developer utilities for testing, data integrity
 
 | Script Command | Purpose | Details |
 | :--- | :--- | :--- |
-| `pnpm dev` | Run full dev suite | Boots the Next.js local server *and* starts the background dataset hot-reloader. |
+| `pnpm dev` | Run dev server | Boots the Next.js local server. The dataset hot-reloader is off by default. |
 | `pnpm dev:next` | Next.js server only | Launches only the local Next.js client (`localhost:3000`). |
-| `pnpm seed:watch` | Hot-reloading seed sync | Watches [thailand_humanoid_atlas_seed_records.json](file:///C:/Users/HP%20OMEN/HumanoidTH/thailand_humanoid_atlas_seed_records.json) for modifications and automatically synchronizes updates into PostgreSQL. |
+| `pnpm seed:watch` | Hot-reloading seed sync (opt in) | Watches [thailand_humanoid_atlas_seed_records.json](thailand_humanoid_atlas_seed_records.json) and reseeds PostgreSQL on every change. Needs `ATLAS_ALLOW_SEED=1` and a local database; `WATCH_SEED=1 ATLAS_ALLOW_SEED=1 pnpm dev` starts it alongside the server. |
 | `pnpm check:no-mock-data` | Audit data integrity | Checks page components under `/app` to ensure no mock constants, fallback placeholders, or static records are used, enforcing active DB routing. |
 | `pnpm seo:audit` | Audit metadata and tags | Scans Next.js dynamic routing structures to verify Title, Meta Descriptions, Canonicals, OpenGraph schemas, and headers. |
 | `pnpm seo:optimize` | Auto-apply SEO fixes | Programmatically rewrites page component metadata blocks with audit-approved SEO structures. |
 | `pnpm test` | Run test suite | Executes unit and integration test specs defined in the `test/` directory. |
 | `pnpm db:generate` | Generate Prisma Client | Re-compiles types and schemas into `generated/prisma` client files. |
-| `pnpm db:push` | Sync database schemas | Migrates model changes directly into the PostgreSQL database. |
-| `pnpm db:seed` | Seed database manually | Performs a one-time import of the seed record file into the database. |
+| `pnpm db:push` | Sync database schemas | Pushes model changes directly into the PostgreSQL database without a migration. For local experiments only; use `npx prisma migrate deploy` for setup. |
+| `pnpm db:seed` | Seed database manually | One-time import of the seed record file. Refused unless `ATLAS_ALLOW_SEED=1` and `DATABASE_URL` is local; resets review status (see step 3). |
 
 ---
 

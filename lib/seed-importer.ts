@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { Prisma, PrismaClient } from "../generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { canonicalizeUrl } from "./url";
+import { assertSeedAllowed } from "./seed-guard";
 
 export type SeedRecord = {
   category: string;
@@ -57,6 +58,7 @@ function normalizeSourceType(platform: string | null) {
 
 export function createSeedClient() {
   const connectionString = process.env.DATABASE_URL;
+  assertSeedAllowed(connectionString);
   if (!connectionString) {
     throw new Error("DATABASE_URL is required for seeding.");
   }

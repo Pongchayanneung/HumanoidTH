@@ -5,7 +5,7 @@
 Set these in Vercel Project Settings -> Environment Variables:
 
 ```env
-DATABASE_URL=prisma+postgres://accelerate.prisma-data.net/?api_key=...
+DATABASE_URL=postgresql://user:password@host:5432/dbname?schema=public
 NEXT_PUBLIC_APP_URL=https://your-project.vercel.app
 ADMIN_BASIC_USER=creativelab.co.th@gmail.com
 ADMIN_BASIC_PASSWORD=<strong unique password>
@@ -13,21 +13,41 @@ YOUTUBE_API_KEY=
 GITHUB_TOKEN=
 ```
 
-`DATABASE_URL` should be the Prisma Postgres connection string from the Prisma/Vercel integration.
+`DATABASE_URL` must be a direct PostgreSQL connection string (use the provider's non-pooling URL if it offers both). This app's Prisma client uses `@prisma/adapter-pg`, which does not support Prisma Accelerate proxy URLs.
 
 ## Deploy Flow
 
 1. Connect this GitHub repo to Vercel.
 2. Add the environment variables above.
 3. Deploy.
-4. Run schema push once from your local machine or Vercel CLI:
+4. Apply the migrations once from your local machine or Vercel CLI, with `DATABASE_URL` exported for the target database:
 
 ```bash
-pnpm db:push
-pnpm db:seed
+npx prisma migrate deploy
 ```
 
-Do not run `db:push` automatically during every Vercel build. Builds should generate Prisma Client and build Next.js only.
+Do not run migrations automatically during every Vercel build. Builds should generate Prisma Client and build Next.js only.
+
+`pnpm install` runs `prisma generate`, which does not need a database. If your pnpm version skips the Prisma build scripts, run `./node_modules/.bin/prisma generate` yourself after installing; it does not need `DATABASE_URL` either.
+
+## Seeding
+
+Never run the seed script against a hosted or production database. It is refused unless `ATLAS_ALLOW_SEED=1` is set and `DATABASE_URL` points at `localhost`, `127.0.0.1` or `[::1]`, so there is no supported way to seed a hosted database from this repository. Seeding:
+
+- resets `relevanceStatus` of seeded source records to the seed value,
+- re-grants the ADMIN role to the seed admin account,
+- overwrites perspective stance and sentiment, and
+- appends a duplicate `SourcePullJob` and `SubmittedData` row on every run.
+
+Use it only on a disposable or empty local database:
+
+```bash
+ATLAS_ALLOW_SEED=1 pnpm db:seed
+```
+
+`prisma migrate reset` and a `prisma migrate dev` that resets the database run the same seed command, and the guard refuses that seed step without the flag. They are destructive in their own right: `migrate reset` drops the target database before the seed runs, and the guard does not stop that. Run them only against a disposable database.
+
+Ordinary startup (`pnpm dev`, `next start`) does not seed. The dataset watcher (`pnpm seed:watch`) is opt in and needs both `WATCH_SEED=1` and `ATLAS_ALLOW_SEED=1`.
 
 ## Protected Routes
 

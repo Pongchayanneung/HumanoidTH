@@ -5,6 +5,8 @@ import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
 
+const ROBOT_LIST_LIMIT = 200;
+
 export const metadata: Metadata = {
   title: "Robot Model Registry | Thailand Humanoid Atlas",
   description: "Comprehensive catalog of humanoid, social, and service robot models deployed, researched, or active in Thailand. Track specifications, developers, and source links.",
@@ -146,7 +148,7 @@ export default async function RobotsPage() {
 
   try {
     [robots, sources] = await Promise.all([
-      prisma.robotModel.findMany({ orderBy: { canonicalName: "asc" }, take: 200 }),
+      prisma.robotModel.findMany({ orderBy: { canonicalName: "asc" }, take: ROBOT_LIST_LIMIT }),
       prisma.sourceRecord.findMany({
         orderBy: [{ relevanceConfidence: "desc" }, { updatedAt: "desc" }],
         select: { title: true, url: true, platform: true, rawMeta: true },
@@ -166,9 +168,10 @@ export default async function RobotsPage() {
       <p className="muted" style={{ marginBottom: "18px" }}>{t.robotsDesc}</p>
       {dbOffline && (
         <div className="notice" style={{ marginBottom: 16 }}>
-          Live database records are unavailable. No substitute robot registry records are being shown.
+          {t.robotsUnavailable}
         </div>
       )}
+      {!dbOffline && <p className="muted">{t.robotsLimitNote.replace("{limit}", String(ROBOT_LIST_LIMIT))}</p>}
       <div className="cards">
         {robots.map((robot) => {
           const bannerUrl = getRobotSourceImage(robot, sources);
@@ -185,11 +188,11 @@ export default async function RobotsPage() {
               <p className="muted">{robot.description ?? "No description yet."}</p>
               <p><span className="badge">{robot.robotType}</span> <span className="badge">{robot.thailandStatus}</span></p>
               <p><strong>{robot.manufacturer ?? robot.developerOrg ?? "Unknown developer"}</strong><br />{robot.primaryUseCase ?? "Use case unclassified"}</p>
-              {robot.officialUrl && <a href={robot.officialUrl} target="_blank" rel="noopener noreferrer">Source</a>}
+              {robot.officialUrl && <a href={robot.officialUrl} target="_blank" rel="noopener noreferrer" aria-label={`${t.sourceLink}: ${robot.canonicalName} (${t.opensInNewTab})`}>{t.sourceLink}</a>}
             </article>
           );
         })}
-        {!robots.length && <div className="empty">No robot models yet. Add seeds with `pnpm db:seed` or import sources.</div>}
+        {!dbOffline && !robots.length && <div className="empty">{t.robotsEmpty}</div>}
       </div>
     </>
   );

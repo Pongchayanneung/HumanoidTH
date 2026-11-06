@@ -55,6 +55,7 @@ export default function SidebarNav({ currentLang = "en" }: SidebarNavProps) {
             key={item.href} 
             href={item.href} 
             className={isActive ? "active" : ""}
+            aria-current={isActive ? "page" : undefined}
           >
             <Icon size={17} aria-hidden="true" />
             <span>{item.label}</span>

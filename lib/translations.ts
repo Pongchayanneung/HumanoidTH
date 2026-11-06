@@ -1,5 +1,10 @@
 export const translations = {
   en: {
+    sourceLink: "Source",
+    opensInNewTab: "opens in a new tab",
+    robotsEmpty: "No public robot records to show.",
+    robotsUnavailable: "Live database records are unavailable. No substitute robot registry records are being shown.",
+    robotsLimitNote: "Showing up to {limit} robot models, sorted by name.",
     brand: "Thailand Humanoid Atlas",
     overview: "Overview",
     dashboard: "Dashboard",
@@ -88,6 +93,12 @@ export const translations = {
     pathPreviewLabel: "Paths Preview"
   },
   th: {
+    // assumed: copy pending Neung review
+    sourceLink: "แหล่งที่มา",
+    opensInNewTab: "เปิดในแท็บใหม่",
+    robotsEmpty: "ยังไม่มีข้อมูลหุ่นยนต์สาธารณะให้แสดง",
+    robotsUnavailable: "ขณะนี้ไม่สามารถโหลดข้อมูลหุ่นยนต์จากฐานข้อมูลได้ และไม่มีการแสดงข้อมูลอื่นแทน",
+    robotsLimitNote: "แสดงหุ่นยนต์สูงสุด {limit} รุ่น เรียงตามชื่อ",
     brand: "คลังข้อมูลหุ่นยนต์ฮิวแมนนอยด์ไทย",
     overview: "ภาพรวม",
     dashboard: "แดชบอร์ด",

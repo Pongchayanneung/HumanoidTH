@@ -1,33 +1,52 @@
 # HumanoidTH agent team: running it on your Mac
 
-## One-time setup
+## A. Continue THIS cloud session in your Mac terminal (optional)
 ```bash
-git clone https://github.com/Pongchayanneung/HumanoidTH.git && cd HumanoidTH
-git checkout chore/agent-team          # the team lives here until it's merged
+cd ~/path/to/HumanoidTH            # a clone of Pongchayanneung/HumanoidTH
+claude --teleport                  # pick this session from the list, or:
+claude --teleport session_01V5p7wC7tvr3y19o9UoxSEW
+```
+Teleport brings the conversation and branch to your machine. Your Mac's own agents, skills,
+Chrome and Codex/Gemini CLIs then become available to it.
+
+## B. Fresh start on the Mac (recommended for the full autonomous run)
+```bash
+# 1. Code + team branch
+git clone https://github.com/Pongchayanneung/HumanoidTH.git
+cd HumanoidTH
+git checkout chore/agent-team
 pnpm install --frozen-lockfile
-# Optional external models. Log in with each CLI's own login flow:
-#   gemini   (Gemini CLI)   -> second opinion
-#   codex    (Codex CLI)    -> second opinion
-export GEMINI_API_KEY=...   # only for art-book images; never commit it
-docker info >/dev/null && echo "docker ok"   # disposable Postgres for the verifier
-claude                                        # start Claude Code here
+
+# 2. Tools the team can use (each is optional; the team skips what's missing)
+docker info >/dev/null && echo "docker ok (disposable Postgres)"
+gemini --version   # Gemini CLI, logged in   -> second-opinion reviewer
+codex --version    # Codex CLI, logged in    -> second-opinion reviewer
+#    ChatGPT image art book: sign in to https://chatgpt.com in Chrome and enable the
+#    Claude in Chrome extension (or computer use for the ChatGPT desktop app).
+export GEMINI_API_KEY=...   # optional fallback for images; never commit it
+
+# 3. Run the whole team autonomously
+claude
+```
+Then inside Claude Code:
+```
+/hackday-team                 # dispatch every startable issue of yours, loops, draft PRs, summary
+```
+Or one piece at a time:
+```
+/issue-board                  # triage only
+/resolve-issue 3 --fast       # M1 alone
+/resolve-issue 19 --ux        # F7 design studio (concept → ChatGPT art book → wireframe)
+/hackday-team --ask           # same as /hackday-team but asks you at each gate
 ```
 
-## Commands
-| Command | What it does |
-|---|---|
-| `/issue-board` | Triage every open issue; tells you what you can start next |
-| `/resolve-issue 3 --fast` | M1, end to end, on branch `issue/3-m1` in `../HumanoidTH-wt/` |
-| `/resolve-issue 12 --prep-only` | M7: prepare the release-check commands now |
-| `/resolve-issue 19 --ux` | F7: brief → art book → wireframe → build |
+To avoid permission prompts during a long autonomous run, start Claude Code in auto mode
+(`claude --permission-mode auto`) or add allow rules with `/fewer-permission-prompts`.
 
-Suggested order: `3` → `12 --prep-only` → `6` → `11` → (after M7) `14`, `21`, `19 --ux`.
-Read `analysis/pongchayanneung-issues.md` first. It lists the M1 bugs already found.
+## What the team does without you, and what it never does
+- Does: branches + worktrees per issue, reviews and feedback loops, pushes `issue/*` and `design/*`
+  branches, opens **draft** PRs, comments evidence on **your own** issues.
+- Never: merges, closes issues, pushes to `main`, touches teammates' issues, sends secrets or private
+  data to ChatGPT/Gemini/Codex.
 
-## Where you stop and decide (✋)
-1. Plan approval, before any code is written.
-2. Art-book direction and wireframe (UX lane only).
-3. Publish: push, PR and issue comment. This always asks, even with `--auto`.
-
-Every issue gets its own branch and worktree from `main`, so each PR holds only that issue's changes.
-Nothing is merged and no issue is closed by the team. You and your teammates review and merge.
+Results: `.claude/team/runs/<timestamp>/SUMMARY.md` and `decisions.md` (every call `team-lead` made).

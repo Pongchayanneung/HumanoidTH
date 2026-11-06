@@ -19,14 +19,12 @@ keyword-mode / partial coverage / stale); 390px and desktop; TH/EN copy samples 
 strings; keyboard order and focus; and data that must NEVER render (vectors, scores, tokens,
 private fields). Keep it to one page.
 
-## 2. Art book → `design/<id>/artbook/`
-Produce 4–6 frames: a mood sheet, the desktop main screen, mobile main, mobile result detail, and the failure state.
-- If `GEMINI_API_KEY` is set: `node .claude/team/bin/gemini-image.mjs design/<id>/artbook/<frame>.png "<prompt>"`.
-- Otherwise write `design/<id>/artbook/PROMPTS.md`, one ready-to-paste prompt per frame, for
-  the user to run in ChatGPT/Codex image generation. Say clearly that the user must run them and drop
-  the PNGs into the same folder.
-Every prompt restates: Thai and English labels, the existing brand colors from `globals.css`, and
-"UI mockup, no lorem ipsum".
+Start from `design/ux-concept.md`. It is the studio's shared concept; extend it, don't restart it.
+
+## 2. Art book (done by `art-director-liaison` with ChatGPT)
+You don't generate images yourself. Hand the liaison your brief. When the art book comes back, write
+`design/<id>/artbook/README.md`: one line per frame saying what to keep and what to drop, mapped to the
+concept's states. Fold persona-review findings and the team-lead direction decision into the brief.
 
 ## 3. Wireframe → `design/<id>/wireframe.html`
 Build it after art-book frames exist and the user has picked a direction.

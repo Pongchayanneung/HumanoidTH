@@ -661,7 +661,7 @@ tbody tr:hover {
   }
 
   .data-pull-fab {
-    bottom: calc(84px + env(safe-area-inset-bottom, 0));
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
     right: 16px;
   }
 
@@ -745,7 +745,7 @@ a:focus-visible,
 .mobile-brand:focus-visible,
 .mobile-profile:focus-visible,
 .lang-selector button:focus-visible { outline: 2px solid var(--focus-ring-dark); outline-offset: 2px; }
-html[lang="th"] .tab-label { letter-spacing: 0; }
+html[lang="th"] .tab-label { letter-spacing: 0; text-transform: none; }
 .mobile-header-actions { display: flex; align-items: center; gap: 8px; }
 .mobile-header .lang-selector { margin-top: 0; }
 .mobile-header .lang-selector .flag { display: none; }
@@ -994,9 +994,7 @@ html[lang="th"] .tab-label { letter-spacing: 0; }
 
 /* Custom FAB Button Override */
 .data-pull-fab {
-  bottom: 24px;
   position: fixed;
-  right: 24px;
   z-index: 1100;
   width: 56px;
   height: 56px;

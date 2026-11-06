@@ -37,3 +37,16 @@ test("U6: robot list uses its named limit without seed instructions", () => {
   assert.doesNotMatch(source, /pnpm db:seed/);
   assert.match(source, /take:\s*ROBOT_LIST_LIMIT/);
 });
+test("U7: later FAB override does not set position offsets", () => {
+  const rule = read("app/globals.css").match(/\/\* Custom FAB Button Override \*\/\s*\.data-pull-fab\s*\{([^}]*)\}/);
+  assert.ok(rule);
+  assert.doesNotMatch(rule[1], /(?:^|;)\s*(?:bottom|right)\s*:/);
+});
+test("U8: Thai tab labels disable text transformation", () => {
+  const rule = read("app/globals.css").match(/html\[lang="th"\] \.tab-label\s*\{([^}]*)\}/);
+  assert.ok(rule);
+  assert.match(rule[1], /(?:^|;)\s*text-transform\s*:\s*none\s*;/);
+});
+test("U9: sidebar distinguishes the current page from its active section", () => {
+  assert.match(read("app/components/SidebarNav.tsx"), /aria-current=\{pathname === item\.href \? "page" : isActive \? "true" : undefined\}/);
+});

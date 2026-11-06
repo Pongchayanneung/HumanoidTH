@@ -5,11 +5,15 @@
 // appends duplicate job/submission rows (see docs/vercel-deploy.md), so it
 // must be deliberate (ATLAS_ALLOW_SEED=1) and aimed at a local database.
 
-const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "[::1]"]);
+const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1"]);
 const ALLOWED_PROTOCOLS = new Set(["postgres:", "postgresql:"]);
 // pg-connection-string lets these query keys override the host in the
 // authority, so a hostname check on the authority alone is bypassable.
 const HOST_OVERRIDE_KEYS = ["host", "hostaddr", "service"];
+// Whitespace, control characters and malformed %-escapes send pg-connection-string
+// down its encodeURI branch, where it and WHATWG URL can read different hosts.
+// Refuse them outright instead of mirroring that parser.
+const UNPARSEABLE_BY_BOTH = [/[\s\x00-\x1f\x7f]/, /%(?![0-9a-f]{2})/i];
 
 export function assertSeedAllowed(
   connectionString: string | undefined,
@@ -25,6 +29,11 @@ export function assertSeedAllowed(
   }
 
   // Error messages never include the connection string (it may hold credentials).
+  if (UNPARSEABLE_BY_BOTH.some((pattern) => pattern.test(connectionString))) {
+    throw new Error(
+      "Refusing to seed: DATABASE_URL contains whitespace, control characters or a malformed percent escape."
+    );
+  }
   let url: URL;
   try {
     url = new URL(connectionString);
@@ -40,6 +49,6 @@ export function assertSeedAllowed(
     }
   }
   if (!LOCAL_HOSTNAMES.has(url.hostname.toLowerCase())) {
-    throw new Error("Refusing to seed a non-local database. Seed only localhost, 127.0.0.1 or [::1].");
+    throw new Error("Refusing to seed a non-local database. Seed only localhost or 127.0.0.1.");
   }
 }

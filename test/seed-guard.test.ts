@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { assertSeedAllowed } from "../lib/seed-guard";
+import { loadEnvFile } from "../lib/load-env";
 
 const ON = { ATLAS_ALLOW_SEED: "1" };
 const LOCAL = "postgresql://postgres@localhost:55432/atlas_test";
@@ -24,7 +28,6 @@ test("allows local hosts when flagged", () => {
     LOCAL,
     "postgres://postgres@localhost/x",
     "postgresql://u:p@127.0.0.1:5432/x?schema=public",
-    "postgresql://postgres@[::1]:5432/x",
     "postgresql://postgres@LOCALHOST/x"
   ]) {
     assert.doesNotThrow(() => assertSeedAllowed(url, ON), url);
@@ -41,7 +44,9 @@ test("refuses remote and lookalike hosts", () => {
     "postgresql://a@localhost@evil.com/x",
     "postgresql://localhost,evil.com/x",
     "postgresql://%6cocalhost/x",
-    "postgresql://0.0.0.0/x"
+    "postgresql://0.0.0.0/x",
+    // pg cannot dial the bracketed form (ENOTFOUND), so it is not a supported local host.
+    "postgresql://postgres@[::1]:5432/x"
   ]) {
     refused(url);
   }
@@ -59,6 +64,19 @@ test("refuses host overrides in the query string", () => {
   }
 });
 
+test("refuses whitespace, control characters and malformed percent escapes", () => {
+  for (const url of [
+    " postgresql://u@localhost/x",
+    "postgresql://u@localhost/x\n",
+    "postgresql://u@localhost/x?a=\tb",
+    "postgresql://u@localhost/x?a=%zz"
+  ]) {
+    assert.throws(() => assertSeedAllowed(url, ON), /whitespace, control characters/, JSON.stringify(url));
+  }
+  // Well-formed escapes stay allowed.
+  assert.doesNotThrow(() => assertSeedAllowed("postgresql://u:p%40ss@localhost/x?a=%2F", ON));
+});
+
 test("refuses empty host, bad protocol, missing and invalid URLs", () => {
   refused("postgresql:///x");
   refused("postgresql://:5432/x");
@@ -74,7 +92,9 @@ test("error messages never leak the connection string", () => {
     "prisma+postgres://accelerate.prisma-data.net/?api_key=SECRETKEY",
     "postgresql://admin:hunter2pw@db.example.com/x",
     "postgresql://localhost/x?host=hunter2host",
-    "not a url hunter2pw"
+    "not a url hunter2pw",
+    "postgresql://admin:hunter2pw@localhost/x?a=%zz",
+    " postgresql://admin:hunter2pw@db.example.com/x"
   ];
   for (const url of secrets) {
     try {
@@ -108,4 +128,38 @@ test("createSeedClient enforces the guard", async () => {
     for (const key of Object.keys(process.env)) delete process.env[key];
     Object.assign(process.env, saved);
   }
+});
+
+// An env file must never satisfy the guard. The sentinel proves the file was
+// actually read, so these cannot pass because the loader found nothing.
+function withEnvFile(contents: string, run: (path: string) => void) {
+  const dir = mkdtempSync(join(tmpdir(), "atlas-env-"));
+  const path = join(dir, "flag.env");
+  writeFileSync(path, contents);
+  try {
+    run(path);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+test("a flag in an env file is ignored and the guard still refuses", () => {
+  withEnvFile("ATLAS_ALLOW_SEED=1\nM1_SENTINEL=loaded\n", (path) => {
+    const env: Record<string, string | undefined> = {};
+    loadEnvFile(env, path);
+    assert.equal(env.M1_SENTINEL, "loaded", "env file was not read");
+    assert.equal(env.ATLAS_ALLOW_SEED, undefined);
+    assert.throws(() => assertSeedAllowed(LOCAL, env), /ATLAS_ALLOW_SEED=1/);
+  });
+});
+
+test("an inline flag survives the loader and other keys keep no-override semantics", () => {
+  withEnvFile("ATLAS_ALLOW_SEED=0\nM1_SENTINEL=loaded\nM1_KEEP=fromfile\n", (path) => {
+    const env: Record<string, string | undefined> = { ATLAS_ALLOW_SEED: "1", M1_KEEP: "inline" };
+    loadEnvFile(env, path);
+    assert.equal(env.M1_SENTINEL, "loaded", "env file was not read");
+    assert.equal(env.ATLAS_ALLOW_SEED, "1");
+    assert.equal(env.M1_KEEP, "inline");
+    assert.doesNotThrow(() => assertSeedAllowed(LOCAL, env));
+  });
 });

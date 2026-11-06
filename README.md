@@ -64,7 +64,7 @@ Follow these simple steps to spin up the Thailand Humanoid Atlas on your local m
 ### ✅ Supported setup
 - Node.js `>=20.11` (engines). Checked on Node 26.9.0 only.
 - PostgreSQL 14 or newer, direct `postgresql://` connection (Prisma Accelerate proxy URLs do not work with `@prisma/adapter-pg`). Checked on 16.15.
-- pnpm. No pnpm version has completed install plus `pnpm run <script>` end to end on this revision yet. pnpm 11.10.0 blocks the Prisma build scripts and then fails every `pnpm run`; the underlying commands work when called directly (for example `./node_modules/.bin/prisma migrate deploy`).
+- pnpm 9.15.9 was observed working in a pristine clone: install, `pnpm run test|typecheck|build`, `pnpm dev` and `pnpm db:generate|db:seed`. It needs a clone without the placeholder `pnpm-workspace.yaml` that pnpm 11 creates. pnpm 11.10.0 fails install and every `pnpm run` with `ERR_PNPM_IGNORED_BUILDS`; the underlying commands work when called directly (for example `./node_modules/.bin/prisma migrate deploy`). Checked on macOS only; Windows and Linux untested.
 - Use a disposable local database for development. `DATABASE_URL` is never committed; keep it in your own `.env` or export it inline.
 
 ### 📥 1. Clone the repository and install dependencies
@@ -104,9 +104,12 @@ npx prisma migrate deploy
 
 # Optional: populate robots, perspectives, and contributions (disposable local database only)
 ATLAS_ALLOW_SEED=1 pnpm db:seed
+
+# Same thing without pnpm (pnpm 11 cannot run `pnpm run` scripts here)
+ATLAS_ALLOW_SEED=1 node --import tsx prisma/seed.ts
 ```
 > [!WARNING]
-> Seeding is refused unless `ATLAS_ALLOW_SEED=1` is set and `DATABASE_URL` points at `localhost`, `127.0.0.1` or `[::1]`. Running it resets the review status of seeded source records, re-grants the ADMIN role to the seed admin, and appends duplicate pull-job and submission rows. `pnpm dev` and restarts never seed.
+> Seeding is refused unless `ATLAS_ALLOW_SEED=1` is set and `DATABASE_URL` points at `localhost` or `127.0.0.1`. The flag is read only from the command line; a value in `.env` is ignored. Running it resets the review status of seeded source records, re-grants the ADMIN role to the seed admin, and appends duplicate pull-job and submission rows. `pnpm dev` and restarts never seed.
 
 ### 🟢 4. Run Development Server
 ```bash

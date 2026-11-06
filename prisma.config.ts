@@ -1,8 +1,10 @@
-import "dotenv/config";
+import "./lib/load-env";
 import { defineConfig } from "prisma/config";
 
 // `prisma generate` (run by postinstall and build) never connects, so it may run
-// without DATABASE_URL. Every other Prisma command still fails loudly without it.
+// without DATABASE_URL: any command line containing a `generate` argument gets the
+// local placeholder below. Other commands still fail without DATABASE_URL, because
+// schema.prisma reads env("DATABASE_URL") itself.
 const GENERATE_ONLY_URL = "postgresql://placeholder@localhost:5432/placeholder";
 
 function databaseUrl() {
@@ -19,7 +21,7 @@ export default defineConfig({
   },
   migrations: {
     path: "prisma/migrations",
-    // Same form as package.json "network:check"; works on macOS, Linux and Windows.
+    // Same form as package.json "network:check"; checked on macOS, Windows and Linux untested.
     seed: "node --import tsx prisma/seed.ts"
   }
 });

@@ -1,8 +1,8 @@
 import { spawn } from "node:child_process";
 
-// Spawn the tools through node directly: no pnpm/.cmd spelling, no shell, so it
-// behaves the same on macOS, Linux and Windows and does not depend on pnpm's
-// deps-status check. Next reads PORT from the inherited environment.
+// Spawn the tools through node directly: no pnpm/.cmd spelling, no shell, and no
+// dependence on pnpm's deps-status check. Checked on macOS; Windows and Linux
+// untested. Next reads PORT from the inherited environment.
 const watchSeedRequested = process.env.WATCH_SEED === "1";
 
 if (watchSeedRequested && process.env.ATLAS_ALLOW_SEED !== "1") {
@@ -25,8 +25,8 @@ function shutdown(code = 0) {
   process.exit(code);
 }
 
-nextDev.on("exit", (code) => shutdown(code ?? 0));
-seedWatch?.on("exit", (code) => shutdown(code ?? 0));
+nextDev.on("exit", (code, signal) => shutdown(code ?? (signal ? 1 : 0)));
+seedWatch?.on("exit", (code, signal) => shutdown(code ?? (signal ? 1 : 0)));
 
 process.on("SIGINT", () => shutdown(130));
 process.on("SIGTERM", () => shutdown(143));

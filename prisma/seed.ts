@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../lib/load-env";
 import { createSeedClient, seedAtlasData } from "../lib/seed-importer";
 
 // Explicit seeding only: createSeedClient() refuses unless ATLAS_ALLOW_SEED=1 and

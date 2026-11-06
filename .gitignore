@@ -54,3 +54,6 @@ Thumbs.db
 # Reference UI Mockups
 *humanoidth.ui/
 *humamnoidth.ui/
+
+# agent team run logs
+.claude/team/runs/

@@ -43,7 +43,7 @@ Coverage numbers are templates. 6,714 is the seed source count (TD §1); the con
 
 ## 6. Navigation
 - `SidebarNav`: "Search / ค้นหา" as the first item (above Overview).
-- `MobileTabNav`: the concept swaps Network → Search to keep 5 tabs. **Conflict:** #11 M8-C wants Contributions reachable on mobile too, and `MobileHeader` has no language switch. Open decision, see the end.
+- `MobileTabNav`: the concept swaps Network → Search to keep 5 tabs. **Conflict:** #11 M8-C wants Contributions reachable on mobile too, and `MobileHeader` has no language switch. Decided 2026-11-06 (direction gate 11, wireframe gate 14/15): mobile tabs are Overview, Dashboard, Search, Robots, Contributors (M8-C bar with Network replaced by Search); the header keeps the TH/EN switch and the Profile link; Network has no mobile entry in F7 (desktop sidebar and URL only), recorded for the navigation owner to revisit.
 - `/` focuses search on desktop. Match `event.code === "Slash"`, not `event.key`: on the Thai Kedmanee layout that key types "ฝ" (assumed from layout knowledge, verify on a real Thai keyboard). Ignore it while any input/textarea has focus.
 
 ## 7. Copy (new translation keys; `lib/translations.ts` has none yet)

@@ -3,8 +3,8 @@ import { defineConfig } from "prisma/config";
 
 // `prisma generate` (run by postinstall and build) never connects, so it may run
 // without DATABASE_URL: any command line containing a `generate` argument gets the
-// local placeholder below. Other commands still fail without DATABASE_URL, because
-// schema.prisma reads env("DATABASE_URL") itself.
+// local placeholder below. Other commands still fail without DATABASE_URL: this config throws
+// "DATABASE_URL is required (direct postgresql:// URL)."
 const GENERATE_ONLY_URL = "postgresql://placeholder@localhost:5432/placeholder";
 
 function databaseUrl() {
@@ -21,7 +21,7 @@ export default defineConfig({
   },
   migrations: {
     path: "prisma/migrations",
-    // Same form as package.json "network:check"; checked on macOS, Windows and Linux untested.
+    // Same form as package.json "network:check". Checked on macOS; Windows and Linux untested.
     seed: "node --import tsx prisma/seed.ts"
   }
 });

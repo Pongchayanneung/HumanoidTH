@@ -109,7 +109,7 @@ ATLAS_ALLOW_SEED=1 pnpm db:seed
 ATLAS_ALLOW_SEED=1 node --import tsx prisma/seed.ts
 ```
 > [!WARNING]
-> Seeding is refused unless `ATLAS_ALLOW_SEED=1` is set and `DATABASE_URL` points at `localhost` or `127.0.0.1`. The flag is read only from the command line; a value in `.env` is ignored. Running it resets the review status of seeded source records, re-grants the ADMIN role to the seed admin, and appends duplicate pull-job and submission rows. `pnpm dev` and restarts never seed.
+> Seeding is refused unless `ATLAS_ALLOW_SEED=1` is set and `DATABASE_URL` points at `localhost` or `127.0.0.1`. The flag is read only from the command line; a value in `.env` is ignored. This does not cover a file you load into the environment yourself, for example `node --env-file` or a `dotenv/config` preload. Running it resets the review status of seeded source records, re-grants the ADMIN role to the seed admin, and appends duplicate pull-job and submission rows. `pnpm dev` and restarts never seed, unless started with `WATCH_SEED=1 ATLAS_ALLOW_SEED=1` inline.
 
 ### 🟢 4. Run Development Server
 ```bash

@@ -163,3 +163,19 @@ test("an inline flag survives the loader and other keys keep no-override semanti
     assert.doesNotThrow(() => assertSeedAllowed(LOCAL, env));
   });
 });
+
+// Case-insensitive environments (Windows) fold atlas_allow_seed into ATLAS_ALLOW_SEED when
+// copied into process.env. The target here is a plain object, so this check does not depend on
+// the host OS: no copied key may uppercase to the flag name, whatever its spelling in the file.
+test("a differently-cased flag spelling in an env file is not copied either", () => {
+  withEnvFile("atlas_allow_seed=1\nAtlas_Allow_Seed=1\nM1_SENTINEL=loaded\n", (path) => {
+    const env: Record<string, string | undefined> = {};
+    loadEnvFile(env, path);
+    assert.equal(env.M1_SENTINEL, "loaded", "env file was not read");
+    assert.equal(
+      Object.keys(env).some((key) => key.toUpperCase() === "ATLAS_ALLOW_SEED"),
+      false,
+      `flag spelling copied from file: ${Object.keys(env).join(", ")}`
+    );
+  });
+});

@@ -32,7 +32,7 @@ Do not run migrations automatically during every Vercel build. Builds should gen
 
 ## Seeding
 
-Never run the seed script against a hosted or production database. It is refused unless `ATLAS_ALLOW_SEED=1` is set and `DATABASE_URL` points at `localhost` or `127.0.0.1`, so there is no supported way to seed a hosted database from this repository. The flag is read only from the command line: a value in `.env` or any other env file is ignored. The guard checks the hostname string only, so a tunnel or port forward on `localhost` counts as local. Seeding:
+Never run the seed script against a hosted or production database. It is refused unless `ATLAS_ALLOW_SEED=1` is set and `DATABASE_URL` points at `localhost` or `127.0.0.1`, so there is no supported way to seed a hosted database from this repository. The flag is read only from the command line: a value in `.env` or any other env file the repository loads is ignored. This does not cover a file you load into the environment yourself, for example `node --env-file` or a `dotenv/config` preload. The guard checks the hostname string only, so a tunnel or port forward on `localhost` counts as local. Seeding:
 
 - resets `relevanceStatus` of seeded source records to the seed value,
 - re-grants the ADMIN role to the seed admin account,
@@ -47,7 +47,7 @@ ATLAS_ALLOW_SEED=1 pnpm db:seed
 ATLAS_ALLOW_SEED=1 node --import tsx prisma/seed.ts
 ```
 
-Per Prisma's documented behaviour (not run on this revision), `prisma migrate reset` and a `prisma migrate dev` that resets the database run the same seed command, and the guard refuses that seed step without the flag. They are destructive in their own right: `migrate reset` drops the target database before the seed runs, and the guard does not stop that. Run them only against a disposable database.
+Per Prisma's documented behaviour, `prisma migrate reset` and a `prisma migrate dev` that resets the database run the same seed command, and the guard refuses that seed step without the flag. `migrate reset` was observed once on macOS against a disposable local database (seed step refused, User=0); the `migrate dev` reset path follows Prisma's documented behaviour and was not run. They are destructive in their own right: `migrate reset` drops the target database before the seed runs, and the guard does not stop that. Run them only against a disposable database.
 
 Ordinary startup (`pnpm dev`, `next start`) does not seed. `pnpm dev` starts the dataset watcher only with both `WATCH_SEED=1` and `ATLAS_ALLOW_SEED=1`. Running `pnpm seed:watch` directly needs `ATLAS_ALLOW_SEED=1` inline and a local URL.
 

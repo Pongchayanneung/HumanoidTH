@@ -42,9 +42,25 @@ what the planning docs say; the docs win when they disagree.
 8. Owners: NoneTP = actions/permissions/search API/ranking; Suk-Nsr = public
    policy/adapters/index/evaluation; Pongchayanneung = startup/map/navigation/GPU/hosting.
 
-## Verification toolbox (cloud container)
+## External models (optional; detect, never install)
 
-- Disposable Postgres 16: `/usr/lib/postgresql/16/bin/{initdb,pg_ctl}` (or `docker`).
+- `gemini` CLI (`gemini -p "..."`) and `codex` CLI (`codex exec --sandbox read-only "..."`)
+  use the user's own logins. They are used by `second-opinion` and `ux-designer`.
+- Art-book images: `node .claude/team/bin/gemini-image.mjs <out.png> "<prompt>"` with
+  `GEMINI_API_KEY`. Without the key, use the ChatGPT/Codex hand-off via `PROMPTS.md`.
+- Never send `.env*` contents, credentials or private records to an external model.
+
+## Platform pitfalls
+
+- `scripts/dev.ts` (`pnpm.cmd`) and `prisma.config.ts` (`tsx.CMD`) are Windows-only on `main`.
+  On macOS/Linux, run checks with explicit commands (`pnpm exec next dev`,
+  `pnpm exec tsx prisma/seed.ts`) until M1 fixes them.
+
+## Verification toolbox
+
+- Disposable Postgres. On macOS use `docker run --rm -d -p 55432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust postgres:16`
+  or Homebrew `postgresql@16` (`initdb`/`pg_ctl` in a temp dir). In the cloud container,
+  `/usr/lib/postgresql/16/bin/{initdb,pg_ctl}`.
   Use a data dir in the scratchpad, a non-default port (e.g. 55432), and
   `DATABASE_URL=postgresql://postgres@localhost:55432/atlas_test`.
 - Checks: `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm lint`,

@@ -34,7 +34,7 @@ One group can hold a source, its perspective and its relationship, each with its
 | Loading | request in flight | skeleton cards, `aria-busy` on results | Searching… / กำลังค้นหา… |
 | Results, hybrid | `mode=hybrid` | status line, green dot | Meaning + keyword search / ค้นหาตามความหมายและคำค้น |
 | Keyword mode | `mode=keyword` | amber banner above results | Meaning-based search is offline; showing keyword matches. Thai queries may miss English records, and the reverse. / ระบบค้นหาเชิงความหมายไม่พร้อม แสดงผลแบบคำค้นตรงตัว คำค้นภาษาไทยอาจไม่พบข้อมูลภาษาอังกฤษ และกลับกัน |
-| Partial coverage | coverage < eligible | amber chip, always visible when not full | {indexed} of {eligible} records indexed / จัดทำดัชนีแล้ว {indexed} จาก {eligible} รายการ |
+| Partial coverage | coverage < eligible | amber chip, always visible when not full ⟶ shows only when `mode=hybrid` and indexed < eligible (TD:152); in keyword mode the amber banner carries the reduced-coverage warning (TD:151, TD:96). assumed: keyword search reads the whole eligible corpus, verify on F1 fixtures | {indexed} of {eligible} records indexed / จัดทำดัชนีแล้ว {indexed} จาก {eligible} รายการ |
 | Empty | 0 groups | cream panel, no padding results | No matching public records. / ไม่พบข้อมูลสาธารณะที่ตรงกัน |
 | Failure / unavailable | network error or `mode=unavailable` | red-bordered panel + Retry, `role="alert"`, old results removed | Search is unavailable right now. / ขณะนี้ไม่สามารถค้นหาได้ · Retry / ลองอีกครั้ง |
 | Stale guard | new query while old shown | old list removed at once and replaced by skeletons; only the latest response renders; clearing the query fetches fresh browse data | Index built {time} / สร้างดัชนีเมื่อ {time} |

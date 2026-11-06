@@ -47,6 +47,6 @@ test("U8: Thai tab labels disable text transformation", () => {
   assert.ok(rule);
   assert.match(rule[1], /(?:^|;)\s*text-transform\s*:\s*none\s*;/);
 });
-test("U9: sidebar distinguishes the current page from its active section", () => {
-  assert.match(read("app/components/SidebarNav.tsx"), /aria-current=\{pathname === item\.href \? "page" : isActive \? "true" : undefined\}/);
+test("U9: sidebar marks only the exact current page with aria-current", () => {
+  assert.match(read("app/components/SidebarNav.tsx"), /aria-current=\{pathname === item\.href \? "page" : undefined\}/);
 });

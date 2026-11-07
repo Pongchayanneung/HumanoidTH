@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const protectedPrefixes = ["/admin", "/data-pulls"];
+const protectedPrefixes = ["/admin", "/data-pulls", "/database"];
 const protectedApiPrefixes = ["/api/ingest", "/api/export"];
 
 function isProtectedPath(pathname: string) {
@@ -27,8 +27,15 @@ export function middleware(request: NextRequest) {
 
   // 2. Protect API Routes (Return 401 JSON without WWW-Authenticate header to prevent browser popups)
   if (isProtectedApiPath(pathname)) {
-    const expectedUser = process.env.ADMIN_BASIC_USER || "creativelab.co.th@gmail.com";
-    const expectedPassword = process.env.ADMIN_BASIC_PASSWORD || "I@M_Cr3LabTH_F4M";
+    const expectedUser = process.env.ADMIN_BASIC_USER;
+    const expectedPassword = process.env.ADMIN_BASIC_PASSWORD;
+
+    if (!expectedUser || !expectedPassword) {
+      return new NextResponse(JSON.stringify({ error: "Service unavailable: admin credentials not configured." }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
 
     const header = request.headers.get("authorization");
     if (header?.startsWith("Basic ")) {
@@ -52,5 +59,13 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/data-pulls/:path*", "/api/ingest/:path*", "/api/export"]
+  matcher: [
+    "/admin/:path*",
+    "/data-pulls/:path*",
+    "/database/:path*",
+    "/database",
+    "/api/ingest/:path*",
+    "/api/export",
+    "/api/export/:path*"
+  ]
 };

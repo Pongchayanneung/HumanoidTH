@@ -4,6 +4,42 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  // Public data protection (M3 / T03): CSV Export is strictly restricted to authenticated operators
+  const expectedUser = process.env.ADMIN_BASIC_USER;
+  const expectedPassword = process.env.ADMIN_BASIC_PASSWORD;
+
+  // Fail closed if admin credentials are not explicitly configured in environment
+  if (!expectedUser || !expectedPassword) {
+    return NextResponse.json(
+      { error: "Service Unavailable. Export authentication credentials are not configured on this server." },
+      { status: 503 }
+    );
+  }
+
+  const authHeader = req.headers.get("authorization");
+  let isAuthorized = false;
+
+  if (authHeader?.startsWith("Basic ")) {
+    try {
+      const [user, pass] = atob(authHeader.slice(6)).split(":");
+      if (user === expectedUser && pass === expectedPassword) {
+        isAuthorized = true;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!isAuthorized) {
+    return NextResponse.json(
+      { error: "Unauthorized. CSV Export is restricted to authenticated operators." },
+      {
+        status: 401,
+        headers: { "WWW-Authenticate": 'Basic realm="Operator Export"' }
+      }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const table = searchParams.get("table") || "sources";
 
@@ -19,53 +55,62 @@ export async function GET(req: NextRequest) {
     case "submissions":
       data = await prisma.submittedData.findMany();
       break;
+    case "inventory":
+    case "owned_inventory":
+      data = await prisma.ownedInventory.findMany();
+      break;
     case "perspective_annotations":
       data = await prisma.perspectiveAnnotation.findMany();
       break;
     case "pull_jobs":
       data = await prisma.sourcePullJob.findMany();
       break;
-    default:
+    case "sources":
       data = await prisma.sourceRecord.findMany();
+      break;
+    default:
+      return new NextResponse(JSON.stringify({ error: `Unknown export table '${table}'.` }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
   }
 
-  if (data.length === 0) {
-    return new NextResponse("id,empty\n1,No records found", {
+  if (!data || data.length === 0) {
+    return new NextResponse("No data available", {
       headers: {
-        "Content-Type": "text/csv",
-        "Content-Disposition": `attachment; filename="${table}_export.csv"`
+        "Content-Type": "text/plain",
+        "Content-Disposition": `attachment; filename="${table}.csv"`
       }
     });
   }
 
-  // Parse columns
-  const keys = Object.keys(data[0]);
-  
-  // Helper to escape values for CSV compatibility
-  const escapeCSVValue = (val: any) => {
+  const headers = Object.keys(data[0]);
+
+  // Sanitize spreadsheet formula injection characters: =, +, -, @, \t, \r
+  const escapeCsvValue = (val: any) => {
     if (val === null || val === undefined) return "";
     let str = typeof val === "object" ? JSON.stringify(val) : String(val);
-    // Escape double quotes by doubling them
-    str = str.replace(/"/g, '""');
-    // Wrap in double quotes if it contains commas, quotes, or newlines
+
+    // If the value starts with risky formula trigger characters, prefix with single quote
+    if (/^[=+\-@\t\r]/.test(str)) {
+      str = `'${str}`;
+    }
+
     if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
-      return `"${str}"`;
+      return `"${str.replace(/"/g, '""')}"`;
     }
     return str;
   };
 
-  // Build CSV content
-  const headerRow = keys.join(",");
-  const rows = data.map((row) => 
-    keys.map((key) => escapeCSVValue(row[key])).join(",")
-  );
+  const csvRows = [
+    headers.join(","),
+    ...data.map((row) => headers.map((header) => escapeCsvValue(row[header])).join(","))
+  ];
 
-  const csvContent = [headerRow, ...rows].join("\n");
-
-  return new NextResponse(csvContent, {
+  return new NextResponse(csvRows.join("\n"), {
     headers: {
-      "Content-Type": "text/csv",
-      "Content-Disposition": `attachment; filename="${table}_export.csv"`
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="${table}.csv"`
     }
   });
 }

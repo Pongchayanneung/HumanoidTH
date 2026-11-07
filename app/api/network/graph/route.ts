@@ -18,7 +18,8 @@ export async function GET(req: NextRequest) {
       relation: searchParams.get("relation"),
       minConfidence: minConfidence ? Number(minConfidence) : null,
       includeLowConfidence: searchParams.get("includeLowConfidence") === null ? undefined : searchParams.get("includeLowConfidence") === "true",
-      includePrivate: searchParams.get("includePrivate") === null ? undefined : searchParams.get("includePrivate") === "true",
+      // Public API protection (M3 / T03): Public calls can never bypass confidentiality controls
+      includePrivate: false,
       maxNodes: Number.isFinite(maxNodes) ? Math.min(Math.max(maxNodes, 25), 1000) : 300,
       maxEdges: Number.isFinite(maxEdges) ? Math.min(Math.max(maxEdges, 50), 2500) : 800
     });

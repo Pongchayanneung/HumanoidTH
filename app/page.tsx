@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
@@ -5,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import RobotViewer from "./components/RobotViewer";
 import CopyCommands from "./components/CopyCommands";
 import { getTranslation } from "@/lib/translations";
+import { getOperatorPrincipal } from "@/lib/operator";
 import {
   Bot,
   Box,
@@ -52,8 +54,16 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function OverviewPage() {
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  let lang: "en" | "th" = "en";
+  let isOperator = false;
+  try {
+    const cookieStore = await cookies();
+    lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+    const operatorResult = await getOperatorPrincipal();
+    isOperator = operatorResult.ok;
+  } catch {
+    // Outside request context
+  }
   const t = getTranslation(lang);
 
   let sourcesCount: number | null = null;
@@ -82,9 +92,17 @@ export default async function OverviewPage() {
       prisma.sourceRecord.count(),
       prisma.sourceRecord.count({ where: { relevanceStatus: "ACCEPTED" } }),
       prisma.robotModel.count(),
-      prisma.contribution.count(),
-      prisma.ownedInventory.count(),
-      prisma.submittedData.count({ where: { status: { in: ["QUEUED", "NEEDS_REVIEW"] } } }),
+      prisma.contribution.count({
+        where: {
+          visibility: "public",
+          verificationStatus: "APPROVED",
+          NOT: { sourceUrl: { contains: "placeholder" } }
+        }
+      }),
+      prisma.ownedInventory.count({ where: { visibility: "public" } }),
+      isOperator
+        ? prisma.submittedData.count({ where: { status: { in: ["QUEUED", "NEEDS_REVIEW"] } } })
+        : Promise.resolve(null),
       prisma.sourceRecord.groupBy({ by: ["platform"], _count: { _all: true } }),
       prisma.sourceRecord.aggregate({ _min: { publishedAt: true }, _max: { publishedAt: true } }),
       prisma.pipelineRun.findFirst({ orderBy: { startedAt: "desc" } })
@@ -772,10 +790,12 @@ export default async function OverviewPage() {
           </Link>
           <Link className="button" href="/admin">
             <ClipboardList size={15} color="#b17c56" />
-            <span>📋</span> {t.reviewQueue}{" "}
-            <span style={{ color: "var(--success)", fontWeight: "800" }}>
-              ({pendingReviewsCount ?? "Unavailable"})
-            </span>
+            <span>📋</span> {t.reviewQueue}
+            {isOperator && pendingReviewsCount !== null && (
+              <span style={{ color: "var(--success)", fontWeight: "800", marginLeft: "4px" }}>
+                ({pendingReviewsCount})
+              </span>
+            )}
           </Link>
         </div>
       </header>

@@ -287,7 +287,13 @@ export async function loadGraphRecordsFromFile(): Promise<AtlasRecord[]> {
   if (!Array.isArray(raw)) {
     throw new Error("Imported graph file must contain a JSON array.");
   }
-  return raw.map((record, index) => normalizeFileRecord(record, index));
+  // Public data projection (M3 / T03): Exclude internal submissions, jobs, and private inventory
+  const publicRecords = raw.filter((r) => {
+    if (r.category === "submission_record" || r.category === "source_pull_job") return false;
+    if (r.category === "owned_inventory" && r.visibility !== "public") return false;
+    return true;
+  });
+  return publicRecords.map((record, index) => normalizeFileRecord(record, index));
 }
 
 function sourceTypeToCategory(sourceType: string) {
@@ -301,14 +307,38 @@ function sourceTypeToCategory(sourceType: string) {
 export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
   const { prisma } = await import("@/lib/prisma");
   const records: AtlasRecord[] = [];
-  const [robots, inventory, contributions, sources, perspectives, submissions, triplets] = await Promise.all([
+  // Public data projection (M3 / T03): Exclude private records and unapproved submissions
+  const [robots, inventory, contributions, sources, perspectives, triplets] = await Promise.all([
     prisma.robotModel.findMany({ take: 700, orderBy: { updatedAt: "desc" } }),
-    prisma.ownedInventory.findMany({ take: 500, include: { robotModel: true }, orderBy: { updatedAt: "desc" } }),
-    prisma.contribution.findMany({ take: 700, include: { relatedRobotModel: true }, orderBy: { updatedAt: "desc" } }),
-    prisma.sourceRecord.findMany({ take: 1200, orderBy: [{ relevanceConfidence: "desc" }, { updatedAt: "desc" }] }),
-    prisma.perspectiveAnnotation.findMany({ take: 800, include: { source: true }, orderBy: { createdAt: "desc" } }),
-    prisma.submittedData.findMany({ take: 500, orderBy: { updatedAt: "desc" } }),
-    prisma.triplet.findMany({ take: 1400, include: { source: true }, orderBy: { confidence: "desc" } })
+    prisma.ownedInventory.findMany({
+      where: { visibility: "public" },
+      take: 500,
+      include: { robotModel: true },
+      orderBy: { updatedAt: "desc" }
+    }),
+    prisma.contribution.findMany({
+      where: { visibility: "public", verificationStatus: "APPROVED" },
+      take: 700,
+      include: { relatedRobotModel: true },
+      orderBy: { updatedAt: "desc" }
+    }),
+    prisma.sourceRecord.findMany({
+      where: { relevanceStatus: "ACCEPTED" },
+      take: 1200,
+      orderBy: [{ relevanceConfidence: "desc" }, { updatedAt: "desc" }]
+    }),
+    prisma.perspectiveAnnotation.findMany({
+      where: { source: { relevanceStatus: "ACCEPTED" } },
+      take: 800,
+      include: { source: true },
+      orderBy: { createdAt: "desc" }
+    }),
+    prisma.triplet.findMany({
+      where: { source: { relevanceStatus: "ACCEPTED" } },
+      take: 1400,
+      include: { source: true },
+      orderBy: { confidence: "desc" }
+    })
   ]);
 
   for (const item of robots) {
@@ -341,14 +371,14 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
   }
 
   for (const item of inventory) {
-    const isPrivate = item.visibility !== "public";
+    if (item.visibility !== "public") continue;
     records.push({
       id: item.id,
       category: "owned_inventory",
       title: item.displayName,
       canonical_name: item.displayName,
-      description: isPrivate ? "Private inventory record. Sensitive details are hidden." : item.notes,
-      organization: isPrivate ? "internal_team" : item.ownerOrg,
+      description: "Public inventory unit",
+      organization: item.ownerOrg,
       country: null,
       robot_type: item.robotModel?.robotType ?? null,
       embodiment_level: null,
@@ -364,8 +394,8 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
       published_at: item.acquisitionDate?.toISOString() ?? null,
       author: null,
       confidence: 0.82,
-      evidence_excerpt: isPrivate ? null : item.notes,
-      notes: isPrivate ? "private" : item.notes,
+      evidence_excerpt: null,
+      notes: null,
       data_origin: "database"
     });
   }
@@ -457,34 +487,7 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
     });
   }
 
-  for (const item of submissions) {
-    records.push({
-      id: item.id,
-      category: "submission_record",
-      title: item.title,
-      canonical_name: item.title,
-      description: item.notes,
-      organization: null,
-      country: null,
-      robot_type: null,
-      embodiment_level: null,
-      contribution_type: item.submissionType,
-      stance: null,
-      sentiment: null,
-      perspective_theme: null,
-      relation: null,
-      subject: null,
-      object: null,
-      url: item.status === "APPROVED" ? item.url : null,
-      source_platform: "submission",
-      published_at: item.createdAt.toISOString(),
-      author: null,
-      confidence: item.status === "APPROVED" ? 0.8 : 0.55,
-      evidence_excerpt: item.reviewNotes ?? item.notes,
-      notes: item.status,
-      data_origin: "database"
-    });
-  }
+
 
   for (const item of triplets) {
     records.push({
@@ -835,7 +838,7 @@ function filterBuiltGraph(nodes: NetworkNode[], edges: NetworkEdge[], options: N
     if (options.cluster && node.cluster !== options.cluster) return false;
     if (options.nodeType && node.type !== options.nodeType) return false;
     if (options.includeLowConfidence === false && node.is_low_confidence) return false;
-    if (options.includePrivate === false && node.is_private) return false;
+    if (!options.includePrivate && node.is_private) return false;
     if (node.confidence < minConfidence) return false;
     nodeSet.add(node.id);
     return true;

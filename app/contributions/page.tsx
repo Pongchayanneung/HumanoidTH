@@ -1,7 +1,9 @@
+import React from "react";
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
+import { publicContributionWhere, isEligiblePublicRobot } from "@/lib/public-projection";
 
 export const dynamic = "force-dynamic";
 
@@ -43,21 +45,33 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   const params = await searchParams;
   const { type, org, robot, status, q } = params;
 
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  let lang: "en" | "th" = "en";
+  try {
+    const cookieStore = await cookies();
+    lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  } catch {
+    // Default to 'en' when rendered outside request store (e.g. unit tests)
+  }
   const t = getTranslation(lang);
 
-  // Build filter conditions
-  const where: any = {};
+  // Build filter conditions enforcing public data projection (M3)
+  // Anonymous public access is strictly constrained to approved, public contributions.
+  // Query flags (e.g. ?status=...) cannot broaden access or reveal internal review states.
+  const where: any = {
+    ...publicContributionWhere
+  };
   if (type) where.contributionType = type;
   if (org) where.organization = org;
   if (robot) where.relatedRobotModelId = robot;
-  if (status) where.verificationStatus = status;
   if (q) {
-    where.OR = [
-      { title: { contains: q, mode: "insensitive" } },
-      { contributorName: { contains: q, mode: "insensitive" } },
-      { description: { contains: q, mode: "insensitive" } }
+    where.AND = [
+      {
+        OR: [
+          { title: { contains: q, mode: "insensitive" } },
+          { contributorName: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } }
+        ]
+      }
     ];
   }
 
@@ -73,11 +87,23 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         orderBy: { updatedAt: "desc" },
         take: 200
       }),
-      prisma.robotModel.findMany({ select: { id: true, canonicalName: true } }),
+      prisma.robotModel.findMany({
+        where: {
+          NOT: [
+            { canonicalName: { contains: "placeholder", mode: "insensitive" } },
+            { canonicalName: { contains: "pending", mode: "insensitive" } },
+            { canonicalName: { contains: "unverified", mode: "insensitive" } }
+          ]
+        },
+        select: { id: true, canonicalName: true }
+      }),
       prisma.contribution.findMany({
         select: { organization: true },
         distinct: ["organization"],
-        where: { organization: { not: null } }
+        where: {
+          organization: { not: null },
+          ...publicContributionWhere
+        }
       })
     ]);
     dbItems = resItems;
@@ -88,8 +114,8 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   }
 
   const items = dbItems;
-  const robots = dbRobots;
-  const uniqueOrgs = dbOrganizations.map(o => o.organization).filter(Boolean) as string[];
+  const robots = dbRobots.filter((r) => isEligiblePublicRobot(r.canonicalName));
+  const uniqueOrgs = dbOrganizations.map((o) => o.organization).filter(Boolean) as string[];
 
   // Taxonomies
   const contributionTypes = [

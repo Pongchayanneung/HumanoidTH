@@ -89,3 +89,63 @@ export interface RevalidationResult {
   expectedContentHash?: string;
   currentDoc?: SearchDocument | null;
 }
+
+export const SEARCH_RECORD_KINDS = ["source", "robot", "contribution", "perspective", "inventory", "relationship", "entity"] as const satisfies readonly SearchRecordKind[];
+export type SearchMode = "keyword" | "hybrid" | "browse" | "unavailable";
+export type SearchWarning = "degraded_semantic" | "partial_vector_coverage" | "stale_index" | "unavailable";
+export interface SearchReference { kind: SearchRecordKind; id: string }
+export interface SearchRequest { query: string; types?: SearchRecordKind[]; limit: number }
+export interface SearchCoverage { indexed: number; eligible: number }
+export interface SearchModelProfile {
+  id: string; revision: string; runtime: string; dimensions: number;
+  pooling: string; precision: string; normalization: string; preprocessing: string;
+}
+export interface SearchRankingPolicy {
+  mode: "keyword" | "hybrid";
+  semanticCutoff: number | null;
+  modelProfileId: string | null;
+}
+export const INITIAL_SEARCH_RANKING_POLICY: SearchRankingPolicy = {
+  mode: "keyword", semanticCutoff: null, modelProfileId: null,
+};
+export interface SearchPublicationPolicy {
+  permittedOrigins: string[]; publicFieldsByKind: Record<SearchRecordKind, string[]>;
+  excludedFields: string[]; excludedReferences: SearchReference[]; exceptions: string[];
+}
+export interface SearchRelease {
+  id: string; generatedAt: string; coverage: SearchCoverage;
+  model: SearchModelProfile | null; publication: SearchPublicationPolicy;
+  ranking: SearchRankingPolicy;
+}
+export type SearchMatch = { evidence: SearchEvidence } & (
+  | { methods: ["semantic"]; ranges?: never }
+  | { methods: ["keyword"] | ["keyword", "semantic"] | ["semantic", "keyword"]; ranges?: { start: number; end: number }[] }
+);
+interface SearchResultFields {
+  reference: SearchReference; title: string; url: string | null; evidence: SearchEvidence[];
+}
+export type SearchBrowseResult = SearchResultFields & { match?: never };
+export type SearchMatchedResult = SearchResultFields & { match: SearchMatch };
+export type SearchResult = SearchBrowseResult | SearchMatchedResult;
+export interface SearchResultGroup<T extends SearchResult = SearchResult> { kind: SearchRecordKind; results: T[] }
+export type SearchResponse = {
+  release: { id: string; generatedAt: string } | null;
+  coverage: SearchCoverage; warnings: SearchWarning[];
+} & (
+  | { mode: "browse" | "unavailable"; groups: SearchResultGroup<SearchBrowseResult>[] }
+  | { mode: "keyword" | "hybrid"; groups: SearchResultGroup<SearchMatchedResult>[] }
+);
+export interface SearchError { error: { code: "invalid_request"; message: string } }
+
+export function validateSearchRequest(value: unknown): SearchRequest | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const input = value as Record<string, unknown>;
+  if (Object.keys(input).some((key) => !["query", "types", "limit"].includes(key))) return null;
+  if (typeof input.query !== "string") return null;
+  const query = input.query.trim();
+  if (Array.from(query).length > 300) return null;
+  if (input.types !== undefined && (!Array.isArray(input.types) ||
+    !input.types.every((kind) => typeof kind === "string" && SEARCH_RECORD_KINDS.includes(kind as SearchRecordKind)))) return null;
+  if (input.limit !== undefined && (!Number.isInteger(input.limit) || (input.limit as number) < 1 || (input.limit as number) > 20)) return null;
+  return { query, types: input.types as SearchRecordKind[] | undefined, limit: (input.limit as number | undefined) ?? 10 };
+}

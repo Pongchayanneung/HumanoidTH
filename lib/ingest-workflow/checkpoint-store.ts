@@ -25,12 +25,8 @@ export class FileCheckpointStore {
   async get(jobId: string): Promise<IngestionCheckpoint | null> {
     const file = this.getFilePath(jobId);
     if (!existsSync(file)) return null;
-    try {
-      const raw = readFileSync(file, "utf8");
-      return JSON.parse(raw) as IngestionCheckpoint;
-    } catch {
-      return null;
-    }
+    const raw = readFileSync(file, "utf8");
+    return JSON.parse(raw) as IngestionCheckpoint;
   }
 
   async clear(jobId: string): Promise<void> {

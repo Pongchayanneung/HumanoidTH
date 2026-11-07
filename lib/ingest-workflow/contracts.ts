@@ -56,6 +56,7 @@ export interface IngestionCheckpoint {
   query: string;
   lastProcessedIndex: number;
   totalRecords: number;
+  recordsHash: string;
   counts: IngestionCounts;
   completedUrls: string[];
   persistedRecordIds: string[];

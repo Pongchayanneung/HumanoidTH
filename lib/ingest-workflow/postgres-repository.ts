@@ -154,7 +154,7 @@ export class PostgresIngestionJobRepository implements IngestionJobRepository {
       }
     }
 
-    // Call aligned saveSources inside atomic transaction
+    // saveSources commits each record separately.
     await saveSources(records);
 
     // Fetch the persisted records to collect IDs and relevance breakdown

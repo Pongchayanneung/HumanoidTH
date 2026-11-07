@@ -1,14 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, writeFileSync, rmSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { FileCheckpointStore } from "../lib/ingest-workflow/checkpoint-store";
 import type { NormalizedSource } from "../lib/ingest/types";
 import {
   executeIngestionJob,
-  isAuthorizedOperator,
-  isPermittedAdapter,
-  type IngestionJobRepository,
-  type IngestionJobRecord,
-  type IngestionCheckpoint
-} from "../lib/ingest-workflow";
+  createIngestionJobExecutor,
+} from "../lib/ingest-workflow/job-service";
+import { isPermittedAdapter, type IngestionJobRepository, type IngestionJobRecord, type IngestionCheckpoint } from "../lib/ingest-workflow/contracts";
 
 /**
  * In-memory test repository for testing recoverable ingestion jobs.
@@ -129,6 +130,29 @@ function makeSampleSources(count: number): NormalizedSource[] {
   return sources;
 }
 
+test("R1: rejects fabricated actors before any job is created", async () => {
+  const repo = new InMemoryIngestRepository();
+  for (const actor of [{ email: "unauthorized@example.com" }, { kind: "operator", email: "user@example.com" }]) {
+    const result = await executeIngestionJob({ actor, adapter: "OPENALEX", query: "test", records: [], repository: repo });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "UNAUTHORIZED");
+  }
+  assert.equal(repo.jobs.size, 0);
+});
+
+const runAuthorized = createIngestionJobExecutor(async () => ({ ok: true, principal: { kind: "operator", email: "test@example.com" } }));
+
+test("R1: rejects changed inputs on resume", async () => {
+  const repo = new InMemoryIngestRepository();
+  const input = { actor: "valid", adapter: "OPENALEX", query: "test", records: makeSampleSources(3), repository: repo, jobId: "identity", batchSize: 1 };
+  await runAuthorized({ ...input, simulateInterruptionAtBatch: 2 });
+  for (const change of [{ adapter: "GITHUB" }, { query: "changed" }, { records: input.records.slice(0, 1) }, { records: input.records.map((r, i) => i === 0 ? { ...r, title: "changed" } : r) }]) {
+    const result = await runAuthorized({ ...input, ...change });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "INVALID_INPUT");
+  }
+});
+
 test("R1: M2 Operator Authorization & Permitted Provider Policy", async () => {
   const repo = new InMemoryIngestRepository();
   const sources = makeSampleSources(3);
@@ -145,8 +169,8 @@ test("R1: M2 Operator Authorization & Permitted Provider Policy", async () => {
   assert.equal(unauthOutcome.code, "UNAUTHORIZED");
 
   // 2. Unpermitted adapter is rejected
-  const invalidAdapterOutcome = await executeIngestionJob({
-    actor: { email: "operator@thaiatlas.org", kind: "operator" },
+  const invalidAdapterOutcome = await runAuthorized({
+    actor: "valid",
     adapter: "UNSUPPORTED_ADAPTER",
     query: "humanoid robot",
     records: sources,
@@ -165,11 +189,11 @@ test("R1: M2 Operator Authorization & Permitted Provider Policy", async () => {
 
 test("R1: Ingestion distinguishes new records, updates, and duplicates (Finding D13)", async () => {
   const repo = new InMemoryIngestRepository();
-  const operator = { email: "lead_curator@thaiatlas.org", kind: "operator" };
+  const operator = "valid";
   const initialSources = makeSampleSources(4);
 
   // Initial pull: all 4 records are new
-  const firstRun = await executeIngestionJob({
+  const firstRun = await runAuthorized({
     actor: operator,
     adapter: "OPENALEX",
     batchSize: 2,
@@ -189,7 +213,7 @@ test("R1: Ingestion distinguishes new records, updates, and duplicates (Finding 
   // Repeat pull with identical records + 2 new records
   const mixedSources = [...initialSources, ...makeSampleSources(2).map((s, idx) => ({ ...s, url: `https://doi.org/10.1000/th-humanoid-new-${idx}` }))];
 
-  const secondRun = await executeIngestionJob({
+  const secondRun = await runAuthorized({
     actor: operator,
     adapter: "OPENALEX",
     batchSize: 2,
@@ -209,13 +233,13 @@ test("R1: Ingestion distinguishes new records, updates, and duplicates (Finding 
 
 test("R1: Interruption saves checkpoint and allows safe, non-duplicating resume (Finding T06)", async () => {
   const repo = new InMemoryIngestRepository();
-  const operator = { email: "curator@thaiatlas.org", kind: "operator" };
+  const operator = "valid";
   const sources = makeSampleSources(10); // 10 records, batchSize = 3 -> 4 batches (3, 3, 3, 1)
 
   const jobId = "job_recoverable_demo_01";
 
   // Simulate interruption during batch 2
-  const interruptedRun = await executeIngestionJob({
+  const interruptedRun = await runAuthorized({
     actor: operator,
     adapter: "OPENALEX",
     batchSize: 3,
@@ -246,7 +270,7 @@ test("R1: Interruption saves checkpoint and allows safe, non-duplicating resume 
   assert.equal(jobState?.recordsSaved, 3);
 
   // Resume the job with the same jobId
-  const resumedRun = await executeIngestionJob({
+  const resumedRun = await runAuthorized({
     actor: operator,
     adapter: "OPENALEX",
     batchSize: 3,
@@ -273,7 +297,7 @@ test("R1: Interruption saves checkpoint and allows safe, non-duplicating resume 
 
 test("R1: Batch execution failure marks job FAILED and preserves partial progress", async () => {
   const repo = new InMemoryIngestRepository();
-  const operator = { email: "operator@thaiatlas.org", kind: "operator" };
+  const operator = "valid";
   const sources = makeSampleSources(6); // 2 batches of 3
   const jobId = "job_fault_test_01";
 
@@ -288,7 +312,7 @@ test("R1: Batch execution failure marks job FAILED and preserves partial progres
     return originalSave(records, id);
   };
 
-  const failedRun = await executeIngestionJob({
+  const failedRun = await runAuthorized({
     actor: operator,
     adapter: "OPENALEX",
     batchSize: 3,
@@ -311,11 +335,11 @@ test("R1: Batch execution failure marks job FAILED and preserves partial progres
 
 test("R1: Optional provider credentials produce warning, not false SKIPPED_MISSING_KEY (Finding D13)", async () => {
   const repo = new InMemoryIngestRepository();
-  const operator = { email: "curator@thaiatlas.org", kind: "operator" };
+  const operator = "valid";
   const githubSources = makeSampleSources(3).map((s) => ({ ...s, sourceType: "GITHUB" as const, platform: "github" }));
 
   // GitHub pull without token: has missingKeys: ["GITHUB_TOKEN optional"]
-  const githubOutcome = await executeIngestionJob({
+  const githubOutcome = await runAuthorized({
     actor: operator,
     adapter: "GITHUB",
     missingKeys: ["GITHUB_TOKEN optional"],
@@ -333,7 +357,7 @@ test("R1: Optional provider credentials produce warning, not false SKIPPED_MISSI
   assert.match(githubOutcome.result.warnings[0], /Optional provider credentials omitted/);
 
   // True mandatory missing key (e.g. YouTube API key absent with 0 records)
-  const youtubeOutcome = await executeIngestionJob({
+  const youtubeOutcome = await runAuthorized({
     actor: operator,
     adapter: "YOUTUBE",
     missingKeys: ["YOUTUBE_API_KEY"],
@@ -348,3 +372,38 @@ test("R1: Optional provider credentials produce warning, not false SKIPPED_MISSI
   assert.equal(youtubeOutcome.result.counts.recordsSaved, 0);
 });
 
+
+
+test("R1: corrupt checkpoint is reported and missing checkpoint cannot recreate a job", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "ingest-checkpoint-"));
+  try {
+    const store = new FileCheckpointStore(dir);
+    writeFileSync(join(dir, "checkpoint-broken.json"), "{");
+    await assert.rejects(store.get("broken"), SyntaxError);
+    const repo = new InMemoryIngestRepository();
+    await repo.createJob({ id: "missing", adapter: "OPENALEX", query: "test" });
+    const result = await runAuthorized({ actor: "valid", jobId: "missing", adapter: "OPENALEX", query: "test", records: [], repository: repo });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "INVALID_INPUT");
+    assert.equal(repo.jobs.size, 1);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("R1: successful retry clears the failed attempt count", async () => {
+  const repo = new InMemoryIngestRepository();
+  repo.shouldFailNextBatch = true;
+  const input = { actor: "valid", adapter: "OPENALEX", query: "test", records: makeSampleSources(2), repository: repo, jobId: "retry" };
+  const first = await runAuthorized(input);
+  assert.equal(first.ok, false);
+  const retry = await runAuthorized(input);
+  assert.equal(retry.ok, true);
+  if (retry.ok) assert.equal(retry.result.counts.recordsFailed, 0);
+});
+
+test("R1: documentation states the current recovery and history limits", () => {
+  const doc = readFileSync(new URL("../docs/recoverable-ingestion-r1.md", import.meta.url), "utf8");
+  assert.match(doc, /separate transaction/);
+  assert.match(doc, /not shared between instances/);
+  assert.match(doc, /Provider fetching, distributed recovery, atomic batch progress, and unified history remain incomplete/);
+  assert.doesNotMatch(doc, /All 300 test assertions pass/);
+});

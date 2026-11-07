@@ -1,4 +1,4 @@
-import type { SourceType, PullStatus } from "../../generated/prisma";
+import type { SourceType } from "../../generated/prisma";
 import type { NormalizedSource } from "@/lib/ingest/types";
 import {
   type IngestionJobRepository,
@@ -6,29 +6,12 @@ import {
   type IngestionCheckpoint,
   type IngestionJobResult,
   type JobExecutionOutcome,
-  type PermittedAdapter,
   isPermittedAdapter
 } from "./contracts";
 
-/**
- * Validate operator principal (M2 alignment).
- */
-export function isAuthorizedOperator(actor: unknown): boolean {
-  if (!actor || typeof actor !== "object") return false;
-  const a = actor as Record<string, unknown>;
-
-  if (a.kind === "operator" && typeof a.email === "string" && a.email.includes("@")) {
-    return true;
-  }
-
-  if (typeof a.email === "string" && a.email.includes("@")) {
-    if (a.role === "ADMIN" || a.role === "RESEARCHER" || a.role === undefined) {
-      return true;
-    }
-  }
-
-  return false;
-}
+import { createHash } from "node:crypto";
+import { runtimeOperatorAuth } from "../operator-auth/runtime";
+import type { SessionResult } from "../operator-auth/contracts";
 
 export interface IngestionExecutionOptions {
   jobId?: string;
@@ -43,9 +26,10 @@ export interface IngestionExecutionOptions {
 }
 
 /**
- * Executes or resumes a durable, recoverable ingestion job.
+ * Executes or resumes an ingestion job.
  */
-export async function executeIngestionJob(
+export function createIngestionJobExecutor(authorize: (token?: string) => Promise<SessionResult>) {
+return async function executeIngestionJob(
   options: IngestionExecutionOptions
 ): Promise<JobExecutionOutcome> {
   const {
@@ -60,7 +44,7 @@ export async function executeIngestionJob(
   } = options;
 
   // 1. M2 Authorization Gate: Fail closed
-  if (!isAuthorizedOperator(actor)) {
+  if (typeof actor !== "string" || !(await authorize(actor)).ok) {
     return {
       code: "UNAUTHORIZED",
       message: "Ingestion jobs require authenticated operator credentials.",
@@ -80,6 +64,8 @@ export async function executeIngestionJob(
   const typedAdapter = adapter.toUpperCase() as SourceType;
   const effectiveBatchSize = Math.max(1, batchSize);
 
+  const recordsHash = createHash("sha256").update(JSON.stringify(records)).digest("hex");
+
   // 3. Resolve existing checkpoint if resuming
   let jobId = options.jobId;
   let checkpoint: IngestionCheckpoint | null = null;
@@ -88,7 +74,14 @@ export async function executeIngestionJob(
   if (jobId) {
     checkpoint = await repository.getCheckpoint(jobId);
     if (checkpoint) {
+      if (checkpoint.adapter !== typedAdapter || checkpoint.query !== query ||
+          checkpoint.totalRecords !== records.length || checkpoint.recordsHash !== recordsHash ||
+          !Number.isInteger(checkpoint.lastProcessedIndex) || checkpoint.lastProcessedIndex < 0 || checkpoint.lastProcessedIndex > records.length) {
+        return { ok: false, code: "INVALID_INPUT", message: "Job input does not match its checkpoint." };
+      }
       isResumed = true;
+    } else if (await repository.getJob(jobId)) {
+      return { ok: false, code: "INVALID_INPUT", message: "Existing job has no checkpoint." };
     }
   }
 
@@ -172,7 +165,7 @@ export async function executeIngestionJob(
 
   if (checkpoint) {
     startIndex = checkpoint.lastProcessedIndex;
-    counts = { ...checkpoint.counts, recordsFound: records.length };
+    counts = { ...checkpoint.counts, recordsFound: records.length, recordsFailed: 0 };
     persistedRecordIds = [...checkpoint.persistedRecordIds];
     completedUrls = [...checkpoint.completedUrls];
   } else {
@@ -198,6 +191,7 @@ export async function executeIngestionJob(
         lastProcessedIndex: i,
         persistedRecordIds,
         query,
+        recordsHash,
         totalRecords: records.length,
         updatedAt: new Date().toISOString()
       };
@@ -258,6 +252,7 @@ export async function executeIngestionJob(
         lastProcessedIndex: i + batch.length,
         persistedRecordIds,
         query,
+        recordsHash,
         totalRecords: records.length,
         updatedAt: new Date().toISOString()
       };
@@ -281,6 +276,7 @@ export async function executeIngestionJob(
         lastProcessedIndex: i,
         persistedRecordIds,
         query,
+        recordsHash,
         totalRecords: records.length,
         updatedAt: new Date().toISOString()
       };
@@ -340,4 +336,6 @@ export async function executeIngestionJob(
     result: finalResult
   };
 }
+}
 
+export const executeIngestionJob = createIngestionJobExecutor(runtimeOperatorAuth.readOperatorSession);

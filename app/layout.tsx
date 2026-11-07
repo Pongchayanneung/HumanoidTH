@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { IBM_Plex_Sans, IBM_Plex_Sans_Thai } from "next/font/google";
-import SidebarNav from "./components/SidebarNav";
-import LanguageSelector from "./components/LanguageSelector";
-import MobileHeader from "./components/MobileHeader";
-import MobileTabNav from "./components/MobileTabNav";
-import FirstTimeLoader from "./components/FirstTimeLoader";
-import { getTranslation } from "@/lib/translations";
+import AtlasNavigation from "./components/AtlasNavigation";
 import { defaultSeoDescription, getSiteUrl, siteName } from "@/lib/seo";
 import "./globals.css";
 
@@ -98,7 +93,6 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const lang = cookieStore.get("lang")?.value === "th" ? "th" : "en";
-  const t = getTranslation(lang);
   const siteUrl = getSiteUrl();
   const structuredData = {
     "@context": "https://schema.org",
@@ -135,22 +129,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-        <FirstTimeLoader />
         <div className="app-shell">
-          <MobileHeader currentLang={lang} />
-          <aside className="sidebar">
-            <div className="brand-logo-container">
-              <img src="/logo.png" alt="Thailand Humanoid Atlas" className="brand-logo" />
-            </div>
-            <div style={{ flex: 1, overflowY: "auto", paddingRight: "4px" }}>
-              <SidebarNav currentLang={lang} />
-            </div>
-            <div style={{ paddingTop: "14px", borderTop: "1px solid #14352a", marginTop: "auto" }}>
-              <LanguageSelector currentLang={lang} />
-            </div>
-          </aside>
-          <main className="main motion-page">{children}</main>
-          <MobileTabNav currentLang={lang} />
+          <a className="atlas-skip" href="#main-content">{lang === "th" ? "ข้ามไปยังเนื้อหาหลัก" : "Skip to main content"}</a>
+          <AtlasNavigation lang={lang} />
+          <main id="main-content" tabIndex={-1} className="main atlas-main">{children}</main>
         </div>
       </body>
     </html>

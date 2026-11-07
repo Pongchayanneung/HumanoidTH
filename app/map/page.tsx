@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MapPin } from "lucide-react";
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 
@@ -45,16 +45,13 @@ export default async function Page() {
   const copy = localT[lang];
 
   return (
-    <>
+    <div className="atlas-workspace">
       <div className="topline"><h1>{t.mapTitle}</h1></div>
-      <section className="panel" aria-labelledby="map-unavailable" data-map-state="unavailable"
-        style={{ minHeight: 520, display: "grid", placeItems: "center", textAlign: "center" }}>
-        <div>
-          <MapPin size={34} aria-hidden="true" style={{ color: "var(--accent)" }} />
-          <h2 id="map-unavailable" style={{ marginTop: 10 }}>{copy.title}</h2>
-          <p className="muted" style={{ maxWidth: 520, margin: "8px auto" }}>{copy.body}</p>
-        </div>
+      <section className="atlas-recovery" aria-labelledby="map-unavailable" data-map-state="unavailable">
+        <h2 id="map-unavailable">{copy.title}</h2>
+        <p className="muted">{copy.body}</p>
+        <Link className="button" href="/network">{lang === "th" ? "ดูเครือข่ายหุ่นยนต์" : "Explore the robotics network"}</Link>
       </section>
-    </>
+    </div>
   );
 }

@@ -13,12 +13,12 @@ export default async function Page() {
   const cookieStore = await cookies();
   const thai = cookieStore.get("lang")?.value === "th";
   return (
-    <div>
+    <div className="atlas-workspace">
       <h1>{thai ? "โปรไฟล์ผู้ใช้" : "User Profile"}</h1>
-      <section className="panel" aria-labelledby="workflow-status" style={{ marginTop: 18 }}>
+      <section className="atlas-recovery" aria-labelledby="workflow-status">
         <h2 id="workflow-status">{thai ? "ยังไม่เปิดให้ใช้งาน" : "Workflow unavailable"}</h2>
         <p className="muted">{thai ? "การสมัครบัญชี ข้อมูลโปรไฟล์ และประวัติการส่งข้อมูลยังไม่เปิดให้ใช้งานระหว่างพัฒนาการยืนยันตัวตนและการคุ้มครองข้อมูลส่วนบุคคล" : "Account registration, profile details and submission history are unavailable while identity and privacy safeguards are completed."}</p>
-        <Link className="button" href="/">{thai ? "กลับหน้าภาพรวม" : "Return to overview"}</Link>
+        <Link className="button" href="/search">{thai ? "ค้นหาข้อมูลสาธารณะ" : "Search public records"}</Link>
       </section>
     </div>
   );

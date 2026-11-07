@@ -63,6 +63,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
   }
 
   let data: Record<string, unknown>[] = [];
+  let unavailable = false;
 
   if (!isSubmissions && !search.invalid) {
     try {
@@ -70,6 +71,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
       data = await fetchExportableRecords(table, q, DEFAULT_EXPORT_LIMIT);
     } catch (error) {
       console.error("Database query failed in database browser page:", error);
+      unavailable = true;
     }
   }
 
@@ -136,6 +138,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
       {search.invalid && (
         <p className="notice" role="alert">Invalid text search. Use at most 200 characters and no control characters.</p>
       )}
+      {unavailable && <p className="notice" role="alert">{lang === "th" ? "ขณะนี้ไม่สามารถอ่านฐานข้อมูลได้" : "The database could not be read. Try again."}</p>}
 
       {/* Selector & Search Form */}
       <form method="GET" className="panel db-form">
@@ -157,7 +160,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
       </form>
 
       {/* Dense Monospace Grid view */}
-      <div className="panel" style={{ padding: "12px" }}>
+      {!unavailable && <div className="panel" style={{ padding: "12px" }}>
         <h2 style={{ fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
           Table Preview: <code>{isSubmissions ? "submissions" : table}</code> ({data.length} records)
         </h2>
@@ -206,7 +209,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
     </>
   );
 }

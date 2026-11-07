@@ -6,6 +6,7 @@ import { inspectCmsRecord } from "@/lib/admin-inspection";
 import type { CmsCollection } from "@/lib/admin-inspection/contracts";
 import { logoutUser } from "@/app/actions";
 import ReadOnlyRecordView from "./ReadOnlyRecordView";
+import PublicProjection from "./PublicProjection";
 
 export type AdminSearchParams = Promise<{
   collection?: string | string[];
@@ -72,7 +73,7 @@ export default async function AdminConsolePage({ searchParams, path = "/admin" }
   if (failure === "UNAUTHENTICATED") redirect("/admin-login");
   const invalidSelection = failure === "INVALID_SELECTION";
   return (
-    <div className="admin-page">
+    <div className="admin-page atlas-workspace atlas-operator">
       <h1>{thai ? "สถานะเซสชันผู้ดูแล" : "Operator session"}</h1>
       {error && <p className="notice" role="alert">{thai ? "ออกจากระบบไม่สำเร็จ เซสชันยังไม่ถูกล้าง โปรดลองออกจากระบบอีกครั้ง" : "Sign-out could not be completed. Your session has not been cleared. Please try signing out again."}</p>}
       <section className="panel" aria-labelledby="session-status" style={{ marginTop: 18 }}>
@@ -122,8 +123,11 @@ export default async function AdminConsolePage({ searchParams, path = "/admin" }
         </form>
         {failure && <p id="inspection-error" className="notice" role="alert">{inspectionFeedback[failure][lang]}</p>}
       </section>
-      {result?.ok && <ReadOnlyRecordView record={result.record} thai={thai} />}
-      <section className="notice" aria-labelledby="workflow-status" style={{ marginTop: 18 }}>
+      {result?.ok && <>
+        <PublicProjection record={result.record} thai={thai} />
+        <ReadOnlyRecordView record={result.record} thai={thai} />
+      </>}
+      <section className="atlas-recovery" aria-labelledby="workflow-status">
         <h2 id="workflow-status">{thai ? "งานจัดการข้อมูลยังไม่เปิดให้ใช้งาน" : "Data workflows unavailable"}</h2>
         <p>{thai ? "การแก้ไข การตรวจอนุมัติ การเผยแพร่ และการดึงข้อมูลยังไม่เปิดให้ใช้งาน แม้เข้าสู่ระบบแล้ว" : "Editing, review, publication and ingestion remain unavailable, including for signed-in operators."}</p>
       </section>

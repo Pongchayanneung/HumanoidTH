@@ -1,0 +1,8 @@
+.body { margin: 0; background: #faf6f0; color: #202d25; font: 16px/1.6 system-ui, sans-serif; }
+.header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; min-height: 60px; padding: 8px 16px; color: #eef7f2; background: #0b1a15; }
+.header nav { display: flex; gap: 16px; }
+.header a { color: inherit; }
+.header a:focus-visible { outline: 2px solid #b7e2c4; outline-offset: 3px; }
+.content { max-width: 1040px; margin: auto; padding: 24px 16px; }
+.content button { min-height: 44px; padding-inline: 16px; border: 0; border-radius: 4px; background: #365b41; color: white; cursor: pointer; }
+.content button:focus-visible { outline: 2px solid #365b41; outline-offset: 3px; }

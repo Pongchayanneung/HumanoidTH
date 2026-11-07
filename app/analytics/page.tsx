@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { getTranslation, parseLanguage } from "@/lib/translations";
-import { PUBLIC_DATASET_SCOPE_LABEL } from "@/lib/public-projection";
+import { parseLanguage } from "@/lib/translations";
+import { publicContributionWhere, publicPerspectiveWhere, publicRobotWhere, publicSourceRecordWhere } from "@/lib/public-projection";
 import AnalyticsPlayground from "./AnalyticsPlayground";
 import AnalyticsBpmn from "./AnalyticsBpmn";
 
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 };export default async function AnalyticsPage() {
   const cookieStore = await cookies();
   const lang = parseLanguage(cookieStore.get("lang")?.value);
-  const t = getTranslation(lang);
+  const thai = lang === "th";
 
   let events: Array<any> = [];
   let summary = {
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
       perspectives
     ] = await Promise.all([
       prisma.sourceRecord.findMany({
-        where: { relevanceStatus: "ACCEPTED" },
+        where: publicSourceRecordWhere,
         select: {
           sourceType: true,
           relevanceStatus: true,
@@ -72,6 +72,7 @@ export const metadata: Metadata = {
         take: 5000
       }),
       prisma.robotModel.findMany({
+        where: publicRobotWhere,
         select: {
           canonicalName: true,
           robotType: true,
@@ -85,7 +86,7 @@ export const metadata: Metadata = {
         take: 5000
       }),
       prisma.contribution.findMany({
-        where: { visibility: "public", verificationStatus: "APPROVED" },
+        where: publicContributionWhere,
         select: {
           title: true,
           contributionType: true,
@@ -98,7 +99,7 @@ export const metadata: Metadata = {
         take: 5000
       }),
       prisma.perspectiveAnnotation.findMany({
-        where: { source: { relevanceStatus: "ACCEPTED" } },
+        where: publicPerspectiveWhere,
         select: {
           perspectiveTheme: true,
           stance: true,
@@ -229,17 +230,10 @@ export const metadata: Metadata = {
   }
 
   return (
-    <>
-      <h1>{t.analyticsTitle}</h1>
-      <p className="muted" style={{ marginBottom: "18px" }}>{t.analyticsDesc}</p>
-      <div className="notice" style={{ background: "rgba(59, 130, 246, 0.08)", borderColor: "var(--accent)", marginBottom: "16px" }}>
-        <strong>Dataset Scope:</strong> {PUBLIC_DATASET_SCOPE_LABEL}. Analytics aggregate verified public records only. Pending submissions, private inventory, and unaccepted sources are strictly excluded.
-      </div>
-      {dbOffline && (
-        <div className="notice" style={{ marginBottom: 16 }}>
-          Live analytics are unavailable. This page needs PostgreSQL to build the analysis workspace.
-        </div>
-      )}
+    <div className="atlas-workspace">
+      <h1>{thai ? "วิเคราะห์ข้อมูลตามเวลา" : "Atlas trends"}</h1>
+      <p className="muted">{thai ? "ข้อมูลสาธารณะใน Atlas เปลี่ยนแปลงอย่างไรตามเวลา?" : "How have public records in the Atlas changed over time?"}</p>
+      {dbOffline ? <p className="notice" role="alert">{thai ? "ขณะนี้ไม่สามารถโหลดข้อมูลวิเคราะห์ได้" : "Live analytics are unavailable."}</p> : <>
       <div className="grid" style={{ margin: "18px 0" }}>
         <div className="panel motion-panel motion-pop">
           <div className="muted">Internet Sources</div>
@@ -259,7 +253,7 @@ export const metadata: Metadata = {
         </div>
       </div>
 
-      <AnalyticsPlayground events={events} />
+      <AnalyticsPlayground events={events} lang={lang} />
       <div style={{ marginTop: "16px" }}>
         <AnalyticsBpmn
           counts={{
@@ -271,6 +265,7 @@ export const metadata: Metadata = {
           }}
         />
       </div>
-    </>
+      </>}
+    </div>
   );
 }

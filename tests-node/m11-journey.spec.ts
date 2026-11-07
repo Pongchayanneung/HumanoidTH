@@ -11,12 +11,6 @@ const ALL_DESTINATIONS = [
   { id: "perspectives", path: "/perspectives" },
 ] as const;
 
-// Desktop SidebarNav order of public destinations
-const DESKTOP_NAV = ["/search", "/dashboard", "/map", "/network", "/perspectives", "/robots", "/contributions"];
-
-// Mobile MobileTabNav order of public destinations
-const MOBILE_NAV = ["/dashboard", "/search", "/robots", "/contributions"];
-
 const viewports = [
   { name: "mobile-390", width: 390, height: 844 },
   { name: "desktop-1440", width: 1440, height: 900 },
@@ -67,24 +61,12 @@ async function tabUntil(
 }
 
 for (const vp of viewports) {
-  const isMobile = vp.width < 860;
-  const navPaths = isMobile ? MOBILE_NAV : DESKTOP_NAV;
-  const navDests = navPaths
-    .map((p) => ALL_DESTINATIONS.find((d) => d.path === p)!)
-    .filter(Boolean);
-
+  const navDests = ALL_DESTINATIONS;
   for (const lang of ["en", "th"] as const) {
     test(`walks main journey via keyboard @ ${vp.name} [${lang}]`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.addInitScript(() => sessionStorage.setItem("th_atlas_loaded_before", "true"));
       await page.goto("/");
-
-      // On mobile, if nav is behind a menu button, open it with keyboard
-      const menuBtn = page.getByRole("button", { name: /menu|navigation/i });
-      if (await menuBtn.isVisible()) {
-        await tabUntil(page, (el) => el.tag === "BUTTON" && /menu|navigation/i.test(el.label || el.text), "mobile menu button");
-        await page.keyboard.press("Enter");
-      }
 
       // Assert language switch can be operated by keyboard and h1 or nav text changes
       if (lang === "th") {
@@ -92,7 +74,7 @@ for (const vp of viewports) {
         await assertFocusAndName(page, "TH language button");
         await page.keyboard.press("Space");
         await expect(page.locator("html")).toHaveAttribute("lang", "th", { timeout: 10000 });
-        await expect(page.locator("h1:visible")).toContainText(/ภาพรวม/i, { timeout: 10000 });
+        await expect(page.locator("h1:visible")).toContainText(/ค้นหาใน Atlas/i, { timeout: 10000 });
       } else {
         await tabUntil(page, (el) => el.tag === "BUTTON" && el.label.includes("TH ภาษาไทย"), "TH language button");
         await assertFocusAndName(page, "TH language button");
@@ -102,15 +84,14 @@ for (const vp of viewports) {
         await assertFocusAndName(page, "EN language button");
         await page.keyboard.press("Space");
         await expect(page.locator("html")).toHaveAttribute("lang", "en", { timeout: 10000 });
-        await expect(page.locator("h1:visible")).toContainText(/overview/i, { timeout: 10000 });
+        await expect(page.locator("h1:visible")).toContainText(/Atlas Search/i, { timeout: 10000 });
       }
 
       // Reach each public destination that exists in the nav
       for (const dest of navDests) {
-        if (isMobile && (await menuBtn.isVisible())) {
-          await tabUntil(page, (el) => el.tag === "BUTTON" && /menu|navigation/i.test(el.label || el.text), "mobile menu button");
-          await page.keyboard.press("Enter");
-        }
+        await tabUntil(page, el => el.tag === "BUTTON" && /^(Open navigation|เปิดเมนู)$/.test(el.label), "menu button");
+        await assertFocusAndName(page, "menu button");
+        await page.keyboard.press("Enter");
         await tabUntil(page, (el) => el.tag === "A" && el.path === dest.path, `nav link for ${dest.id} (${dest.path})`);
         await assertFocusAndName(page, `nav link for ${dest.id}`);
         await page.keyboard.press("Enter");
@@ -119,13 +100,5 @@ for (const vp of viewports) {
       }
     });
 
-    // Write test.skip for destinations not in this nav instead of inventing a route
-    for (const dest of ALL_DESTINATIONS) {
-      if (!navPaths.includes(dest.path)) {
-        test(`destination ${dest.id} @ ${vp.name} [${lang}]`, () => {
-          test.skip(true, `Destination "${dest.id}" (${dest.path}) is not present in ${vp.name} navigation`);
-        });
-      }
-    }
   }
 }

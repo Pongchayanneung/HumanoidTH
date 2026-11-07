@@ -188,7 +188,8 @@ function toScatterPoint(event: AnalyticsEvent) {
   };
 }
 
-export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps) {
+export default function AnalyticsPlayground({ events, lang = "en" }: AnalyticsPlaygroundProps & { lang?: "en" | "th" }) {
+  const thai = lang === "th";
   const [scope, setScope] = useState<Scope>("sources");
   const [timeBucket, setTimeBucket] = useState<TimeBucket>("month");
   const [seriesField, setSeriesField] = useState("relevanceStatus");
@@ -317,39 +318,39 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
       <section className="panel motion-panel motion-pop">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
           <div>
-            <div className="muted">Scope</div>
-            <select value={scope} onChange={(e) => setScope(e.target.value as Scope)} style={{ width: "100%" }}>
+            <label className="muted" htmlFor="analytics-scope">{thai ? "ขอบเขต" : "Scope"}</label>
+            <select id="analytics-scope" value={scope} onChange={(e) => setScope(e.target.value as Scope)} style={{ width: "100%" }}>
               {scopeOrder.map((value) => (
                 <option key={value} value={value}>{scopeLabels[value]}</option>
               ))}
             </select>
           </div>
           <div>
-            <div className="muted">Time bucket</div>
-            <select value={timeBucket} onChange={(e) => setTimeBucket(e.target.value as TimeBucket)} style={{ width: "100%" }}>
-              <option value="month">Month</option>
-              <option value="year">Year</option>
+            <label className="muted" htmlFor="analytics-period">{thai ? "ช่วงเวลา" : "Time bucket"}</label>
+            <select id="analytics-period" value={timeBucket} onChange={(e) => setTimeBucket(e.target.value as TimeBucket)} style={{ width: "100%" }}>
+              <option value="month">{thai ? "เดือน" : "Month"}</option>
+              <option value="year">{thai ? "ปี" : "Year"}</option>
             </select>
           </div>
           <div>
-            <div className="muted">Trend factor</div>
-            <select value={trendSeriesField} onChange={(e) => setSeriesField(e.target.value)} style={{ width: "100%" }}>
+            <label className="muted" htmlFor="analytics-factor">{thai ? "จัดกลุ่มตาม" : "Trend factor"}</label>
+            <select id="analytics-factor" value={trendSeriesField} onChange={(e) => setSeriesField(e.target.value)} style={{ width: "100%" }}>
               {availableFields.map((field) => (
                 <option key={field.value} value={field.value}>{field.label}</option>
               ))}
             </select>
           </div>
           <div>
-            <div className="muted">Matrix row</div>
-            <select value={matrixRowField} onChange={(e) => setRowField(e.target.value)} style={{ width: "100%" }}>
+            <label className="muted" htmlFor="analytics-row">{thai ? "แถวในตารางเปรียบเทียบ" : "Matrix row"}</label>
+            <select id="analytics-row" value={matrixRowField} onChange={(e) => setRowField(e.target.value)} style={{ width: "100%" }}>
               {availableFields.map((field) => (
                 <option key={field.value} value={field.value}>{field.label}</option>
               ))}
             </select>
           </div>
           <div>
-            <div className="muted">Matrix column</div>
-            <select value={matrixColumnField} onChange={(e) => setColumnField(e.target.value)} style={{ width: "100%" }}>
+            <label className="muted" htmlFor="analytics-column">{thai ? "คอลัมน์ในตารางเปรียบเทียบ" : "Matrix column"}</label>
+            <select id="analytics-column" value={matrixColumnField} onChange={(e) => setColumnField(e.target.value)} style={{ width: "100%" }}>
               {availableFields.map((field) => (
                 <option key={field.value} value={field.value}>{field.label}</option>
               ))}
@@ -357,7 +358,7 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
           </div>
           <label style={{ display: "flex", alignItems: "center", gap: "8px", paddingTop: "20px" }}>
             <input type="checkbox" checked={showConfidence} onChange={(e) => setShowConfidence(e.target.checked)} />
-            <span className="muted">Confidence lens</span>
+            <span className="muted">{thai ? "แสดงคะแนนความเชื่อมั่น" : "Confidence lens"}</span>
           </label>
         </div>
       </section>
@@ -381,19 +382,19 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
         </div>
       </div>
 
-      <div style={{ display: "grid", gap: "16px", gridTemplateColumns: "minmax(0, 1.35fr) minmax(0, 0.95fr)" }}>
+      <div className="atlas-analytics-grid">
         <section className="panel motion-panel motion-pop">
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "baseline" }}>
             <div>
-              <h2>Appearance Trend</h2>
+              <h2>{thai ? "จำนวนระเบียนตามเวลา" : "Records over time"}</h2>
               <div className="muted" style={{ fontSize: "12px" }}>
-                Monthly or yearly record appearance across the selected scope.
+                {thai ? "จำนวนระเบียนรายเดือนหรือรายปีตามขอบเขตที่เลือก" : "Monthly or yearly record counts in the selected scope."}
               </div>
             </div>
             <div className="badge">{scopeLabels[scope]}</div>
           </div>
 
-          <div style={{ width: "100%", height: 360, marginTop: "12px" }}>
+          {trendRows.length ? <div style={{ width: "100%", height: 360, marginTop: "12px" }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trendRows} margin={{ top: 10, right: 18, left: 0, bottom: 6 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#d8ded8" />
@@ -414,26 +415,23 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
                     fill={palette[index % palette.length]}
                     fillOpacity={0.18}
                     strokeWidth={2}
-                    isAnimationActive
-                    animationDuration={650}
+                    isAnimationActive={false}
                   />
                 ))}
-                {trendRows.some((row) => remainderLabel in row) && (
-                  <Area
-                    type="monotone"
-                    dataKey={remainderLabel}
-                    stackId="1"
-                    stroke="#7a8a80"
-                    fill="#7a8a80"
-                    fillOpacity={0.12}
-                    strokeWidth={2}
-                    isAnimationActive
-                    animationDuration={650}
-                  />
-                )}
               </AreaChart>
             </ResponsiveContainer>
-          </div>
+          </div> : <p className="muted">{thai ? "ไม่พบข้อมูลตามตัวกรอง" : "No records match the current filters."}</p>}
+          {trendRows.length > 0 && <details>
+            <summary>{thai ? "ดูข้อมูลในกราฟ" : "View chart data"}</summary>
+            <div className="atlas-scroll-table" tabIndex={0} role="region" aria-label={thai ? "ตารางข้อมูลตามเวลา" : "Time series table"}><table>
+              <caption>{thai ? "จำนวนระเบียนตามช่วงเวลา" : "Record counts by period"}</caption>
+              <thead><tr><th scope="col">{thai ? "ช่วงเวลา" : "Period"}</th>{trendKeys.map(key => <th scope="col" key={key}>{seriesLabel(key)}</th>)}</tr></thead>
+              <tbody>{trendRows.map(row => <tr key={row.timeKey}>
+                <th scope="row">{row.timeKey}</th>
+                {trendKeys.map(key => <td key={key}>{(row as Record<string, string | number>)[key] ?? 0}</td>)}
+              </tr>)}</tbody>
+            </table></div>
+          </details>}
         </section>
 
         <section className="panel motion-panel motion-pop">
@@ -471,7 +469,7 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
                       return new Date(point.x).toLocaleString();
                     }}
                   />
-                  <Scatter data={confidenceSeries} fill="#19523c" isAnimationActive animationDuration={500} />
+                  <Scatter data={confidenceSeries} fill="#19523c" isAnimationActive={false} />
                 </ScatterChart>
               </ResponsiveContainer>
             </div>
@@ -480,6 +478,16 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
               Toggle confidence lens to inspect scored records.
             </div>
           )}
+          {showConfidence && confidenceSeries.length > 0 && <details>
+            <summary>{thai ? "ดูคะแนนความเชื่อมั่น" : "View confidence data"}</summary>
+            <div className="atlas-scroll-table" tabIndex={0} role="region" aria-label={thai ? "ตารางคะแนนความเชื่อมั่น" : "Confidence table"}><table>
+              <caption>{thai ? "คะแนนความเชื่อมั่นตามวัน" : "Confidence by date"}</caption>
+              <thead><tr><th scope="col">{thai ? "วันที่" : "Date"}</th><th scope="col">{thai ? "คะแนน" : "Confidence"}</th></tr></thead>
+              <tbody>{confidenceSeries.map((point, index) => <tr key={index}>
+                <td>{new Date(point.x!).toLocaleDateString(lang, { timeZone: "UTC" })}</td><td>{point.y}</td>
+              </tr>)}</tbody>
+            </table></div>
+          </details>}
         </section>
       </div>
 
@@ -512,7 +520,7 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
                   </td>
                   {matrix.colLabels.map((colLabel) => {
                     const count = matrix.counts.get(`${rowLabel}|||${colLabel}`) ?? 0;
-                    const alpha = count > 0 ? Math.max(0.08, count / matrix.max) : 0;
+                    const alpha = count > 0 ? Math.max(0.08, 0.3 * count / matrix.max) : 0;
                     return (
                       <td
                         key={`${rowLabel}-${colLabel}`}

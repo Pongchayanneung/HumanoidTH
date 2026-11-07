@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { getTranslation, parseLanguage } from "@/lib/translations";
-import { PUBLIC_DATASET_SCOPE_LABEL } from "@/lib/public-projection";
+import { publicPerspectiveWhere } from "@/lib/public-projection";
+import { safeSourceUrl } from "@/app/search/searchClient";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +38,7 @@ export const metadata: Metadata = {
   const cookieStore = await cookies();
   const lang = parseLanguage(cookieStore.get("lang")?.value);
   const t = getTranslation(lang);
+  const thai = lang === "th";
 
   let items: Array<{
     id: string;
@@ -50,12 +53,9 @@ export const metadata: Metadata = {
 
   try {
     items = await prisma.perspectiveAnnotation.findMany({
-      where: {
-        source: {
-          relevanceStatus: "ACCEPTED"
-        }
-      },
-      include: { source: true },
+      where: publicPerspectiveWhere,
+      select: { id: true, perspectiveTheme: true, stance: true, sentiment: true, confidence: true, evidenceExcerpt: true,
+        source: { select: { title: true, url: true, platform: true } } },
       orderBy: { createdAt: "desc" },
       take: 200
     });
@@ -66,35 +66,29 @@ export const metadata: Metadata = {
   }
 
   return (
-    <>
+    <div className="atlas-workspace">
       <h1>{t.perspectivesTitle}</h1>
       <p className="muted">{t.perspectivesDesc}</p>
-      <div className="notice" style={{ background: "rgba(59, 130, 246, 0.08)", borderColor: "var(--accent)", marginBottom: 16 }}>
-        <strong>Dataset Scope:</strong> {PUBLIC_DATASET_SCOPE_LABEL}. Perspective records inherit parent source eligibility. Unaccepted sources are omitted.
-      </div>
-      {dbOffline && (
-        <div className="notice" style={{ marginBottom: 16 }}>
-          Live perspective annotations are unavailable. No substitute perspective records are being shown.
-        </div>
-      )}
-      <div className="table-wrap">
-        <table>
-          <thead><tr><th>Source</th><th>Theme</th><th>Stance</th><th>Sentiment</th><th>Confidence</th><th>Source Excerpt</th></tr></thead>
-          <tbody>
-            {items.map((item) => (
-              <tr key={item.id}>
-                <td><a href={item.source.url}>{item.source.title}</a><br /><span className="muted">{item.source.platform}</span></td>
-                <td>{item.perspectiveTheme}</td>
-                <td>{item.stance}</td>
-                <td>{item.sentiment}</td>
-                <td><span className={item.confidence < 0.6 ? "badge warn" : "badge ok"}>{item.confidence.toFixed(2)}</span></td>
-                <td>{item.evidenceExcerpt}</td>
-              </tr>
-            ))}
-            {!items.length && <tr><td className="empty" colSpan={6}>No perspective annotations yet. Run an API pull with accepted records.</td></tr>}
-          </tbody>
-        </table>
-      </div>
-    </>
+      {dbOffline ? <p className="notice" role="alert">{thai ? "ขณะนี้ไม่สามารถโหลดข้อมูลมุมมองได้" : "Live perspective records are unavailable."}</p> :
+        !items.length ? <div className="atlas-recovery">
+          <p>{thai ? "ยังไม่มีมุมมองจากแหล่งข้อมูลที่เผยแพร่" : "There are no published perspective records yet."}</p>
+          <Link className="atlas-text-link" href="/sources">{thai ? "ดูแหล่งข้อมูลสาธารณะ" : "Browse public sources"}</Link>
+        </div> : items.map(item => {
+          const url = safeSourceUrl(item.source.url);
+          return <article className="atlas-record" key={item.id}>
+            <div>
+              <p className="muted">{thai ? "การจัดหมวดหมู่ของ Atlas" : "Atlas annotation"}</p>
+              <h2>{item.perspectiveTheme.replaceAll("_", " ")}</h2>
+              <p>{item.stance} · {item.sentiment} · {thai ? "ความเชื่อมั่น" : "Confidence"} {item.confidence.toFixed(2)}</p>
+              {item.evidenceExcerpt && <p>{thai ? "ข้อความจากแหล่งข้อมูล" : "Source excerpt"}<br />{item.evidenceExcerpt}</p>}
+            </div>
+            <div>
+              <h3>{thai ? "แหล่งข้อมูล" : "Source"}</h3>
+              {url ? <a href={url}>{item.source.title}</a> : <p>{item.source.title}</p>}
+              <p className="muted">{item.source.platform}</p>
+            </div>
+          </article>;
+        })}
+    </div>
   );
 }

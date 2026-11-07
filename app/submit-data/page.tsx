@@ -13,12 +13,12 @@ export default async function Page() {
   const cookieStore = await cookies();
   const thai = cookieStore.get("lang")?.value === "th";
   return (
-    <div>
+    <div className="atlas-workspace">
       <h1>{thai ? "ส่งข้อมูลและรายงานการพบเห็น" : "Contribute Data & Sightings"}</h1>
-      <section className="panel" aria-labelledby="workflow-status" style={{ marginTop: 18 }}>
+      <section className="atlas-recovery" aria-labelledby="workflow-status">
         <h2 id="workflow-status">{thai ? "ยังไม่เปิดให้ใช้งาน" : "Workflow unavailable"}</h2>
         <p className="muted">{thai ? "การส่งข้อมูลและประวัติการส่งยังไม่เปิดให้ใช้งานระหว่างพัฒนาระบบตรวจสอบและยืนยันตัวตน หน้านี้ไม่เก็บข้อมูลที่ส่ง" : "Community submissions and submission history are unavailable while the review and identity workflows are completed. No submission is collected on this page."}</p>
-        <Link className="button" href="/">{thai ? "กลับหน้าภาพรวม" : "Return to overview"}</Link>
+        <Link className="button" href="/contributions">{thai ? "ดูผลงานที่เผยแพร่แล้ว" : "Browse published contributions"}</Link>
       </section>
     </div>
   );

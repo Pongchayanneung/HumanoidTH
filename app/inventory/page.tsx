@@ -53,6 +53,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
   const t = getTranslation(lang);
 
   let inventory: any[] = [];
+  let unavailable = false;
   try {
     if (isOperator) {
       inventory = await prisma.ownedInventory.findMany({
@@ -69,6 +70,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
     }
   } catch (error) {
     console.error("Failed to query inventory in inventory page:", error);
+    unavailable = true;
   }
 
   const localT = {
@@ -89,7 +91,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
       accs: "Accessories & Docs",
       notes: "Notes / Repair Log",
       updated: "Updated",
-      empty: "No inventory records found. Run database seed or submit an inventory update.",
+      empty: "No inventory records are available in this view.",
       masked: "Masked",
       maskedNotes: "Masked for privacy",
       noLogs: "No logs."
@@ -111,7 +113,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
       accs: "อุปกรณ์เสริมและคู่มือ",
       notes: "หมายเหตุ / บันทึกการซ่อม",
       updated: "อัปเดตล่าสุด",
-      empty: "ไม่พบข้อมูลรายการหุ่นยนต์ กรุณาเรียกใช้การตั้งค่าหรือส่งข้อมูลเพิ่มบันทึกคลัง",
+      empty: "ไม่พบข้อมูลคลังหุ่นยนต์ในมุมมองนี้",
       masked: "ปิดบังข้อมูล",
       maskedNotes: "ปิดบังข้อมูลส่วนบุคคล",
       noLogs: "ไม่มีบันทึก"
@@ -119,7 +121,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
   }[lang];
 
   return (
-    <>
+    <div className="atlas-workspace">
       <div className="topline">
         <div>
           <h1>{t.inventoryTitle}</h1>
@@ -153,8 +155,9 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
         </div>
       )}
 
-      <div className="table-wrap">
+      {unavailable ? <p className="notice" role="alert">{lang === "th" ? "ขณะนี้ไม่สามารถโหลดข้อมูลคลังได้" : "Live inventory is unavailable."}</p> : <div className="table-wrap">
         <table>
+          <caption className="atlas-table-caption">{lang === "th" ? "รายการในคลัง" : "Inventory records"}</caption>
           <thead>
             <tr>
               <th>{localT.model}</th>
@@ -237,7 +240,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
             )}
           </tbody>
         </table>
-      </div>
-    </>
+      </div>}
+    </div>
   );
 }

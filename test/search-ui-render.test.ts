@@ -30,3 +30,9 @@ test('browse prefers excerpt and empty evidence does not expose an empty expande
  const output=html({...base,evidence:[evidence,excerpt]});assert.match(output,/Stored excerpt/);
  const empty=html({...base,evidence:[]});assert.match(empty,/Title\/metadata only/);assert.doesNotMatch(empty,/Show original/);
 });
+
+test('a typed robot reference links to the exact registry record', () => {
+ const robot = { ...base, contentType: 'robot' as const, reference: { kind: 'robot' as const, id: 'robot:record-17' } };
+ assert.match(html(robot), /href="\/robots\?robot=record-17"/);
+ assert.doesNotMatch(html({ ...robot, reference: { kind: 'robot', id: 'record-17' } }), /View robot record/);
+});

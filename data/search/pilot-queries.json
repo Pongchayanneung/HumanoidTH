@@ -1,0 +1,259 @@
+{
+  "pilotVersion": "1.0",
+  "generatedAt": "2026-11-07T08:00:00.000Z",
+  "description": "20-query pilot covering 10 independent search intents in paired Thai and English. Split into 12 development queries (6 intents) and 8 reserved queries (4 intents).",
+  "intents": [
+    {
+      "intentId": "hospital-service-robot",
+      "category": "supported",
+      "split": "dev",
+      "description": "Hospital delivery and medical assistant service robotics deployed or developed in Thailand.",
+      "queries": [
+        {
+          "queryId": "dev-01-th",
+          "lang": "th",
+          "queryText": "หุ่นยนต์บริการทางการแพทย์ในโรงพยาบาลของไทย",
+          "targetKeywords": ["หุ่นยนต์", "โรงพยาบาล", "การแพทย์"],
+          "expectedRelevantIds": [
+            "robot:seed-1",
+            "robot:seed-25",
+            "relationship:seed-26",
+            "robot:seed-28",
+            "robot:seed-22"
+          ]
+        },
+        {
+          "queryId": "dev-01-en",
+          "lang": "en",
+          "queryText": "hospital medical service robots developed in Thailand",
+          "targetKeywords": ["hospital", "medical", "robot", "Thailand"],
+          "expectedRelevantIds": [
+            "robot:seed-1",
+            "robot:seed-25",
+            "relationship:seed-26",
+            "robot:seed-28",
+            "robot:seed-22"
+          ]
+        }
+      ]
+    },
+    {
+      "intentId": "elderly-care-companion",
+      "category": "supported",
+      "split": "dev",
+      "description": "Elderly care companionship and home assistance robots for patients and aging population in Thailand.",
+      "queries": [
+        {
+          "queryId": "dev-02-th",
+          "lang": "th",
+          "queryText": "หุ่นยนต์ดูแลผู้สูงอายุและช่วยเหลือผู้ป่วยติดเตียงที่บ้าน",
+          "targetKeywords": ["หุ่นยนต์", "ผู้สูงอายุ", "ผู้ป่วย", "บ้าน"],
+          "expectedRelevantIds": ["robot:seed-4", "perspective:seed-5", "relationship:seed-8"]
+        },
+        {
+          "queryId": "dev-02-en",
+          "lang": "en",
+          "queryText": "elderly care assistance and home companion robots in Thailand",
+          "targetKeywords": ["elderly", "care", "home", "companion", "robot"],
+          "expectedRelevantIds": ["robot:seed-4", "perspective:seed-5", "relationship:seed-8"]
+        }
+      ]
+    },
+    {
+      "intentId": "fibo-robotics-education",
+      "category": "supported",
+      "split": "dev",
+      "description": "KMUTT FIBO initiatives for robotics skills, researchers, and educational capacity building.",
+      "queries": [
+        {
+          "queryId": "dev-03-th",
+          "lang": "th",
+          "queryText": "โครงการพัฒนาทักษะหุ่นยนต์และการศึกษาของ FIBO มจธ.",
+          "targetKeywords": ["FIBO", "มจธ", "หุ่นยนต์", "การศึกษา"],
+          "expectedRelevantIds": ["contribution:seed-30", "relationship:seed-31"]
+        },
+        {
+          "queryId": "dev-03-en",
+          "lang": "en",
+          "queryText": "KMUTT FIBO robotics education and capacity building programs",
+          "targetKeywords": ["KMUTT", "FIBO", "robotics", "education"],
+          "expectedRelevantIds": ["contribution:seed-30", "relationship:seed-31"]
+        }
+      ]
+    },
+    {
+      "intentId": "covid19-delivery-telepresence",
+      "category": "supported",
+      "split": "dev",
+      "description": "COVID-19 pandemic response telepresence and delivery robots Pinto and Mirror by Chulalongkorn.",
+      "queries": [
+        {
+          "queryId": "dev-04-th",
+          "lang": "th",
+          "queryText": "หุ่นยนต์ส่งของและสื่อสารทางไกลช่วงโควิด Pinto และ Mirror",
+          "targetKeywords": ["หุ่นยนต์", "ส่งของ", "สื่อสารทางไกล", "โควิด", "Pinto", "Mirror"],
+          "expectedRelevantIds": [
+            "contribution:seed-11",
+            "robot:seed-10",
+            "robot:seed-13",
+            "relationship:seed-12"
+          ]
+        },
+        {
+          "queryId": "dev-04-en",
+          "lang": "en",
+          "queryText": "COVID-19 response telepresence and delivery robots Pinto and Mirror",
+          "targetKeywords": ["COVID-19", "Pinto", "Mirror", "delivery", "telepresence"],
+          "expectedRelevantIds": [
+            "contribution:seed-11",
+            "robot:seed-10",
+            "robot:seed-13",
+            "relationship:seed-12"
+          ]
+        }
+      ]
+    },
+    {
+      "intentId": "quantum-cryptography",
+      "category": "unrelated",
+      "split": "dev",
+      "description": "Quantum key distribution protocols and post-quantum cryptography (Unrelated domain).",
+      "queries": [
+        {
+          "queryId": "dev-05-th",
+          "lang": "th",
+          "queryText": "การเข้ารหัสเชิงควอนตัมและการกระจายคีย์ความปลอดภัยสูง",
+          "targetKeywords": ["ควอนตัม", "เข้ารหัส", "คีย์"],
+          "expectedRelevantIds": []
+        },
+        {
+          "queryId": "dev-05-en",
+          "lang": "en",
+          "queryText": "quantum key distribution protocols and post-quantum cryptography",
+          "targetKeywords": ["quantum", "cryptography", "protocols", "key"],
+          "expectedRelevantIds": []
+        }
+      ]
+    },
+    {
+      "intentId": "humanoid-no-camera-sensors",
+      "category": "unsupported_condition",
+      "split": "dev",
+      "description": "Humanoid robots in Thailand explicitly without any optical cameras or vision sensors (Unsupported negative condition).",
+      "queries": [
+        {
+          "queryId": "dev-06-th",
+          "lang": "th",
+          "queryText": "หุ่นยนต์ฮิวแมนนอยด์ในไทยที่ไม่ติดตั้งกล้องหรือเซนเซอร์จับภาพใดๆ",
+          "targetKeywords": ["หุ่นยนต์", "ฮิวแมนนอยด์", "กล้อง", "เซนเซอร์"],
+          "expectedRelevantIds": []
+        },
+        {
+          "queryId": "dev-06-en",
+          "lang": "en",
+          "queryText": "humanoid robots in Thailand without cameras or optical vision sensors",
+          "targetKeywords": ["humanoid", "robot", "Thailand", "cameras", "sensors"],
+          "expectedRelevantIds": []
+        }
+      ]
+    },
+    {
+      "intentId": "police-surveillance-cyborg",
+      "category": "supported",
+      "split": "reserved",
+      "description": "Surveillance and security AI police cyborg robots in Thailand.",
+      "queries": [
+        {
+          "queryId": "res-01-th",
+          "lang": "th",
+          "queryText": "หุ่นยนต์ตรวจการณ์และรักษาความปลอดภัยสำหรับตำรวจไทย",
+          "targetKeywords": ["หุ่นยนต์", "ตรวจการณ์", "ตำรวจ", "รักษาความปลอดภัย"],
+          "expectedRelevantIds": [
+            "robot:seed-39",
+            "relationship:seed-40",
+            "relationship:seed-41",
+            "perspective:seed-42"
+          ]
+        },
+        {
+          "queryId": "res-01-en",
+          "lang": "en",
+          "queryText": "security surveillance and police cyborg robots in Thailand",
+          "targetKeywords": ["security", "surveillance", "police", "cyborg", "robot"],
+          "expectedRelevantIds": [
+            "robot:seed-39",
+            "relationship:seed-40",
+            "relationship:seed-41",
+            "perspective:seed-42"
+          ]
+        }
+      ]
+    },
+    {
+      "intentId": "elementary-coding-buddy",
+      "category": "supported",
+      "split": "reserved",
+      "description": "Robo-Buddy educational small robot for teaching coding in elementary schools.",
+      "queries": [
+        {
+          "queryId": "res-02-th",
+          "lang": "th",
+          "queryText": "หุ่นยนต์สอนเขียนโค้ดสำหรับนักเรียนประถมศึกษา Robo-Buddy",
+          "targetKeywords": ["หุ่นยนต์", "สอนเขียนโค้ด", "ประถม", "Robo-Buddy"],
+          "expectedRelevantIds": ["robot:seed-32", "contribution:seed-33"]
+        },
+        {
+          "queryId": "res-02-en",
+          "lang": "en",
+          "queryText": "educational coding companion robot for elementary school Robo-Buddy",
+          "targetKeywords": ["educational", "coding", "robot", "Robo-Buddy", "elementary"],
+          "expectedRelevantIds": ["robot:seed-32", "contribution:seed-33"]
+        }
+      ]
+    },
+    {
+      "intentId": "deep-sea-hydrothermal",
+      "category": "unrelated",
+      "split": "reserved",
+      "description": "Deep-sea hydrothermal vent exploration with autonomous underwater submersibles (Unrelated domain).",
+      "queries": [
+        {
+          "queryId": "res-03-th",
+          "lang": "th",
+          "queryText": "การสำรวจปล่องน้ำร้อนใต้ทะเลลึกด้วยเรือดำน้ำไร้คนขับ",
+          "targetKeywords": ["สำรวจ", "ปล่องน้ำร้อน", "ทะเลลึก", "เรือดำน้ำ"],
+          "expectedRelevantIds": []
+        },
+        {
+          "queryId": "res-03-en",
+          "lang": "en",
+          "queryText": "deep-sea hydrothermal vent exploration with autonomous submersibles",
+          "targetKeywords": ["deep-sea", "hydrothermal", "vent", "submersibles"],
+          "expectedRelevantIds": []
+        }
+      ]
+    },
+    {
+      "intentId": "underwater-humanoid-chiangmai",
+      "category": "unsupported_condition",
+      "split": "reserved",
+      "description": "Autonomous underwater humanoid robots deployed in Chiang Mai rivers (Unsupported combination).",
+      "queries": [
+        {
+          "queryId": "res-04-th",
+          "lang": "th",
+          "queryText": "หุ่นยนต์ฮิวแมนนอยด์ดำน้ำอัตโนมัติที่ใช้งานในแม่น้ำเชียงใหม่",
+          "targetKeywords": ["หุ่นยนต์", "ฮิวแมนนอยด์", "ดำน้ำ", "เชียงใหม่"],
+          "expectedRelevantIds": []
+        },
+        {
+          "queryId": "res-04-en",
+          "lang": "en",
+          "queryText": "autonomous underwater humanoid robots deployed in Chiang Mai rivers",
+          "targetKeywords": ["underwater", "humanoid", "robots", "Chiang Mai", "rivers"],
+          "expectedRelevantIds": []
+        }
+      ]
+    }
+  ]
+}

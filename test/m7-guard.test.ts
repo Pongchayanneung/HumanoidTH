@@ -3,6 +3,11 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
+const explicitBash = process.env.ATLAS_TEST_BASH;
+// Windows may resolve bare `bash` to the WSL launcher.
+const skipBash = process.platform === "win32" && !explicitBash &&
+  "Set ATLAS_TEST_BASH to the path to Git Bash to run these guard checks.";
+
 // The guard runs before any database work, so these URLs must be refused without touching a database.
 const refused: Array<[string, string]> = [
   ["postgresql://u@localhost:5432?host=evil.example.com", "no database name"],
@@ -15,12 +20,13 @@ const refused: Array<[string, string]> = [
 ];
 
 for (const [url, why] of refused) {
-  test(`m7 guard refuses ${url}`, () => {
-    const r = spawnSync("bash", ["scripts/m7-baseline-check.sh"], {
+  test(`m7 guard refuses ${url}`, { skip: skipBash }, () => {
+    const r = spawnSync(explicitBash || "bash", ["scripts/m7-baseline-check.sh"], {
       env: { ...process.env, DATABASE_URL: url },
       encoding: "utf8",
       timeout: 15000,
     });
+    assert.ifError(r.error);
     assert.equal(r.status, 2, r.stdout + r.stderr);
     assert.match(r.stderr, /REFUSED/);
     assert.ok(r.stderr.includes(why), r.stderr);

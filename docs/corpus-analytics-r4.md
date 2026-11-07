@@ -99,9 +99,11 @@ When `isSampleTruncated === true` (`analyzedCount < totalEligibleCount`):
 - Metric cards display true whole-corpus totals (`totalEligibleSources`).
 - BPMN pipeline lanes display true whole-corpus counts.
 - An alert banner is displayed:
-  > **Sampled Visualization Active:** Charts plot a bounded sample of 5,000 records (74.8% coverage of 6,779 verified public records). Summary metric cards and BPMN pipeline lanes reflect the complete un-truncated corpus.
+  > **Bounded Visualization Active:** Charts plot a bounded subset of 5,000 records (74.8% coverage of 6,779 eligible public records). Summary metric cards and BPMN pipeline lanes reflect the complete un-truncated corpus.
 - Date disclosures disclose the exact number and rate of missing dates on `app/analytics/page.tsx`:
-  > **Temporal Completeness:** 6,000 of 6,714 internet sources (89.4%) have explicit publication dates (714 undated, missing-date rate: 10.6%). 18 of 20 robots have verified observation years.
+  > **Temporal Completeness:** 6,000 of 6,714 internet sources (89.4%) have explicit publication dates (714 undated, missing-date rate: 10.6%). 18 of 20 catalogued robots have recorded observation years (unverified foreign platforms require Thailand-specific deployment evidence).
+- Chronological timeline charts segregate non-temporal records (`year_only` and `undated`) from the continuous time axis, disclosing them in a dedicated badge notice.
+- Perspective annotations are gated for freshness: preserved annotations whose evidence text no longer exists in re-ingested source records are excluded from analyzed events.
 
 ---
 
@@ -113,10 +115,13 @@ When `isSampleTruncated === true` (`analyzedCount < totalEligibleCount`):
 | **Distinguish publication, observation, and ingestion dates** | **PASSED** | `dateKind` and `datePrecision` keep event time strictly separated from `createdAt`. Contributions and annotations leave `eventDate` null so they are not falsely bucketed into the publication timeline. |
 | **Explicit Day Precision Precedence** | **PASSED** | OpenAlex publications with explicit `publicationDatePrecision: "day"` retain daily precision on January 1st and monthly grouping, preventing false degradation to year-only. |
 | **Confidence Scatter Chart Precision** | **PASSED** | Year-only robot observation dates are excluded from the exact-date scatter axis under publication dimension, avoiding fake Jan 1 points, while year-only counts are disclosed in summary metrics. |
+| **Non-date Timeline Segregation** | **PASSED** | Monthly `year_only` and `undated` categories are segregated from the continuous AreaChart time axis, with counts disclosed separately to preserve chronological scale. |
+| **Matrix Selector Synchronization** | **PASSED** | Matrix row and column dropdown selectors stay bound to resolved fields and re-synchronize on scope changes (e.g. Sources $\leftrightarrow$ Robots). |
+| **Perspective Annotation Freshness** | **PASSED** | `isFreshPerspectiveAnnotation` validates that perspective evidence remains aligned with re-ingested source text, excluding stale annotations from analytics events. |
 | **Rejected/private records stay excluded** | **PASSED** | Counts, samples, and in-memory event builders enforce `publicRobotWhere`, `publicContributionWhere`, `publicSourceRecordWhere`, and `publicPerspectiveWhere`. |
 | **Hybrid Graph Warning Propagation** | **PASSED** | `loadGraphRecordsHybrid()` propagates Prisma loader cap warnings, ensuring `truncated: true` and warning banners are displayed when database queries hit row limits. |
 | **Disclose snapshot/scope and missing data** | **PASSED** | UI displays scope notice, sample truncation warning, coverage percentage, and missing publication date rate banner. |
-| **>5,000-row fixture reconciliation** | **PASSED** | Tested with 6,714-record fixture; produces full aggregates and `isSampleTruncated: true` warning. |
+| **Loader-level >5,000-row fixture reconciliation** | **PASSED** | Tested via `loadWholeCorpusAnalytics()` with mocked 6,714-record corpus queries; verifies that `prisma.*.count` reflects the full 6,714 corpus while `findMany` correctly applies `sampleLimit: 5000` and sets `isSampleTruncated: true`. |
 
 ### Test Suite Execution
 - `pnpm test`: **83/83 tests passed** (including 11 comprehensive tests in `test/corpus-analytics.test.ts`).

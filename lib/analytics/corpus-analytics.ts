@@ -13,7 +13,8 @@ import {
   publicSourceRecordWhere,
   publicPerspectiveWhere,
   isEligiblePublicRobot,
-  isEligiblePublicContribution
+  isEligiblePublicContribution,
+  isFreshPerspectiveAnnotation
 } from "../public-projection";
 import {
   parseIngestionDateSemantics,
@@ -67,7 +68,13 @@ export interface RawAnalyticsPerspective {
   confidence: number;
   createdAt: Date;
   evidenceExcerpt: string;
-  source?: { relevanceStatus?: string } | null;
+  method?: string | null;
+  source?: {
+    relevanceStatus?: string | null;
+    title?: string | null;
+    excerpt?: string | null;
+    updatedAt?: Date | string | null;
+  } | null;
 }
 
 /**
@@ -184,9 +191,9 @@ export function buildAnalyticsEvents(params: {
     });
   }
 
-  // Perspectives (Associated with accepted sources)
+  // Perspectives (Associated with accepted sources, filtered for freshness)
   for (const item of params.perspectives) {
-    if (item.source && item.source.relevanceStatus !== "ACCEPTED") continue;
+    if (!isFreshPerspectiveAnnotation(item, item.source)) continue;
     const dates = parseIngestionDateSemantics(item.createdAt, "ingestion");
     events.push({
       scope: "perspectives",
@@ -388,7 +395,16 @@ export async function loadWholeCorpusAnalytics(sampleLimit = DEFAULT_ANALYTICS_S
           targetEntity: true,
           confidence: true,
           createdAt: true,
-          evidenceExcerpt: true
+          evidenceExcerpt: true,
+          method: true,
+          source: {
+            select: {
+              title: true,
+              excerpt: true,
+              relevanceStatus: true,
+              updatedAt: true
+            }
+          }
         },
         orderBy: { createdAt: "desc" },
         take: sampleLimit

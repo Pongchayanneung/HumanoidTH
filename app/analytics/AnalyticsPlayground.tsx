@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -183,6 +183,22 @@ export default function AnalyticsPlayground({ events, summary: corpusSummary }: 
 
   const availableFields = fieldCatalog[scope];
 
+  // Keep selector state synchronized with available fields on scope change
+  useEffect(() => {
+    const fields = fieldCatalog[scope];
+    if (fields && fields.length > 0) {
+      if (!fields.some((f) => f.value === seriesField)) {
+        setSeriesField(fields[0].value);
+      }
+      if (!fields.some((f) => f.value === rowField)) {
+        setRowField(fields[0].value);
+      }
+      if (!fields.some((f) => f.value === columnField)) {
+        setColumnField(fields[1]?.value || fields[0].value);
+      }
+    }
+  }, [scope]);
+
   const trendSeriesField = availableFields.some((field) => field.value === seriesField)
     ? seriesField
     : availableFields[0]?.value || "eventType";
@@ -192,6 +208,21 @@ export default function AnalyticsPlayground({ events, summary: corpusSummary }: 
   const matrixColumnField = availableFields.some((field) => field.value === columnField)
     ? columnField
     : availableFields[1]?.value || matrixRowField;
+
+  // Track non-temporal records (year-only and undated) for explicit disclosure
+  const nonTemporalStats = useMemo(() => {
+    return scopeEvents.reduce(
+      (acc, event) => {
+        const timeKey = formatTimeBucketKey(event, timeBucket, dateDimension);
+        if (timeKey === "year_only") acc.yearOnly += 1;
+        else if (timeKey === "undated") acc.undated += 1;
+        return acc;
+      },
+      { yearOnly: 0, undated: 0 }
+    );
+  }, [scopeEvents, timeBucket, dateDimension]);
+
+  const totalNonTemporal = nonTemporalStats.yearOnly + nonTemporalStats.undated;
 
   const trendTopValues = useMemo(() => topValues(scopeEvents, trendSeriesField), [scopeEvents, trendSeriesField]);
   const trendSeriesTotals = useMemo(() => {
@@ -203,11 +234,16 @@ export default function AnalyticsPlayground({ events, summary: corpusSummary }: 
     return [...totals.entries()].sort((a, b) => b[1] - a[1]);
   }, [scopeEvents, trendSeriesField]);
 
+  // Area chart timeline only plots chronological dates (excluding "year_only" and "undated")
+  const isChronologicalKey = (key: string) => key !== "year_only" && key !== "undated";
+
   const trendRows = useMemo(() => {
     const byBucket = new Map<string, Record<string, number>>();
 
     for (const event of scopeEvents) {
       const timeKey = formatTimeBucketKey(event, timeBucket, dateDimension);
+      if (!isChronologicalKey(timeKey)) continue; // Segregate non-date categories from time axis
+
       const seriesValue = getFieldValue(event, trendSeriesField) || "unknown";
       const normalizedSeries = trendTopValues.includes(seriesValue) ? seriesValue : remainderLabel;
 
@@ -343,7 +379,7 @@ export default function AnalyticsPlayground({ events, summary: corpusSummary }: 
           </div>
           <div>
             <div className="muted">Matrix row</div>
-            <select value={rowField} onChange={(e) => setRowField(e.target.value)} style={{ width: "100%" }}>
+            <select value={matrixRowField} onChange={(e) => setRowField(e.target.value)} style={{ width: "100%" }}>
               {availableFields.map((field) => (
                 <option key={field.value} value={field.value}>{field.label}</option>
               ))}
@@ -351,7 +387,7 @@ export default function AnalyticsPlayground({ events, summary: corpusSummary }: 
           </div>
           <div>
             <div className="muted">Matrix column</div>
-            <select value={columnField} onChange={(e) => setColumnField(e.target.value)} style={{ width: "100%" }}>
+            <select value={matrixColumnField} onChange={(e) => setColumnField(e.target.value)} style={{ width: "100%" }}>
               {availableFields.map((field) => (
                 <option key={field.value} value={field.value}>{field.label}</option>
               ))}
@@ -442,6 +478,11 @@ export default function AnalyticsPlayground({ events, summary: corpusSummary }: 
               </AreaChart>
             </ResponsiveContainer>
           </div>
+          {totalNonTemporal > 0 && (
+            <div className="notice" style={{ marginTop: "10px", fontSize: "12px", background: "rgba(100, 116, 139, 0.06)", borderColor: "#cbd5e1" }}>
+              <strong>Non-temporal Records ({totalNonTemporal.toLocaleString()}):</strong> {nonTemporalStats.yearOnly.toLocaleString()} year-only observation{nonTemporalStats.yearOnly === 1 ? "" : "s"} and {nonTemporalStats.undated.toLocaleString()} undated record{nonTemporalStats.undated === 1 ? "" : "s"} in this subset are segregated from the continuous chronological time axis to prevent distortion.
+            </div>
+          )}
           <div className="muted" style={{ fontSize: "11px", marginTop: "10px", fontStyle: "italic" }}>
             Note: Trend and sentiment metrics reflect the verified public corpus and do not imply generalized public polling or clinical health outcomes.
           </div>

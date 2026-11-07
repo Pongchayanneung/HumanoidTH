@@ -1,3 +1,5 @@
+process.env.DATABASE_URL = process.env.DATABASE_URL || "postgresql://mock:mock@localhost:5432/mock";
+
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -9,9 +11,18 @@ import {
 import {
   buildAnalyticsEvents,
   buildCorpusAggregateSummary,
+  loadWholeCorpusAnalytics,
   DEFAULT_ANALYTICS_SAMPLE_LIMIT
 } from "../lib/analytics/corpus-analytics";
 import type { CorpusAnalyticsEvent } from "../lib/analytics/types";
+import {
+  publicSourceRecordWhere,
+  publicRobotWhere,
+  publicContributionWhere,
+  publicPerspectiveWhere,
+  isFreshPerspectiveAnnotation
+} from "../lib/public-projection";
+import { prisma } from "../lib/prisma";
 
 test("Date Semantics: preserves nulls and never substitutes createdAt as publication date", () => {
   const missingPub = parseSourceDateSemantics(null, "2026-11-07T10:00:00.000Z");
@@ -167,7 +178,7 @@ test("Audit D11 Fix: changing ingestion time does not shift publication timeline
   assert.equal(formatTimeBucketKey(eventV2, "month", "ingestion"), "2026-11");
 });
 
-test("Audit D11 Acceptance: >5,000-row fixture yields full aggregate totals and explicit sample warning", () => {
+test("Corpus Aggregation: summary helper reconciles whole-corpus counts and sample truncation with >5,000 values", () => {
   // Simulating an isolated fixture with 6,714 sources and 5,000-record query cap
   const totalEligibleSources = 6714;
   const analyzedSourcesCount = 5000;
@@ -195,6 +206,243 @@ test("Audit D11 Acceptance: >5,000-row fixture yields full aggregate totals and 
   assert.equal(summary.coverageFraction, 0.7472); // 5065 / 6779
   assert.equal(summary.dateDisclosures.sourcesMissingPublicationDate, 714);
   assert.ok(summary.dateDisclosures.sourcesMissingPublicationDateRate > 0.1);
+});
+
+test("Audit D11 Acceptance: loadWholeCorpusAnalytics exercises database loader with 6,714-row fixture, verifying counts, filters, samples and truncation", async () => {
+  const origSourceCount = prisma.sourceRecord.count;
+  const origRobotCount = prisma.robotModel.count;
+  const origContribCount = prisma.contribution.count;
+  const origPerspCount = prisma.perspectiveAnnotation.count;
+  const origSourceFindMany = prisma.sourceRecord.findMany;
+  const origRobotFindMany = prisma.robotModel.findMany;
+  const origContribFindMany = prisma.contribution.findMany;
+  const origPerspFindMany = prisma.perspectiveAnnotation.findMany;
+
+  const capturedCountWheres: any[] = [];
+  const capturedFindManyArgs: any[] = [];
+
+  try {
+    // 1. Mock count queries across the complete snapshot
+    (prisma.sourceRecord as any).count = async (args: any) => {
+      capturedCountWheres.push({ domain: "sourceRecord", where: args?.where });
+      if (args?.where?.publishedAt?.not !== undefined) return 6000;
+      if (args?.where?.relevanceConfidence?.gt !== undefined) return 6500;
+      return 6714;
+    };
+    (prisma.robotModel as any).count = async (args: any) => {
+      capturedCountWheres.push({ domain: "robotModel", where: args?.where });
+      if (args?.where?.firstSeenYear?.not !== undefined) return 18;
+      return 20;
+    };
+    (prisma.contribution as any).count = async (args: any) => {
+      capturedCountWheres.push({ domain: "contribution", where: args?.where });
+      return 15;
+    };
+    (prisma.perspectiveAnnotation as any).count = async (args: any) => {
+      capturedCountWheres.push({ domain: "perspectiveAnnotation", where: args?.where });
+      return 30;
+    };
+
+    // 2. Mock findMany queries returning a sample bounded by take (sampleLimit = 5,000)
+    (prisma.sourceRecord as any).findMany = async (args: any) => {
+      capturedFindManyArgs.push({ domain: "sourceRecord", ...args });
+      const take = args?.take ?? 5000;
+      return Array.from({ length: Math.min(take, 5000) }, (_, i) => ({
+        sourceType: "NEWS",
+        relevanceStatus: "ACCEPTED",
+        platform: "Web",
+        publishedAt: new Date("2024-01-01"),
+        createdAt: new Date("2024-01-02"),
+        relevanceConfidence: 0.9,
+        title: `Mock News Source ${i}`,
+        rawMeta: {}
+      }));
+    };
+    (prisma.robotModel as any).findMany = async (args: any) => {
+      capturedFindManyArgs.push({ domain: "robotModel", ...args });
+      return [
+        {
+          canonicalName: "Dinsaw 4",
+          robotType: "social_service_robot",
+          thailandStatus: "developed_in_thailand",
+          countryOfOrigin: "Thailand",
+          statusConfidence: 0.9,
+          firstSeenYear: 2020,
+          createdAt: new Date("2024-01-01")
+        }
+      ];
+    };
+    (prisma.contribution as any).findMany = async (args: any) => {
+      capturedFindManyArgs.push({ domain: "contribution", ...args });
+      return [];
+    };
+    (prisma.perspectiveAnnotation as any).findMany = async (args: any) => {
+      capturedFindManyArgs.push({ domain: "perspectiveAnnotation", ...args });
+      return [];
+    };
+
+    // 3. Call the actual database loader with 5,000 sampleLimit
+    const result = await loadWholeCorpusAnalytics(5000);
+
+    // Verify whole-corpus totals are preserved (6,714), not capped at 5,000
+    assert.equal(result.summary.totalEligibleSources, 6714);
+    assert.equal(result.summary.analyzedSourcesCount, 5000);
+    assert.equal(result.summary.isSampleTruncated, true);
+    assert.equal(result.summary.sampleLimit, 5000);
+    assert.ok(result.summary.coveragePercent < 100);
+    assert.equal(result.summary.totalVerifiedPublicRecords, 6714 + 20 + 15 + 30);
+    assert.equal(result.summary.totalAnalyzedEvents, 5001);
+
+    // Verify that the query filters applied the approved public WHERE clauses
+    const sourceCountCall = capturedCountWheres.find(
+      (c) => c.domain === "sourceRecord" && !c.where?.publishedAt && !c.where?.relevanceConfidence
+    );
+    assert.deepEqual(sourceCountCall.where, publicSourceRecordWhere);
+
+    const robotCountCall = capturedCountWheres.find(
+      (c) => c.domain === "robotModel" && !c.where?.firstSeenYear
+    );
+    assert.deepEqual(robotCountCall.where, publicRobotWhere);
+
+    const contribCountCall = capturedCountWheres.find((c) => c.domain === "contribution");
+    assert.deepEqual(contribCountCall.where, publicContributionWhere);
+
+    const perspCountCall = capturedCountWheres.find((c) => c.domain === "perspectiveAnnotation");
+    assert.deepEqual(perspCountCall.where, publicPerspectiveWhere);
+
+    const sourceFindCall = capturedFindManyArgs.find((a) => a.domain === "sourceRecord");
+    assert.equal(sourceFindCall.take, 5000);
+    assert.deepEqual(sourceFindCall.where, publicSourceRecordWhere);
+  } finally {
+    prisma.sourceRecord.count = origSourceCount;
+    prisma.robotModel.count = origRobotCount;
+    prisma.contribution.count = origContribCount;
+    prisma.perspectiveAnnotation.count = origPerspCount;
+    prisma.sourceRecord.findMany = origSourceFindMany;
+    prisma.robotModel.findMany = origRobotFindMany;
+    prisma.contribution.findMany = origContribFindMany;
+    prisma.perspectiveAnnotation.findMany = origPerspFindMany;
+  }
+});
+
+test("Perspective Freshness: isFreshPerspectiveAnnotation and buildAnalyticsEvents exclude stale annotations after re-ingestion", () => {
+  const currentSource = {
+    title: "Chulalongkorn University deploys CU-Robo in hospital",
+    excerpt: "CU-Robo telepresence and medication delivery robot deployed across hospital wards in Bangkok.",
+    relevanceStatus: "ACCEPTED",
+    updatedAt: new Date("2026-11-07T12:00:00Z")
+  };
+
+  // Fresh annotation: evidence excerpt is preserved in re-ingested source
+  const freshAnnotation = {
+    evidenceExcerpt: "CU-Robo telepresence and medication delivery robot deployed across hospital wards",
+    createdAt: new Date("2026-11-01"),
+    method: "human_review"
+  };
+  assert.equal(isFreshPerspectiveAnnotation(freshAnnotation, currentSource), true);
+
+  // Stale annotation: source text was changed on re-ingestion, old evidence excerpt is absent
+  const staleAnnotation = {
+    evidenceExcerpt: "Old prototype discontinued before hospital deployment",
+    createdAt: new Date("2024-01-01"),
+    method: "human_review"
+  };
+  assert.equal(isFreshPerspectiveAnnotation(staleAnnotation, currentSource), false);
+
+  // Ineligible parent source: rejected
+  const rejectedSource = {
+    ...currentSource,
+    relevanceStatus: "REJECTED"
+  };
+  assert.equal(isFreshPerspectiveAnnotation(freshAnnotation, rejectedSource), false);
+
+  // Verification in buildAnalyticsEvents: fresh survives, stale is excluded
+  const events = buildAnalyticsEvents({
+    sources: [],
+    robots: [],
+    contributions: [],
+    perspectives: [
+      {
+        perspectiveTheme: "healthcare_trust",
+        stance: "supportive",
+        sentiment: "positive",
+        targetEntity: "CU-Robo",
+        confidence: 0.9,
+        createdAt: new Date("2026-11-01"),
+        evidenceExcerpt: freshAnnotation.evidenceExcerpt,
+        source: currentSource
+      },
+      {
+        perspectiveTheme: "discontinued_risk",
+        stance: "skeptical",
+        sentiment: "negative",
+        targetEntity: "Old prototype",
+        confidence: 0.85,
+        createdAt: new Date("2024-01-01"),
+        evidenceExcerpt: staleAnnotation.evidenceExcerpt,
+        source: currentSource
+      }
+    ]
+  });
+
+  assert.equal(events.length, 1);
+  assert.equal(events[0].label, "healthcare_trust");
+});
+
+test("Timeline Date Segregation: formatTimeBucketKey distinguishes chronological periods from year_only and undated", () => {
+  const datedEvent: CorpusAnalyticsEvent = {
+    scope: "sources",
+    label: "Dated Robot Paper",
+    confidence: 0.9,
+    eventType: "source",
+    eventDate: "2023-04-15T00:00:00.000Z",
+    ingestionDate: "2026-11-07T00:00:00.000Z",
+    dateKind: "publication",
+    datePrecision: "exact_date",
+    displayYear: 2023,
+    monthKey: "2023-04",
+    yearKey: "2023",
+    sourceType: "NEWS",
+    relevanceStatus: "ACCEPTED",
+    platform: "Web",
+    robotType: "unknown",
+    thailandStatus: "unknown",
+    contributionType: "unknown",
+    verificationStatus: "unknown",
+    perspectiveTheme: "unknown",
+    stance: "unknown",
+    sentiment: "unknown",
+    submissionType: "unknown",
+    status: "unknown",
+    visibility: "public",
+    countryOfOrigin: "unknown",
+    ownerOrg: "unknown"
+  };
+
+  const yearOnlyEvent: CorpusAnalyticsEvent = {
+    ...datedEvent,
+    datePrecision: "year_only",
+    monthKey: null,
+    eventDate: null
+  };
+
+  const undatedEvent: CorpusAnalyticsEvent = {
+    ...datedEvent,
+    datePrecision: "missing",
+    displayYear: null,
+    monthKey: null,
+    yearKey: null,
+    eventDate: null
+  };
+
+  assert.equal(formatTimeBucketKey(datedEvent, "month", "publication"), "2023-04");
+  assert.equal(formatTimeBucketKey(yearOnlyEvent, "month", "publication"), "year_only");
+  assert.equal(formatTimeBucketKey(undatedEvent, "month", "publication"), "undated");
+
+  const isChronologicalKey = (k: string) => /^\d{4}(-\d{2})?$/.test(k);
+  assert.ok(isChronologicalKey(formatTimeBucketKey(datedEvent, "month", "publication")));
+  assert.ok(!isChronologicalKey(formatTimeBucketKey(yearOnlyEvent, "month", "publication")));
+  assert.ok(!isChronologicalKey(formatTimeBucketKey(undatedEvent, "month", "publication")));
 });
 
 test("Corpus Aggregation: confirms complete coverage when snapshot is within limit", () => {

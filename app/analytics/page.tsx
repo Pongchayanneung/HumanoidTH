@@ -49,16 +49,16 @@ export default async function AnalyticsPage() {
       <p className="muted" style={{ marginBottom: "18px" }}>{t.analyticsDesc}</p>
       
       <div className="notice" style={{ background: "rgba(59, 130, 246, 0.08)", borderColor: "var(--accent)", marginBottom: "16px" }}>
-        <strong>Dataset Scope:</strong> Whole Eligible Public Corpus. Analytics aggregate all verified public records (accepted sources, verified robots, and approved contributions). Unreviewed submissions, private inventory, and excluded placeholders are strictly omitted.
+        <strong>Dataset Scope:</strong> Whole Eligible Public Corpus. Analytics aggregate all eligible public records across the atlas (accepted sources, catalogued robot models, and approved contributions). Unreviewed submissions, private inventory, and excluded placeholders are strictly omitted.
       </div>
 
       <div className="notice" style={{ background: "rgba(100, 116, 139, 0.08)", borderColor: "#94a3b8", marginBottom: "16px" }}>
-        <strong>Temporal Completeness:</strong> {summary.dateDisclosures.sourcesWithPublicationDate.toLocaleString()} of {summary.totalEligibleSources.toLocaleString()} internet sources ({((1 - summary.dateDisclosures.sourcesMissingPublicationDateRate) * 100).toFixed(1)}%) have explicit publication dates ({summary.dateDisclosures.sourcesMissingPublicationDate.toLocaleString()} undated, missing-date rate: {(summary.dateDisclosures.sourcesMissingPublicationDateRate * 100).toFixed(1)}%). {summary.dateDisclosures.robotsWithFirstSeenYear} of {summary.totalEligibleRobots} robots have verified observation years.
+        <strong>Temporal Completeness:</strong> {summary.dateDisclosures.sourcesWithPublicationDate.toLocaleString()} of {summary.totalEligibleSources.toLocaleString()} internet sources ({((1 - summary.dateDisclosures.sourcesMissingPublicationDateRate) * 100).toFixed(1)}%) have explicit publication dates ({summary.dateDisclosures.sourcesMissingPublicationDate.toLocaleString()} undated, missing-date rate: {(summary.dateDisclosures.sourcesMissingPublicationDateRate * 100).toFixed(1)}%). {summary.dateDisclosures.robotsWithFirstSeenYear} of {summary.totalEligibleRobots} catalogued robots have recorded observation years (unverified foreign platforms require Thailand-specific deployment evidence).
       </div>
 
       {summary.isSampleTruncated && (
         <div className="notice" style={{ background: "rgba(245, 158, 11, 0.08)", borderColor: "#f59e0b", marginBottom: "16px" }}>
-          <strong>Bounded Visualization Active:</strong> Charts plot a bounded subset of {summary.totalAnalyzedEvents.toLocaleString()} records ({summary.coveragePercent}% coverage of {summary.totalVerifiedPublicRecords.toLocaleString()} verified public records). Summary metric cards and BPMN pipeline lanes reflect the complete un-truncated corpus.
+          <strong>Bounded Visualization Active:</strong> Charts plot a bounded subset of {summary.totalAnalyzedEvents.toLocaleString()} records ({summary.coveragePercent}% coverage of {summary.totalVerifiedPublicRecords.toLocaleString()} eligible public records). Summary metric cards and BPMN pipeline lanes reflect the complete un-truncated corpus.
         </div>
       )}
 

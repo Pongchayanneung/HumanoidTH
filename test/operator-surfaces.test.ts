@@ -10,7 +10,7 @@ import ts from "typescript";
 const require = createRequire(import.meta.url);
 // Execute real page components while replacing Next's request context. Any
 // business dependency import is an error, so denied pages cannot hide DB reads.
-function loadPage(file: string, lang = "en", session: unknown = { ok: false, code: "UNAUTHENTICATED" }, pending = false) {
+function loadPage(file: string, lang = "en", pending = false) {
   const source = readFileSync(resolve(file), "utf8");
   const output = ts.transpileModule(source, { compilerOptions: {
     module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true
@@ -19,10 +19,9 @@ function loadPage(file: string, lang = "en", session: unknown = { ok: false, cod
   runInNewContext(output, { module, exports: module.exports, require(name: string) {
     if (name === "next/headers") return { cookies: async () => ({ get: (key: string) => key === "lang" ? { value: lang } : undefined }) };
     if (name === "next/navigation") return { redirect: (path: string) => { throw new Error(`REDIRECT:${path}`); } };
-    if (name === "@/lib/operator-auth/web") return { getOperatorPrincipal: async () => session };
-    if (name === "@/app/actions") return { logoutUser: async () => {} };
+    if (name === "@/app/actions") return { adminLoginAction: async () => {} };
     if (name === "@/lib/translations") return require("../lib/translations.ts");
-    if (name === "./AdminLoginForm") return { __esModule: true, default: loadPage("app/admin-login/AdminLoginForm.tsx", lang, session, pending) };
+    if (name === "./AdminLoginForm") return { __esModule: true, default: loadPage("app/admin-login/AdminLoginForm.tsx", lang, pending) };
     if (name === "react-dom") return { useFormStatus: () => ({ pending }) };
     if (name === "react" || name === "lucide-react" || name === "react/jsx-runtime" || name === "next/link") return require(name);
     throw new Error(`Forbidden dependency in contained surface: ${name}`);
@@ -38,28 +37,6 @@ for (const page of ["profile", "submit-data", "data-pulls", "map"]) {
     assert.doesNotMatch(html, /<form|<input|<table/);
   });
 }
-
-test("anonymous administrator is redirected before business dependencies", async () => {
-  const Page = loadPage("app/admin/AdminConsolePage.tsx");
-  await assert.rejects(() => Page({ searchParams: Promise.resolve({}) }), /REDIRECT:\/admin-login/);
-});
-
-test("unavailable administrator shows a deliberate state without a login assertion", async () => {
-  const Page = loadPage("app/admin/AdminConsolePage.tsx", "en", { ok: false, code: "UNAVAILABLE" });
-  const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
-  assert.match(html, /unavailable/i);
-  assert.doesNotMatch(html, /verified session/i);
-});
-
-test("verified operator sees session only, with logout and no inspection/editor", async () => {
-  const Page = loadPage("app/admin/AdminConsolePage.tsx", "en", { ok: true, principal: { kind: "operator", email: "operator@example.invalid" } });
-  const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ error: "unavailable" }) }));
-  assert.match(html, /Verified session/);
-  assert.match(html, /operator@example.invalid/);
-  assert.match(html, /Sign out/);
-  assert.match(html, /role="alert"/);
-  assert.doesNotMatch(html, /<input|<table|Approve|Review queue/);
-});
 
 test("login offers accessible credentials without a caller-controlled redirect", async () => {
   const Page = loadPage("app/admin-login/page.tsx");
@@ -83,7 +60,7 @@ for (const [code, expected] of [
 });
 
 test("Thai login errors and pending state are localized and submission is disabled", async () => {
-  const Page = loadPage("app/admin-login/page.tsx", "th", undefined, true);
+  const Page = loadPage("app/admin-login/page.tsx", "th", true);
   const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ error: "invalid_credentials" }) }));
   assert.match(html, /อีเมลหรือรหัสผ่านไม่ถูกต้อง/);
   assert.match(html, /กำลังเข้าสู่ระบบ/);

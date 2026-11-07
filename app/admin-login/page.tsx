@@ -21,7 +21,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
   const localT = {
     en: {
       title: "Operator sign-in",
-      desc: "Sign in to verify your operator session. Data inspection and management workflows remain unavailable.",
+      desc: "Sign in to inspect records by exact ID. Editing, review and publication remain unavailable.",
       email: "Email address", password: "Password", btn: "Sign in", pending: "Signing in…",
       show: "Show password", hide: "Hide password", back: "Return to overview",
       errors: {
@@ -33,7 +33,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: S
     },
     th: {
       title: "เข้าสู่ระบบผู้ดูแล",
-      desc: "เข้าสู่ระบบเพื่อยืนยันเซสชันผู้ดูแล การตรวจดูและจัดการข้อมูลยังไม่เปิดให้ใช้งาน",
+      desc: "เข้าสู่ระบบเพื่อตรวจดูระเบียนตามรหัส การแก้ไข การตรวจอนุมัติ และการเผยแพร่ยังไม่เปิดให้ใช้งาน",
       email: "อีเมล", password: "รหัสผ่าน", btn: "เข้าสู่ระบบ", pending: "กำลังเข้าสู่ระบบ…",
       show: "แสดงรหัสผ่าน", hide: "ซ่อนรหัสผ่าน", back: "กลับหน้าภาพรวม",
       errors: {

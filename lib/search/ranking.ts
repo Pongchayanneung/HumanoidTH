@@ -188,5 +188,13 @@ export function fuseRankings(
   addBranch(semanticGroups);
   const exact = new Set(keyword.filter((hit) => hit.exactTitle).map((hit) => groupOf(hit.id)));
   const fused = Array.from(rrf.keys()).sort((a, b) => Number(exact.has(b)) - Number(exact.has(a)) || rrf.get(b)! - rrf.get(a)!);
-  return fused.flatMap((group) => members.get(group)!);
+  const seen = new Set(rrf.keys());
+  const overflow: string[] = [];
+  for (const group of [...keywordGroups, ...semanticGroups]) {
+    if (!seen.has(group)) {
+      seen.add(group);
+      overflow.push(group);
+    }
+  }
+  return [...fused, ...overflow].flatMap((group) => members.get(group)!);
 }

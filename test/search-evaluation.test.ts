@@ -416,7 +416,7 @@ test("F8 evaluation uses serving lexical eligibility and group-first capped orde
   const response = await post(new Request("http://localhost/api/search", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ query: query.queryText }) }));
   const result = await response.json();
   assert.deepEqual(report.top3Results.hybrid.map((group) => group.groupId), result.groups.map((group: { groupKey: string }) => group.groupKey));
-  assert.deepEqual(report.top3Results.hybrid.map((group) => group.primaryDocument.typedId), ["doc:a", "doc:b"]);
+  assert.deepEqual(report.top3Results.hybrid.map((group) => group.primaryDocument.typedId), ["doc:a", "doc:b", "doc:c"]);
   assert.equal(normalizeQueryTokens(query.queryText).includes("the"), false);
   assert.equal(computeKeywordScore(normalizeQueryTokens(query.queryText), unrelated), 0);
 });

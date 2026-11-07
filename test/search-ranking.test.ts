@@ -298,10 +298,10 @@ test("keywordMatch only qualifies a record through text it can show", () => {
 const hitOf = (id: string) => ({ id, exactTitle: false, evidenceIndex: 0, ranges: [], score: 1 });
 const withLimits = (candidatesPerBranch: number, rrfConstantK = FROZEN_SEMANTIC_POLICY.rrfConstantK) => ({ ...FROZEN_SEMANTIC_POLICY, rrfConstantK, limits: { ...FROZEN_SEMANTIC_POLICY.limits, candidatesPerBranch } });
 
-test("a group beyond both branch caps is excluded", () => {
+test("a record beyond both branch caps is returned once", () => {
   const fused = fuseRankings([hitOf("a"), hitOf("x")], ["b", "x"], withLimits(1));
-  assert.deepEqual(fused, ["a", "b"]);
-  assert.deepEqual(fuseRankings([hitOf("a"), hitOf("a2"), hitOf("x")], [], withLimits(1), (id) => id.replace(/\d+$/, "")), ["a", "a2"]);
+  assert.deepEqual(fused, ["a", "b", "x"]);
+  assert.deepEqual(fuseRankings([hitOf("a"), hitOf("a2"), hitOf("x")], [], withLimits(1), (id) => id.replace(/\d+$/, "")), ["a", "a2", "x"]);
 });
 
 test("duplicate copies of one identity do not change the group order or fused outcome of any group", async () => {

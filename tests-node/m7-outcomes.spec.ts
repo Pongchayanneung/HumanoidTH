@@ -426,14 +426,14 @@ test.describe("database-backed outcomes (denial, privacy, map cold read)", () =>
 
     for (const query of ["Thai HRI research seed", "Placeholder contribution", PRIVATE_UNIT.name, "robot"]) {
       const response = await request.post("/api/search", { data: { query } });
-      // On main the search index is not wired, so the API answers 503 {"mode":"unavailable"}. 200 or 503 are
-      // both honest; anything else, or any matching record text, is not.
+      // Keyword search may return 200 with public matches. An unavailable search may return 503.
       expect([200, 503], `search "${query}" status`).toContain(response.status());
       const body = await response.text();
       // The query itself may be echoed back, so only text that exists in stored records counts as a leak.
       const storedOnly = markers.filter((marker) => !query.includes(marker) && !marker.includes(query));
       expect(leaked(body, storedOnly), `search response for "${query}"`).toEqual([]);
-      expect(JSON.parse(body).groups ?? [], `search groups for "${query}"`).toEqual([]);
+      // Disabled after F6 enabled keyword search. Public matches can legitimately populate groups.
+      // expect(JSON.parse(body).groups ?? [], `search groups for "${query}"`).toEqual([]);
     }
 
     // The exported search corpus and the crawler summary are static files in the repository.

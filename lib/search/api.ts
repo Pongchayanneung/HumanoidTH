@@ -1,5 +1,5 @@
 import { validateSearchRequest } from "./types";
-import type { SearchBrowseResult, SearchDocument, SearchEvidence, SearchMatchedResult, SearchResponse, SearchResult, SearchResultGroup } from "./types";
+import type { SearchBrowseResult, SearchDocument, SearchResultEvidence, SearchMatchedResult, SearchResponse, SearchResult, SearchResultGroup } from "./types";
 
 export interface SearchFixtureIndex {
   documents: SearchDocument[];
@@ -47,12 +47,12 @@ export function createSearchPost(loadIndex: SearchIndexLoader) {
       let count = 0;
       for (const doc of index.documents) {
         if (input.types && !input.types.includes(doc.kind)) continue;
-        const evidence = doc.evidence.map(({ fieldName, originalText, label, coverage, startOffset, endOffset }) => ({ fieldName, originalText, label, coverage, startOffset, endOffset }));
+        const evidence: SearchResultEvidence[] = doc.evidence.map(({ fieldName, originalText, label, coverage, startOffset, endOffset }) => ({ fieldName, originalText, label, coverage, startOffset, endOffset, evidenceKind: (doc.kind === "perspective" || doc.kind === "relationship") && originalText === doc.title ? "derived" : "source" }));
         let match: SearchResult["match"];
         if (input.query) {
           const pattern = new RegExp(input.query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "iu");
-          const titleEvidence: SearchEvidence = { fieldName: "title", originalText: doc.title, label: "Title", coverage: doc.isTitleOnly ? "title-only" : "full", startOffset: 0, endOffset: doc.title.length };
-          const matchedEvidence: SearchEvidence | undefined = [titleEvidence, ...evidence].find((item) => pattern.test(item.originalText));
+          const titleEvidence: SearchResultEvidence = { fieldName: "title", originalText: doc.title, label: "Constructed title", evidenceKind: "derived", coverage: doc.isTitleOnly ? "title-only" : "full", startOffset: 0, endOffset: doc.title.length };
+          const matchedEvidence = [titleEvidence, ...evidence].find((item) => pattern.test(item.originalText));
           if (!matchedEvidence) continue;
           const found = pattern.exec(matchedEvidence.originalText)!;
           match = { methods: ["keyword"], evidence: matchedEvidence, ranges: [{ start: found.index, end: found.index + found[0].length }] };

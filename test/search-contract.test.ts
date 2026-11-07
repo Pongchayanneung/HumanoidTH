@@ -15,13 +15,14 @@ test("request validation handles trimming, code points, filters and bounds", () 
   assert.deepEqual(validateSearchRequest({ query: "  " }), { query: "", types: undefined, limit: 10 });
   assert.equal(validateSearchRequest({ query: "😀".repeat(300) })?.query.length, 600);
   assert.equal(validateSearchRequest({ query: "😀".repeat(301) }), null);
-  for (const value of [{ query: "x", types: ["bad"] }, { query: "x", types: "source" }, { query: "x", limit: 0 }, { query: "x", limit: 21 }, { query: "x", limit: 1.5 }, { query: 1 }, { query: "x", extra: true }]) assert.equal(validateSearchRequest(value), null);
+  for (const value of [{ query: "x", types: ["bad"] }, { query: "x", types: "source" }, { query: "x", limit: 0 }, { query: "x", limit: -1 }, { query: "x", limit: 1.5 }, { query: 1 }, { query: "x", extra: true }]) assert.equal(validateSearchRequest(value), null);
+  assert.equal(validateSearchRequest({ query: "x", limit: 21 })?.limit, 20);
   assert.equal(validateSearchRequest({ query: " x ", types: ["source"], limit: 20 })?.query, "x");
   assert.deepEqual(INITIAL_SEARCH_RANKING_POLICY, { mode: "keyword", semanticCutoff: null, modelProfileId: null });
 });
 
 test("API enforces JSON and byte limit with typed errors", async () => {
-  for (const req of [request("{}", "text/plain"), request("{"), request(JSON.stringify({ query: "x", limit: 21 })), request(" ".repeat(8193)), request(JSON.stringify({ query: "😀".repeat(2100) }))]) {
+  for (const req of [request("{}", "text/plain"), request("{"), ...[0, -1, 1.5].map(limit => request(JSON.stringify({ query: "x", limit }))), request(" ".repeat(8193)), request(JSON.stringify({ query: "😀".repeat(2100) }))]) {
     const res = await post(req);
     assert.equal(res.status, 400);
     assert.deepEqual(await res.json(), { error: { code: "invalid_request", message: "Invalid search request." } });
@@ -31,6 +32,26 @@ test("API enforces JSON and byte limit with typed errors", async () => {
   const oversized = body + " ".repeat(8193 - Buffer.byteLength(body));
   assert.deepEqual(JSON.parse(oversized), { query: "" });
   assert.equal((await post(request(oversized))).status, 400);
+});
+
+test("API defaults and clamps the result limit", async () => {
+  const many = createSearchPost(async () => ({ documents: Array.from({ length: 25 }, (_, i) => ({ ...documents[0], typedId: `source:${i}` })), release: { id: "fixture", generatedAt: "2026-01-01" }, coverage: { indexed: 25, eligible: 25 } }));
+  for (const [limit, expected] of [[undefined, 10], [1, 1], [100, 20]] as const) {
+    const res = await many(request(JSON.stringify({ query: "", limit })));
+    assert.equal(res.status, 200);
+    assert.equal((await res.json()).groups[0].results.length, expected);
+  }
+});
+
+test("constructed titles are labelled derived in matches and result evidence", async () => {
+  for (const kind of ["perspective", "relationship"] as const) {
+    const title = "Constructed title";
+    const doc = { ...documents[0], kind, title, evidence: [{ ...documents[0].evidence[0], originalText: title }] };
+    const handler = createSearchPost(async () => ({ documents: [doc], release: { id: "fixture", generatedAt: "2026-01-01" }, coverage: { indexed: 1, eligible: 1 } }));
+    const result = (await (await handler(request(JSON.stringify({ query: "Constructed" })))).json()).groups[0].results[0];
+    assert.equal(result.match.evidence.evidenceKind, "derived");
+    assert.equal(result.evidence[0].evidenceKind, "derived");
+  }
 });
 
 test("fixture search returns grouped original evidence and UTF-16 literal ranges", async () => {
@@ -45,6 +66,7 @@ test("fixture search returns grouped original evidence and UTF-16 literal ranges
     assert.equal(data.groups[0].kind, result.reference.kind);
     const { evidence, ranges, methods } = result.match;
     assert.deepEqual(methods, ["keyword"]);
+    assert.equal(evidence.evidenceKind, evidence.label === "Constructed title" ? "derived" : "source");
     assert.equal(evidence.originalText.slice(ranges[0].start, ranges[0].end).toLowerCase(), query.toLowerCase());
     assert.doesNotMatch(JSON.stringify(data), /vector|score|retrievalText|contentHash/i);
   }

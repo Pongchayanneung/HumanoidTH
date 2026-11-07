@@ -94,7 +94,7 @@ export const SEARCH_RECORD_KINDS = ["source", "robot", "contribution", "perspect
 export type SearchMode = "keyword" | "hybrid" | "browse" | "unavailable";
 export type SearchWarning = "degraded_semantic" | "partial_vector_coverage" | "stale_index" | "unavailable";
 export interface SearchReference { kind: SearchRecordKind; id: string }
-export interface SearchRequest { query: string; types?: SearchRecordKind[]; limit: number }
+export interface SearchRequest { query: string; types?: SearchRecordKind[]; limit?: number }
 export interface SearchCoverage { indexed: number; eligible: number }
 export interface SearchModelProfile {
   id: string; revision: string; runtime: string; dimensions: number;
@@ -117,12 +117,13 @@ export interface SearchRelease {
   model: SearchModelProfile | null; publication: SearchPublicationPolicy;
   ranking: SearchRankingPolicy;
 }
-export type SearchMatch = { evidence: SearchEvidence } & (
+export type SearchResultEvidence = SearchEvidence & { evidenceKind: "source" | "derived" };
+export type SearchMatch = { evidence: SearchResultEvidence } & (
   | { methods: ["semantic"]; ranges?: never }
   | { methods: ["keyword"] | ["keyword", "semantic"] | ["semantic", "keyword"]; ranges?: { start: number; end: number }[] }
 );
 interface SearchResultFields {
-  reference: SearchReference; title: string; url: string | null; evidence: SearchEvidence[];
+  reference: SearchReference; title: string; url: string | null; evidence: SearchResultEvidence[];
 }
 export type SearchBrowseResult = SearchResultFields & { match?: never };
 export type SearchMatchedResult = SearchResultFields & { match: SearchMatch };
@@ -137,7 +138,7 @@ export type SearchResponse = {
 );
 export interface SearchError { error: { code: "invalid_request"; message: string } }
 
-export function validateSearchRequest(value: unknown): SearchRequest | null {
+export function validateSearchRequest(value: unknown): (SearchRequest & { limit: number }) | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const input = value as Record<string, unknown>;
   if (Object.keys(input).some((key) => !["query", "types", "limit"].includes(key))) return null;
@@ -146,6 +147,6 @@ export function validateSearchRequest(value: unknown): SearchRequest | null {
   if (Array.from(query).length > 300) return null;
   if (input.types !== undefined && (!Array.isArray(input.types) ||
     !input.types.every((kind) => typeof kind === "string" && SEARCH_RECORD_KINDS.includes(kind as SearchRecordKind)))) return null;
-  if (input.limit !== undefined && (!Number.isInteger(input.limit) || (input.limit as number) < 1 || (input.limit as number) > 20)) return null;
-  return { query, types: input.types as SearchRecordKind[] | undefined, limit: (input.limit as number | undefined) ?? 10 };
+  if (input.limit !== undefined && (!Number.isInteger(input.limit) || (input.limit as number) < 1)) return null;
+  return { query, types: input.types as SearchRecordKind[] | undefined, limit: Math.min((input.limit as number | undefined) ?? 10, 20) };
 }

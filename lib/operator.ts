@@ -6,6 +6,14 @@ export type SessionResult =
   | { ok: true; principal: OperatorPrincipal }
   | { ok: false; code: "UNAUTHENTICATED" | "UNAVAILABLE" };
 
+let operatorPrincipalResolver: (() => Promise<SessionResult>) | null = null;
+
+export function setOperatorPrincipalResolverForTesting(
+  resolver: (() => Promise<SessionResult>) | null
+) {
+  operatorPrincipalResolver = resolver;
+}
+
 /**
  * Resolves the authenticated operator session principal.
  * Integrates with #36 operator session infrastructure when present.
@@ -13,6 +21,10 @@ export type SessionResult =
  * Always fails closed if unauthenticated.
  */
 export async function getOperatorPrincipal(customCookies?: any): Promise<SessionResult> {
+  if (operatorPrincipalResolver) {
+    return await operatorPrincipalResolver();
+  }
+
   try {
     const cookieStore = customCookies ?? (await cookies());
 

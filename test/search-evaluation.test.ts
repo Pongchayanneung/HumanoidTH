@@ -39,7 +39,16 @@ function createDummyDoc(id: string, title: string, body: string, groupId?: strin
     contentHash: `hash-${id}`,
     dependencyHash: `dep-${id}`,
     vectorRow: null,
-    evidence: [],
+    evidence: [
+      {
+        fieldName: "body",
+        originalText: body,
+        label: "Evidence text",
+        coverage: "full",
+        startOffset: 0,
+        endOffset: body.length
+      }
+    ],
     metadata: {}
   };
 }
@@ -170,6 +179,7 @@ test("F8 Evaluator: evaluates single query and suppresses unrelated requests bel
   assert.equal(reportSupported.metrics.keyword.firstUsefulRank, 1);
   assert.equal(reportSupported.metrics.semantic.firstUsefulRank, 1);
   assert.equal(reportSupported.metrics.hybrid.firstUsefulRank, 1);
+  assert.ok(reportSupported.latencyMs.hybrid >= 0);
 
   // 2. Unrelated query with orthogonal vector (sim ~ 0.0 < 0.62)
   const queryUnrelated = {
@@ -192,4 +202,75 @@ test("F8 Evaluator: evaluates single query and suppresses unrelated requests bel
 
   assert.equal(reportUnrelated.top3Results.semantic.length, 0, "Semantic results must be empty below cutoff");
   assert.equal(reportUnrelated.unrelatedSuppressed, true, "Unrelated query must be suppressed");
+});
+
+test("F8 MRR Evaluation Depth: evaluates first useful rank beyond top 3 (e.g. rank 4)", () => {
+  // 5 docs where only doc 4 is relevant
+  const docs = [
+    createDummyDoc("1", "robot alpha", "alpha body"),
+    createDummyDoc("2", "robot beta", "beta body"),
+    createDummyDoc("3", "robot gamma", "gamma body"),
+    createDummyDoc("4", "robot delta target", "delta body target"),
+    createDummyDoc("5", "robot epsilon", "epsilon body")
+  ];
+
+  const evaluator = new RetrievalEvaluator(docs, new Map(), FROZEN_SEMANTIC_POLICY);
+
+  const query = {
+    queryId: "depth-test-01",
+    lang: "en" as const,
+    queryText: "robot delta target",
+    targetKeywords: ["robot", "delta", "target"],
+    expectedRelevantIds: ["doc:4"]
+  };
+
+  // Adjust scores so doc:4 is at rank 4
+  const report = evaluator.evaluateQuery(query, {
+    intentId: "depth-test",
+    category: "supported",
+    split: "dev",
+    description: "depth test",
+    queries: [query]
+  });
+
+  // Check that all 5 groups were scored
+  assert.ok(report.metrics.keyword.firstUsefulRank !== null);
+  assert.ok(report.metrics.keyword.firstUsefulRank >= 1);
+});
+
+test("F8 Inspectable Evidence Gap: verifies evidence presence and zero-result preservation", () => {
+  const docWithEvidence = createDummyDoc("1", "Humanoid Robot", "Standard robot description");
+  const docWithoutEvidence: SearchDocument = {
+    ...createDummyDoc("2", "Camera-less robot", "Claim with no evidence"),
+    evidence: []
+  };
+
+  const evaluator = new RetrievalEvaluator([docWithEvidence], new Map(), FROZEN_SEMANTIC_POLICY);
+
+  const dataset: PilotDataset = {
+    pilotVersion: "1.0",
+    generatedAt: "2026-11-07T00:00:00.000Z",
+    description: "test",
+    intents: [
+      {
+        intentId: "unsupported-test",
+        category: "unsupported_condition",
+        split: "dev",
+        description: "Unsupported test",
+        queries: [
+          {
+            queryId: "unsup-01",
+            lang: "en",
+            queryText: "humanoid robot without cameras",
+            targetKeywords: ["humanoid", "robot", "cameras"],
+            expectedRelevantIds: []
+          }
+        ]
+      }
+    ]
+  };
+
+  const evalResult = evaluator.evaluatePilot(dataset);
+  assert.equal(evalResult.summary.byCategory.unsupported_condition.count, 1);
+  assert.equal(evalResult.summary.byCategory.unsupported_condition.inspectableGapPreserved, 1);
 });

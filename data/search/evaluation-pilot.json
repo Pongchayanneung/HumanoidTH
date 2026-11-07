@@ -8,9 +8,9 @@
       "lang": "th",
       "queryText": "หุ่นยนต์บริการทางการแพทย์ในโรงพยาบาลของไทย",
       "latencyMs": {
-        "keyword": 8.56,
-        "semantic": 0,
-        "hybrid": 0.01
+        "keyword": 5.34,
+        "semantic": 2.76,
+        "hybrid": 8.27
       },
       "top3Results": {
         "keyword": [],
@@ -42,9 +42,9 @@
       "lang": "en",
       "queryText": "hospital medical service robots developed in Thailand",
       "latencyMs": {
-        "keyword": 20.52,
-        "semantic": 0,
-        "hybrid": 0.31
+        "keyword": 18.78,
+        "semantic": 0.82,
+        "hybrid": 31.84
       },
       "top3Results": {
         "keyword": [
@@ -493,7 +493,7 @@
       },
       "metrics": {
         "keyword": {
-          "firstUsefulRank": null,
+          "firstUsefulRank": 35,
           "precisionAt3": 0
         },
         "semantic": {
@@ -501,7 +501,7 @@
           "precisionAt3": 0
         },
         "hybrid": {
-          "firstUsefulRank": null,
+          "firstUsefulRank": 35,
           "precisionAt3": 0
         }
       },
@@ -516,14 +516,166 @@
       "lang": "th",
       "queryText": "หุ่นยนต์ดูแลผู้สูงอายุและช่วยเหลือผู้ป่วยติดเตียงที่บ้าน",
       "latencyMs": {
-        "keyword": 1.66,
-        "semantic": 0,
-        "hybrid": 0.01
+        "keyword": 3.01,
+        "semantic": 0.72,
+        "hybrid": 3.86
       },
       "top3Results": {
         "keyword": [],
-        "semantic": [],
-        "hybrid": []
+        "semantic": [
+          {
+            "groupId": "https://www.nationthailand.com/tech/30385613",
+            "bestScore": 0.6433391342792285,
+            "primaryDocument": {
+              "typedId": "robot:seed-14",
+              "kind": "robot",
+              "title": "Ninja Robot",
+              "body": "Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+              "retrievalText": "Ninja Robot Chulalongkorn University / CU-RoboCOVID partners Thailand medical_telepresence_robot mobile_non_humanoid_robot Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+              "url": "https://www.nationthailand.com/tech/30385613",
+              "groupId": "https://www.nationthailand.com/tech/30385613",
+              "origin": "public_catalog",
+              "language": "en",
+              "isTitleOnly": false,
+              "isPartial": false,
+              "parentTypedId": null,
+              "contentHash": "7aa1712735921666cd67a7f7d5f823f5e1175508b97807004378fd0aed42254c",
+              "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+              "vectorRow": 14,
+              "evidence": [
+                {
+                  "fieldName": "description",
+                  "originalText": "Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+                  "label": "Robot Description",
+                  "coverage": "full",
+                  "startOffset": 0,
+                  "endOffset": 144
+                }
+              ],
+              "metadata": {
+                "manufacturer": "Chulalongkorn University / CU-RoboCOVID partners",
+                "countryOfOrigin": "Thailand",
+                "robotType": "medical_telepresence_robot",
+                "embodimentLevel": "mobile_non_humanoid_robot",
+                "firstSeenYear": 2020
+              }
+            },
+            "members": [
+              {
+                "typedId": "robot:seed-14",
+                "kind": "robot",
+                "title": "Ninja Robot",
+                "body": "Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+                "retrievalText": "Ninja Robot Chulalongkorn University / CU-RoboCOVID partners Thailand medical_telepresence_robot mobile_non_humanoid_robot Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+                "url": "https://www.nationthailand.com/tech/30385613",
+                "groupId": "https://www.nationthailand.com/tech/30385613",
+                "origin": "public_catalog",
+                "language": "en",
+                "isTitleOnly": false,
+                "isPartial": false,
+                "parentTypedId": null,
+                "contentHash": "7aa1712735921666cd67a7f7d5f823f5e1175508b97807004378fd0aed42254c",
+                "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+                "vectorRow": 14,
+                "evidence": [
+                  {
+                    "fieldName": "description",
+                    "originalText": "Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+                    "label": "Robot Description",
+                    "coverage": "full",
+                    "startOffset": 0,
+                    "endOffset": 144
+                  }
+                ],
+                "metadata": {
+                  "manufacturer": "Chulalongkorn University / CU-RoboCOVID partners",
+                  "countryOfOrigin": "Thailand",
+                  "robotType": "medical_telepresence_robot",
+                  "embodimentLevel": "mobile_non_humanoid_robot",
+                  "firstSeenYear": 2020
+                }
+              }
+            ],
+            "isRelevant": false
+          }
+        ],
+        "hybrid": [
+          {
+            "groupId": "https://www.nationthailand.com/tech/30385613",
+            "bestScore": 0.01639344262295082,
+            "primaryDocument": {
+              "typedId": "robot:seed-14",
+              "kind": "robot",
+              "title": "Ninja Robot",
+              "body": "Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+              "retrievalText": "Ninja Robot Chulalongkorn University / CU-RoboCOVID partners Thailand medical_telepresence_robot mobile_non_humanoid_robot Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+              "url": "https://www.nationthailand.com/tech/30385613",
+              "groupId": "https://www.nationthailand.com/tech/30385613",
+              "origin": "public_catalog",
+              "language": "en",
+              "isTitleOnly": false,
+              "isPartial": false,
+              "parentTypedId": null,
+              "contentHash": "7aa1712735921666cd67a7f7d5f823f5e1175508b97807004378fd0aed42254c",
+              "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+              "vectorRow": 14,
+              "evidence": [
+                {
+                  "fieldName": "description",
+                  "originalText": "Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+                  "label": "Robot Description",
+                  "coverage": "full",
+                  "startOffset": 0,
+                  "endOffset": 144
+                }
+              ],
+              "metadata": {
+                "manufacturer": "Chulalongkorn University / CU-RoboCOVID partners",
+                "countryOfOrigin": "Thailand",
+                "robotType": "medical_telepresence_robot",
+                "embodimentLevel": "mobile_non_humanoid_robot",
+                "firstSeenYear": 2020
+              }
+            },
+            "members": [
+              {
+                "typedId": "robot:seed-14",
+                "kind": "robot",
+                "title": "Ninja Robot",
+                "body": "Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+                "retrievalText": "Ninja Robot Chulalongkorn University / CU-RoboCOVID partners Thailand medical_telepresence_robot mobile_non_humanoid_robot Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+                "url": "https://www.nationthailand.com/tech/30385613",
+                "groupId": "https://www.nationthailand.com/tech/30385613",
+                "origin": "public_catalog",
+                "language": "en",
+                "isTitleOnly": false,
+                "isPartial": false,
+                "parentTypedId": null,
+                "contentHash": "7aa1712735921666cd67a7f7d5f823f5e1175508b97807004378fd0aed42254c",
+                "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+                "vectorRow": 14,
+                "evidence": [
+                  {
+                    "fieldName": "description",
+                    "originalText": "Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+                    "label": "Robot Description",
+                    "coverage": "full",
+                    "startOffset": 0,
+                    "endOffset": 144
+                  }
+                ],
+                "metadata": {
+                  "manufacturer": "Chulalongkorn University / CU-RoboCOVID partners",
+                  "countryOfOrigin": "Thailand",
+                  "robotType": "medical_telepresence_robot",
+                  "embodimentLevel": "mobile_non_humanoid_robot",
+                  "firstSeenYear": 2020
+                }
+              }
+            ],
+            "isRelevant": false
+          }
+        ]
       },
       "metrics": {
         "keyword": {
@@ -550,9 +702,9 @@
       "lang": "en",
       "queryText": "elderly care assistance and home companion robots in Thailand",
       "latencyMs": {
-        "keyword": 15.82,
-        "semantic": 0,
-        "hybrid": 0.04
+        "keyword": 22.57,
+        "semantic": 0.68,
+        "hybrid": 28.66
       },
       "top3Results": {
         "keyword": [
@@ -720,7 +872,7 @@
               "parentTypedId": "source:seed-7",
               "contentHash": "379c37c5038714eb90b385eeea8021ec934af8ce7d391f299a4c25d5097fb270",
               "dependencyHash": "8d141744b08c327729c5f1189d9bfeb2c0198dc5c9c58d24155a564b4bb27afe",
-              "vectorRow": null,
+              "vectorRow": 8,
               "evidence": [
                 {
                   "fieldName": "relation",
@@ -755,7 +907,7 @@
                 "parentTypedId": "source:seed-7",
                 "contentHash": "379c37c5038714eb90b385eeea8021ec934af8ce7d391f299a4c25d5097fb270",
                 "dependencyHash": "8d141744b08c327729c5f1189d9bfeb2c0198dc5c9c58d24155a564b4bb27afe",
-                "vectorRow": null,
+                "vectorRow": 8,
                 "evidence": [
                   {
                     "fieldName": "relation",
@@ -789,7 +941,7 @@
                 "parentTypedId": null,
                 "contentHash": "5ce4b76c7541011e72b9e4585e53601934d5ed3d2c98262979cc52fb6719b60f",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 7,
                 "evidence": [
                   {
                     "fieldName": "evidence_excerpt",
@@ -977,7 +1129,7 @@
               "parentTypedId": "source:seed-7",
               "contentHash": "379c37c5038714eb90b385eeea8021ec934af8ce7d391f299a4c25d5097fb270",
               "dependencyHash": "8d141744b08c327729c5f1189d9bfeb2c0198dc5c9c58d24155a564b4bb27afe",
-              "vectorRow": null,
+              "vectorRow": 8,
               "evidence": [
                 {
                   "fieldName": "relation",
@@ -1012,7 +1164,7 @@
                 "parentTypedId": "source:seed-7",
                 "contentHash": "379c37c5038714eb90b385eeea8021ec934af8ce7d391f299a4c25d5097fb270",
                 "dependencyHash": "8d141744b08c327729c5f1189d9bfeb2c0198dc5c9c58d24155a564b4bb27afe",
-                "vectorRow": null,
+                "vectorRow": 8,
                 "evidence": [
                   {
                     "fieldName": "relation",
@@ -1061,9 +1213,9 @@
       "lang": "th",
       "queryText": "โครงการพัฒนาทักษะหุ่นยนต์และการศึกษาของ FIBO มจธ.",
       "latencyMs": {
-        "keyword": 3.69,
-        "semantic": 0,
-        "hybrid": 0.03
+        "keyword": 4.93,
+        "semantic": 0.57,
+        "hybrid": 5.85
       },
       "top3Results": {
         "keyword": [
@@ -1512,7 +1664,7 @@
       },
       "metrics": {
         "keyword": {
-          "firstUsefulRank": null,
+          "firstUsefulRank": 337,
           "precisionAt3": 0
         },
         "semantic": {
@@ -1535,9 +1687,9 @@
       "lang": "en",
       "queryText": "KMUTT FIBO robotics education and capacity building programs",
       "latencyMs": {
-        "keyword": 13.43,
-        "semantic": 0,
-        "hybrid": 0.04
+        "keyword": 17.91,
+        "semantic": 0.61,
+        "hybrid": 22.15
       },
       "top3Results": {
         "keyword": [
@@ -1986,7 +2138,7 @@
       },
       "metrics": {
         "keyword": {
-          "firstUsefulRank": null,
+          "firstUsefulRank": 15,
           "precisionAt3": 0
         },
         "semantic": {
@@ -1994,7 +2146,7 @@
           "precisionAt3": 0
         },
         "hybrid": {
-          "firstUsefulRank": null,
+          "firstUsefulRank": 15,
           "precisionAt3": 0
         }
       },
@@ -2009,9 +2161,9 @@
       "lang": "th",
       "queryText": "หุ่นยนต์ส่งของและสื่อสารทางไกลช่วงโควิด Pinto และ Mirror",
       "latencyMs": {
-        "keyword": 5,
-        "semantic": 0,
-        "hybrid": 0.02
+        "keyword": 6.05,
+        "semantic": 1.56,
+        "hybrid": 7.75
       },
       "top3Results": {
         "keyword": [
@@ -2033,7 +2185,7 @@
               "parentTypedId": null,
               "contentHash": "c160c3b13a682c28fbab848e716f73802d3bcaa23583cef744b70a37efe47f69",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 11,
               "evidence": [
                 {
                   "fieldName": "description",
@@ -2067,7 +2219,7 @@
                 "parentTypedId": null,
                 "contentHash": "c160c3b13a682c28fbab848e716f73802d3bcaa23583cef744b70a37efe47f69",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 11,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -2100,7 +2252,7 @@
                 "parentTypedId": null,
                 "contentHash": "0ce1956079d729d50a7cfa39897bc337e4ab9bdf7ee61dd9db57ae2c4f204737",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 9,
                 "evidence": [
                   {
                     "fieldName": "evidence_excerpt",
@@ -2133,7 +2285,7 @@
                 "parentTypedId": "source:seed-9",
                 "contentHash": "a440f40fd4bfb7da50a48db26119a4a0233dfbef1f14ea2411cb24f1ac2fb698",
                 "dependencyHash": "0f80c58c80ffc22fb1638124f170352caea704ffbbda59f15dd9cd3452ace985",
-                "vectorRow": null,
+                "vectorRow": 12,
                 "evidence": [
                   {
                     "fieldName": "relation",
@@ -2153,7 +2305,7 @@
                 }
               }
             ],
-            "isRelevant": false
+            "isRelevant": true
           },
           {
             "groupId": "https://csii.chula.ac.th/robots-and-the-covid-strip-test-innovations-by-chulalongkorn-university-to-combat-the-covid-pandemic/",
@@ -2173,7 +2325,7 @@
               "parentTypedId": null,
               "contentHash": "f6accc39a074d51c7d445476d6eebb8e0e8effbd3245817bdb0409693c24de8c",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 13,
               "evidence": [
                 {
                   "fieldName": "description",
@@ -2208,7 +2360,7 @@
                 "parentTypedId": null,
                 "contentHash": "f6accc39a074d51c7d445476d6eebb8e0e8effbd3245817bdb0409693c24de8c",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 13,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -2228,7 +2380,7 @@
                 }
               }
             ],
-            "isRelevant": false
+            "isRelevant": true
           },
           {
             "groupId": "https://www.youtube.com/watch?v=uLCa2pB8qJU",
@@ -2324,7 +2476,7 @@
               "parentTypedId": null,
               "contentHash": "c160c3b13a682c28fbab848e716f73802d3bcaa23583cef744b70a37efe47f69",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 11,
               "evidence": [
                 {
                   "fieldName": "description",
@@ -2358,7 +2510,7 @@
                 "parentTypedId": null,
                 "contentHash": "c160c3b13a682c28fbab848e716f73802d3bcaa23583cef744b70a37efe47f69",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 11,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -2391,7 +2543,7 @@
                 "parentTypedId": null,
                 "contentHash": "0ce1956079d729d50a7cfa39897bc337e4ab9bdf7ee61dd9db57ae2c4f204737",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 9,
                 "evidence": [
                   {
                     "fieldName": "evidence_excerpt",
@@ -2424,7 +2576,7 @@
                 "parentTypedId": "source:seed-9",
                 "contentHash": "a440f40fd4bfb7da50a48db26119a4a0233dfbef1f14ea2411cb24f1ac2fb698",
                 "dependencyHash": "0f80c58c80ffc22fb1638124f170352caea704ffbbda59f15dd9cd3452ace985",
-                "vectorRow": null,
+                "vectorRow": 12,
                 "evidence": [
                   {
                     "fieldName": "relation",
@@ -2444,7 +2596,7 @@
                 }
               }
             ],
-            "isRelevant": false
+            "isRelevant": true
           },
           {
             "groupId": "https://csii.chula.ac.th/robots-and-the-covid-strip-test-innovations-by-chulalongkorn-university-to-combat-the-covid-pandemic/",
@@ -2464,7 +2616,7 @@
               "parentTypedId": null,
               "contentHash": "f6accc39a074d51c7d445476d6eebb8e0e8effbd3245817bdb0409693c24de8c",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 13,
               "evidence": [
                 {
                   "fieldName": "description",
@@ -2499,7 +2651,7 @@
                 "parentTypedId": null,
                 "contentHash": "f6accc39a074d51c7d445476d6eebb8e0e8effbd3245817bdb0409693c24de8c",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 13,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -2519,7 +2671,7 @@
                 }
               }
             ],
-            "isRelevant": false
+            "isRelevant": true
           },
           {
             "groupId": "https://www.youtube.com/watch?v=uLCa2pB8qJU",
@@ -2598,16 +2750,16 @@
       },
       "metrics": {
         "keyword": {
-          "firstUsefulRank": null,
-          "precisionAt3": 0
+          "firstUsefulRank": 1,
+          "precisionAt3": 0.6666666666666666
         },
         "semantic": {
           "firstUsefulRank": null,
           "precisionAt3": 0
         },
         "hybrid": {
-          "firstUsefulRank": null,
-          "precisionAt3": 0
+          "firstUsefulRank": 1,
+          "precisionAt3": 0.6666666666666666
         }
       },
       "unrelatedSuppressed": false,
@@ -2621,9 +2773,9 @@
       "lang": "en",
       "queryText": "COVID-19 response telepresence and delivery robots Pinto and Mirror",
       "latencyMs": {
-        "keyword": 15.19,
-        "semantic": 0,
-        "hybrid": 0.04
+        "keyword": 20.51,
+        "semantic": 0.6,
+        "hybrid": 25.61
       },
       "top3Results": {
         "keyword": [
@@ -2645,7 +2797,7 @@
               "parentTypedId": null,
               "contentHash": "0ce1956079d729d50a7cfa39897bc337e4ab9bdf7ee61dd9db57ae2c4f204737",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 9,
               "evidence": [
                 {
                   "fieldName": "evidence_excerpt",
@@ -2679,7 +2831,7 @@
                 "parentTypedId": null,
                 "contentHash": "0ce1956079d729d50a7cfa39897bc337e4ab9bdf7ee61dd9db57ae2c4f204737",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 9,
                 "evidence": [
                   {
                     "fieldName": "evidence_excerpt",
@@ -2712,7 +2864,7 @@
                 "parentTypedId": null,
                 "contentHash": "c160c3b13a682c28fbab848e716f73802d3bcaa23583cef744b70a37efe47f69",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 11,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -2745,7 +2897,7 @@
                 "parentTypedId": "source:seed-9",
                 "contentHash": "a440f40fd4bfb7da50a48db26119a4a0233dfbef1f14ea2411cb24f1ac2fb698",
                 "dependencyHash": "0f80c58c80ffc22fb1638124f170352caea704ffbbda59f15dd9cd3452ace985",
-                "vectorRow": null,
+                "vectorRow": 12,
                 "evidence": [
                   {
                     "fieldName": "relation",
@@ -2765,7 +2917,7 @@
                 }
               }
             ],
-            "isRelevant": false
+            "isRelevant": true
           },
           {
             "groupId": "https://github.com/wandson190488-cloud/Delivery_robots2026",
@@ -2934,7 +3086,7 @@
               "parentTypedId": null,
               "contentHash": "0ce1956079d729d50a7cfa39897bc337e4ab9bdf7ee61dd9db57ae2c4f204737",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 9,
               "evidence": [
                 {
                   "fieldName": "evidence_excerpt",
@@ -2968,7 +3120,7 @@
                 "parentTypedId": null,
                 "contentHash": "0ce1956079d729d50a7cfa39897bc337e4ab9bdf7ee61dd9db57ae2c4f204737",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 9,
                 "evidence": [
                   {
                     "fieldName": "evidence_excerpt",
@@ -3001,7 +3153,7 @@
                 "parentTypedId": null,
                 "contentHash": "c160c3b13a682c28fbab848e716f73802d3bcaa23583cef744b70a37efe47f69",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 11,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -3034,7 +3186,7 @@
                 "parentTypedId": "source:seed-9",
                 "contentHash": "a440f40fd4bfb7da50a48db26119a4a0233dfbef1f14ea2411cb24f1ac2fb698",
                 "dependencyHash": "0f80c58c80ffc22fb1638124f170352caea704ffbbda59f15dd9cd3452ace985",
-                "vectorRow": null,
+                "vectorRow": 12,
                 "evidence": [
                   {
                     "fieldName": "relation",
@@ -3054,7 +3206,7 @@
                 }
               }
             ],
-            "isRelevant": false
+            "isRelevant": true
           },
           {
             "groupId": "https://github.com/wandson190488-cloud/Delivery_robots2026",
@@ -3206,16 +3358,16 @@
       },
       "metrics": {
         "keyword": {
-          "firstUsefulRank": null,
-          "precisionAt3": 0
+          "firstUsefulRank": 1,
+          "precisionAt3": 0.3333333333333333
         },
         "semantic": {
           "firstUsefulRank": null,
           "precisionAt3": 0
         },
         "hybrid": {
-          "firstUsefulRank": null,
-          "precisionAt3": 0
+          "firstUsefulRank": 1,
+          "precisionAt3": 0.3333333333333333
         }
       },
       "unrelatedSuppressed": false,
@@ -3229,9 +3381,9 @@
       "lang": "th",
       "queryText": "การเข้ารหัสเชิงควอนตัมและการกระจายคีย์ความปลอดภัยสูง",
       "latencyMs": {
-        "keyword": 1.31,
-        "semantic": 0,
-        "hybrid": 0.04
+        "keyword": 2.03,
+        "semantic": 0.55,
+        "hybrid": 2.61
       },
       "top3Results": {
         "keyword": [],
@@ -3254,7 +3406,7 @@
       },
       "unrelatedSuppressed": true,
       "notes": [
-        "Cleanly suppressed below semantic cutoff without false match claim"
+        "Cleanly suppressed below cutoff without false match claim"
       ]
     },
     {
@@ -3265,9 +3417,9 @@
       "lang": "en",
       "queryText": "quantum key distribution protocols and post-quantum cryptography",
       "latencyMs": {
-        "keyword": 9.65,
-        "semantic": 0,
-        "hybrid": 0.04
+        "keyword": 14.11,
+        "semantic": 0.58,
+        "hybrid": 16.79
       },
       "top3Results": {
         "keyword": [
@@ -3728,10 +3880,8 @@
           "precisionAt3": 0
         }
       },
-      "unrelatedSuppressed": true,
-      "notes": [
-        "Cleanly suppressed below semantic cutoff without false match claim"
-      ]
+      "unrelatedSuppressed": false,
+      "notes": []
     },
     {
       "queryId": "dev-06-th",
@@ -3741,9 +3891,9 @@
       "lang": "th",
       "queryText": "หุ่นยนต์ฮิวแมนนอยด์ในไทยที่ไม่ติดตั้งกล้องหรือเซนเซอร์จับภาพใดๆ",
       "latencyMs": {
-        "keyword": 2.12,
-        "semantic": 0,
-        "hybrid": 0.01
+        "keyword": 2.71,
+        "semantic": 0.57,
+        "hybrid": 3.32
       },
       "top3Results": {
         "keyword": [],
@@ -3766,7 +3916,7 @@
       },
       "unrelatedSuppressed": false,
       "notes": [
-        "Partial match preserved: original evidence text reveals condition gap for user inspection"
+        "Condition gap preserved via complete rejection (0 false claims)"
       ]
     },
     {
@@ -3777,9 +3927,9 @@
       "lang": "en",
       "queryText": "humanoid robots in Thailand without cameras or optical vision sensors",
       "latencyMs": {
-        "keyword": 17.11,
-        "semantic": 0,
-        "hybrid": 0.04
+        "keyword": 22.38,
+        "semantic": 1.06,
+        "hybrid": 32.27
       },
       "top3Results": {
         "keyword": [
@@ -4253,9 +4403,9 @@
       "lang": "th",
       "queryText": "หุ่นยนต์ตรวจการณ์และรักษาความปลอดภัยสำหรับตำรวจไทย",
       "latencyMs": {
-        "keyword": 2.61,
-        "semantic": 0,
-        "hybrid": 0
+        "keyword": 2.34,
+        "semantic": 0.61,
+        "hybrid": 2.99
       },
       "top3Results": {
         "keyword": [],
@@ -4287,9 +4437,9 @@
       "lang": "en",
       "queryText": "security surveillance and police cyborg robots in Thailand",
       "latencyMs": {
-        "keyword": 14.46,
-        "semantic": 0,
-        "hybrid": 0.03
+        "keyword": 19.2,
+        "semantic": 0.56,
+        "hybrid": 24.69
       },
       "top3Results": {
         "keyword": [
@@ -4738,7 +4888,7 @@
       },
       "metrics": {
         "keyword": {
-          "firstUsefulRank": null,
+          "firstUsefulRank": 10,
           "precisionAt3": 0
         },
         "semantic": {
@@ -4746,7 +4896,7 @@
           "precisionAt3": 0
         },
         "hybrid": {
-          "firstUsefulRank": null,
+          "firstUsefulRank": 10,
           "precisionAt3": 0
         }
       },
@@ -4761,9 +4911,9 @@
       "lang": "th",
       "queryText": "หุ่นยนต์สอนเขียนโค้ดสำหรับนักเรียนประถมศึกษา Robo-Buddy",
       "latencyMs": {
-        "keyword": 3.1,
-        "semantic": 0,
-        "hybrid": 0.01
+        "keyword": 5.26,
+        "semantic": 1,
+        "hybrid": 6.43
       },
       "top3Results": {
         "keyword": [
@@ -4785,7 +4935,7 @@
               "parentTypedId": null,
               "contentHash": "ca3d90a02faf0595c293a99231bdf2432f5467a9290a9223d5c6fbb9fa73515a",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 32,
               "evidence": [
                 {
                   "fieldName": "description",
@@ -4819,7 +4969,7 @@
                 "parentTypedId": null,
                 "contentHash": "ca3d90a02faf0595c293a99231bdf2432f5467a9290a9223d5c6fbb9fa73515a",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 32,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -4852,7 +5002,7 @@
                 "parentTypedId": null,
                 "contentHash": "60fc4eec5512003cb19b4bd72931e1cacfefe9003b2b52a2cd7c5b38fad8d96a",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 33,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -4871,7 +5021,7 @@
                 }
               }
             ],
-            "isRelevant": false
+            "isRelevant": true
           }
         ],
         "semantic": [],
@@ -4894,7 +5044,7 @@
               "parentTypedId": null,
               "contentHash": "ca3d90a02faf0595c293a99231bdf2432f5467a9290a9223d5c6fbb9fa73515a",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 32,
               "evidence": [
                 {
                   "fieldName": "description",
@@ -4928,7 +5078,7 @@
                 "parentTypedId": null,
                 "contentHash": "ca3d90a02faf0595c293a99231bdf2432f5467a9290a9223d5c6fbb9fa73515a",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 32,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -4961,7 +5111,7 @@
                 "parentTypedId": null,
                 "contentHash": "60fc4eec5512003cb19b4bd72931e1cacfefe9003b2b52a2cd7c5b38fad8d96a",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 33,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -4980,22 +5130,22 @@
                 }
               }
             ],
-            "isRelevant": false
+            "isRelevant": true
           }
         ]
       },
       "metrics": {
         "keyword": {
-          "firstUsefulRank": null,
-          "precisionAt3": 0
+          "firstUsefulRank": 1,
+          "precisionAt3": 0.3333333333333333
         },
         "semantic": {
           "firstUsefulRank": null,
           "precisionAt3": 0
         },
         "hybrid": {
-          "firstUsefulRank": null,
-          "precisionAt3": 0
+          "firstUsefulRank": 1,
+          "precisionAt3": 0.3333333333333333
         }
       },
       "unrelatedSuppressed": false,
@@ -5009,9 +5159,9 @@
       "lang": "en",
       "queryText": "educational coding companion robot for elementary school Robo-Buddy",
       "latencyMs": {
-        "keyword": 13.53,
-        "semantic": 0,
-        "hybrid": 0.04
+        "keyword": 20.06,
+        "semantic": 0.59,
+        "hybrid": 24.32
       },
       "top3Results": {
         "keyword": [
@@ -5033,7 +5183,7 @@
               "parentTypedId": null,
               "contentHash": "60fc4eec5512003cb19b4bd72931e1cacfefe9003b2b52a2cd7c5b38fad8d96a",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 33,
               "evidence": [
                 {
                   "fieldName": "description",
@@ -5067,7 +5217,7 @@
                 "parentTypedId": null,
                 "contentHash": "60fc4eec5512003cb19b4bd72931e1cacfefe9003b2b52a2cd7c5b38fad8d96a",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 33,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -5100,7 +5250,7 @@
                 "parentTypedId": null,
                 "contentHash": "ca3d90a02faf0595c293a99231bdf2432f5467a9290a9223d5c6fbb9fa73515a",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 32,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -5119,7 +5269,7 @@
                 }
               }
             ],
-            "isRelevant": false
+            "isRelevant": true
           },
           {
             "groupId": "https://doi.org/10.28991/esj-2021-sp1-09",
@@ -5212,7 +5362,7 @@
               "parentTypedId": null,
               "contentHash": "231c6990255548fcefe2d39217eab0dd2c3c44574bde94a95b3a3fc1e12e12d6",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 62,
               "evidence": [
                 {
                   "fieldName": "title",
@@ -5246,7 +5396,7 @@
                 "parentTypedId": null,
                 "contentHash": "231c6990255548fcefe2d39217eab0dd2c3c44574bde94a95b3a3fc1e12e12d6",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 62,
                 "evidence": [
                   {
                     "fieldName": "title",
@@ -5288,7 +5438,7 @@
               "parentTypedId": null,
               "contentHash": "60fc4eec5512003cb19b4bd72931e1cacfefe9003b2b52a2cd7c5b38fad8d96a",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 33,
               "evidence": [
                 {
                   "fieldName": "description",
@@ -5322,7 +5472,7 @@
                 "parentTypedId": null,
                 "contentHash": "60fc4eec5512003cb19b4bd72931e1cacfefe9003b2b52a2cd7c5b38fad8d96a",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 33,
                 "evidence": [
                   {
                     "fieldName": "description",
@@ -5341,7 +5491,7 @@
                 }
               }
             ],
-            "isRelevant": false
+            "isRelevant": true
           },
           {
             "groupId": "https://doi.org/10.28991/esj-2021-sp1-09",
@@ -5434,7 +5584,7 @@
               "parentTypedId": null,
               "contentHash": "231c6990255548fcefe2d39217eab0dd2c3c44574bde94a95b3a3fc1e12e12d6",
               "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-              "vectorRow": null,
+              "vectorRow": 62,
               "evidence": [
                 {
                   "fieldName": "title",
@@ -5468,7 +5618,7 @@
                 "parentTypedId": null,
                 "contentHash": "231c6990255548fcefe2d39217eab0dd2c3c44574bde94a95b3a3fc1e12e12d6",
                 "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-                "vectorRow": null,
+                "vectorRow": 62,
                 "evidence": [
                   {
                     "fieldName": "title",
@@ -5493,16 +5643,16 @@
       },
       "metrics": {
         "keyword": {
-          "firstUsefulRank": null,
-          "precisionAt3": 0
+          "firstUsefulRank": 1,
+          "precisionAt3": 0.3333333333333333
         },
         "semantic": {
           "firstUsefulRank": null,
           "precisionAt3": 0
         },
         "hybrid": {
-          "firstUsefulRank": null,
-          "precisionAt3": 0
+          "firstUsefulRank": 1,
+          "precisionAt3": 0.3333333333333333
         }
       },
       "unrelatedSuppressed": false,
@@ -5516,9 +5666,9 @@
       "lang": "th",
       "queryText": "การสำรวจปล่องน้ำร้อนใต้ทะเลลึกด้วยเรือดำน้ำไร้คนขับ",
       "latencyMs": {
-        "keyword": 1.54,
-        "semantic": 0,
-        "hybrid": 0
+        "keyword": 4.09,
+        "semantic": 1.05,
+        "hybrid": 5.23
       },
       "top3Results": {
         "keyword": [],
@@ -5541,7 +5691,7 @@
       },
       "unrelatedSuppressed": true,
       "notes": [
-        "Cleanly suppressed below semantic cutoff without false match claim"
+        "Cleanly suppressed below cutoff without false match claim"
       ]
     },
     {
@@ -5552,9 +5702,9 @@
       "lang": "en",
       "queryText": "deep-sea hydrothermal vent exploration with autonomous submersibles",
       "latencyMs": {
-        "keyword": 10.34,
-        "semantic": 0,
-        "hybrid": 0.03
+        "keyword": 15.22,
+        "semantic": 0.66,
+        "hybrid": 16.73
       },
       "top3Results": {
         "keyword": [
@@ -6015,10 +6165,8 @@
           "precisionAt3": 0
         }
       },
-      "unrelatedSuppressed": true,
-      "notes": [
-        "Cleanly suppressed below semantic cutoff without false match claim"
-      ]
+      "unrelatedSuppressed": false,
+      "notes": []
     },
     {
       "queryId": "res-04-th",
@@ -6028,9 +6176,9 @@
       "lang": "th",
       "queryText": "หุ่นยนต์ฮิวแมนนอยด์ดำน้ำอัตโนมัติที่ใช้งานในแม่น้ำเชียงใหม่",
       "latencyMs": {
-        "keyword": 1.57,
-        "semantic": 0,
-        "hybrid": 0
+        "keyword": 2.71,
+        "semantic": 0.89,
+        "hybrid": 3.63
       },
       "top3Results": {
         "keyword": [],
@@ -6053,7 +6201,7 @@
       },
       "unrelatedSuppressed": false,
       "notes": [
-        "Partial match preserved: original evidence text reveals condition gap for user inspection"
+        "Condition gap preserved via complete rejection (0 false claims)"
       ]
     },
     {
@@ -6064,9 +6212,9 @@
       "lang": "en",
       "queryText": "autonomous underwater humanoid robots deployed in Chiang Mai rivers",
       "latencyMs": {
-        "keyword": 15.67,
-        "semantic": 0,
-        "hybrid": 0.08
+        "keyword": 19.87,
+        "semantic": 0.62,
+        "hybrid": 23.74
       },
       "top3Results": {
         "keyword": [
@@ -6534,6 +6682,8 @@
     }
   ],
   "summary": {
+    "evaluationMode": "mock_fixture",
+    "semanticStatus": "evaluated",
     "totalQueries": 20,
     "devQueries": 12,
     "reservedQueries": 8,
@@ -6541,14 +6691,14 @@
       "supported": {
         "count": 12,
         "mrr": {
-          "keyword": 0.028,
+          "keyword": 0.378,
           "semantic": 0,
-          "hybrid": 0.028
+          "hybrid": 0.377
         },
         "avgP3": {
-          "keyword": 0.028,
+          "keyword": 0.167,
           "semantic": 0,
-          "hybrid": 0.028
+          "hybrid": 0.167
         }
       },
       "unrelated": {
@@ -6567,11 +6717,11 @@
     "byLanguage": {
       "th": {
         "count": 10,
-        "avgHybridP3": 0
+        "avgHybridP3": 0.1
       },
       "en": {
         "count": 10,
-        "avgHybridP3": 0.033
+        "avgHybridP3": 0.1
       },
       "mixed": {
         "count": 0,
@@ -6584,7 +6734,7 @@
     },
     "policy": {
       "policyVersion": "1.0-frozen",
-      "boundProfileHash": "qwen2-gte-1024-f32-l2-v1",
+      "boundProfileHash": "qwen2-gte-1024-f32-l2-e085e72-v1",
       "semanticCutoffThreshold": 0.62,
       "rrfConstantK": 60,
       "lexicalWeights": {

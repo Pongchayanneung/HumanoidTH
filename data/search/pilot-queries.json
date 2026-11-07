@@ -14,14 +14,26 @@
           "lang": "th",
           "queryText": "หุ่นยนต์บริการทางการแพทย์ในโรงพยาบาลของไทย",
           "targetKeywords": ["หุ่นยนต์", "โรงพยาบาล", "การแพทย์"],
-          "expectedRelevantIds": ["robot:seed-1", "contribution:seed-17", "relationship:seed-26"]
+          "expectedRelevantIds": [
+            "robot:seed-1",
+            "robot:seed-25",
+            "relationship:seed-26",
+            "robot:seed-28",
+            "robot:seed-22"
+          ]
         },
         {
           "queryId": "dev-01-en",
           "lang": "en",
           "queryText": "hospital medical service robots developed in Thailand",
           "targetKeywords": ["hospital", "medical", "robot", "Thailand"],
-          "expectedRelevantIds": ["robot:seed-1", "contribution:seed-17", "relationship:seed-26"]
+          "expectedRelevantIds": [
+            "robot:seed-1",
+            "robot:seed-25",
+            "relationship:seed-26",
+            "robot:seed-28",
+            "robot:seed-22"
+          ]
         }
       ]
     },
@@ -36,14 +48,14 @@
           "lang": "th",
           "queryText": "หุ่นยนต์ดูแลผู้สูงอายุและช่วยเหลือผู้ป่วยติดเตียงที่บ้าน",
           "targetKeywords": ["หุ่นยนต์", "ผู้สูงอายุ", "ผู้ป่วย", "บ้าน"],
-          "expectedRelevantIds": ["robot:seed-3", "perspective:seed-5", "relationship:seed-8"]
+          "expectedRelevantIds": ["robot:seed-4", "perspective:seed-5", "relationship:seed-8"]
         },
         {
           "queryId": "dev-02-en",
           "lang": "en",
           "queryText": "elderly care assistance and home companion robots in Thailand",
           "targetKeywords": ["elderly", "care", "home", "companion", "robot"],
-          "expectedRelevantIds": ["robot:seed-3", "perspective:seed-5", "relationship:seed-8"]
+          "expectedRelevantIds": ["robot:seed-4", "perspective:seed-5", "relationship:seed-8"]
         }
       ]
     },
@@ -58,14 +70,14 @@
           "lang": "th",
           "queryText": "โครงการพัฒนาทักษะหุ่นยนต์และการศึกษาของ FIBO มจธ.",
           "targetKeywords": ["FIBO", "มจธ", "หุ่นยนต์", "การศึกษา"],
-          "expectedRelevantIds": ["contribution:seed-22", "relationship:seed-31"]
+          "expectedRelevantIds": ["contribution:seed-30", "relationship:seed-31"]
         },
         {
           "queryId": "dev-03-en",
           "lang": "en",
           "queryText": "KMUTT FIBO robotics education and capacity building programs",
           "targetKeywords": ["KMUTT", "FIBO", "robotics", "education"],
-          "expectedRelevantIds": ["contribution:seed-22", "relationship:seed-31"]
+          "expectedRelevantIds": ["contribution:seed-30", "relationship:seed-31"]
         }
       ]
     },
@@ -80,14 +92,24 @@
           "lang": "th",
           "queryText": "หุ่นยนต์ส่งของและสื่อสารทางไกลช่วงโควิด Pinto และ Mirror",
           "targetKeywords": ["หุ่นยนต์", "ส่งของ", "สื่อสารทางไกล", "โควิด", "Pinto", "Mirror"],
-          "expectedRelevantIds": ["contribution:seed-17", "relationship:seed-19"]
+          "expectedRelevantIds": [
+            "contribution:seed-11",
+            "robot:seed-10",
+            "robot:seed-13",
+            "relationship:seed-12"
+          ]
         },
         {
           "queryId": "dev-04-en",
           "lang": "en",
           "queryText": "COVID-19 response telepresence and delivery robots Pinto and Mirror",
           "targetKeywords": ["COVID-19", "Pinto", "Mirror", "delivery", "telepresence"],
-          "expectedRelevantIds": ["contribution:seed-17", "relationship:seed-19"]
+          "expectedRelevantIds": [
+            "contribution:seed-11",
+            "robot:seed-10",
+            "robot:seed-13",
+            "relationship:seed-12"
+          ]
         }
       ]
     },
@@ -124,14 +146,14 @@
           "lang": "th",
           "queryText": "หุ่นยนต์ฮิวแมนนอยด์ในไทยที่ไม่ติดตั้งกล้องหรือเซนเซอร์จับภาพใดๆ",
           "targetKeywords": ["หุ่นยนต์", "ฮิวแมนนอยด์", "กล้อง", "เซนเซอร์"],
-          "expectedRelevantIds": ["robot:seed-1"]
+          "expectedRelevantIds": []
         },
         {
           "queryId": "dev-06-en",
           "lang": "en",
           "queryText": "humanoid robots in Thailand without cameras or optical vision sensors",
           "targetKeywords": ["humanoid", "robot", "Thailand", "cameras", "sensors"],
-          "expectedRelevantIds": ["robot:seed-1"]
+          "expectedRelevantIds": []
         }
       ]
     },
@@ -146,14 +168,24 @@
           "lang": "th",
           "queryText": "หุ่นยนต์ตรวจการณ์และรักษาความปลอดภัยสำหรับตำรวจไทย",
           "targetKeywords": ["หุ่นยนต์", "ตรวจการณ์", "ตำรวจ", "รักษาความปลอดภัย"],
-          "expectedRelevantIds": ["relationship:seed-40", "relationship:seed-41"]
+          "expectedRelevantIds": [
+            "robot:seed-39",
+            "relationship:seed-40",
+            "relationship:seed-41",
+            "perspective:seed-42"
+          ]
         },
         {
           "queryId": "res-01-en",
           "lang": "en",
           "queryText": "security surveillance and police cyborg robots in Thailand",
           "targetKeywords": ["security", "surveillance", "police", "cyborg", "robot"],
-          "expectedRelevantIds": ["relationship:seed-40", "relationship:seed-41"]
+          "expectedRelevantIds": [
+            "robot:seed-39",
+            "relationship:seed-40",
+            "relationship:seed-41",
+            "perspective:seed-42"
+          ]
         }
       ]
     },
@@ -168,14 +200,14 @@
           "lang": "th",
           "queryText": "หุ่นยนต์สอนเขียนโค้ดสำหรับนักเรียนประถมศึกษา Robo-Buddy",
           "targetKeywords": ["หุ่นยนต์", "สอนเขียนโค้ด", "ประถม", "Robo-Buddy"],
-          "expectedRelevantIds": ["contribution:seed-28", "robot:seed-39"]
+          "expectedRelevantIds": ["robot:seed-32", "contribution:seed-33"]
         },
         {
           "queryId": "res-02-en",
           "lang": "en",
           "queryText": "educational coding companion robot for elementary school Robo-Buddy",
           "targetKeywords": ["educational", "coding", "robot", "Robo-Buddy", "elementary"],
-          "expectedRelevantIds": ["contribution:seed-28", "robot:seed-39"]
+          "expectedRelevantIds": ["robot:seed-32", "contribution:seed-33"]
         }
       ]
     },

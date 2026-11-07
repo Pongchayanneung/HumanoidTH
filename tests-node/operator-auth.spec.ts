@@ -74,7 +74,12 @@ test("real whitespace-preserving login creates independent browser sessions and 
   expect((await context.cookies()).some(cookie => ["admin_session", "user_email", "user_role"].includes(cookie.name))).toBe(false);
   expect((await page.content()).includes(first.value)).toBe(false);
   expect((await page.evaluate(() => document.cookie)).includes(first.value)).toBe(false);
-  await expect(page.locator("input:not([type=hidden]), table")).toHaveCount(0);
+  const selector = page.locator('form[method="get"][action="/admin"]');
+  await expect(selector).toHaveCount(1);
+  await expect(selector.locator('select[name="collection"]')).toHaveCount(1);
+  await expect(selector.locator('input[type="text"][name="selectedId"]')).toHaveCount(1);
+  await expect(page.locator("input:not([type=hidden]), select, textarea, table, [contenteditable]")).toHaveCount(2);
+  await expect(page.locator("form")).toHaveCount(2); // Inspection and the existing sign-out form.
   const secondContext = await browser.newContext({ baseURL: browserOrigin });
   const replayContext = await browser.newContext({ baseURL: browserOrigin });
   try {

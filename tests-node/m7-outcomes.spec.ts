@@ -229,6 +229,8 @@ test.describe("database-backed outcomes (denial, privacy, map cold read)", () =>
       upsertContributionAction: { "1_id": approvedContributionId, "1_title": "M7 forged contribution", "1_verificationStatus": "APPROVED" },
       upsertSubmittedDataAction: { "1_id": submittedDataId, "1_title": "M7 forged submitted data", "1_status": "REJECTED" },
     };
+    // S5 made updateSubmissionStatus a real workflow: anonymous and forged callers now get UNAUTHENTICATED.
+    const expectedCode: Record<string, string> = { updateSubmissionStatus: "UNAUTHENTICATED" };
     const before = await snapshot(sql);
     for (const [name, body] of Object.entries(denied)) {
       expect(ids[name], `server action ${name} is no longer exported from app/actions.ts: update this list`).toBeTruthy();
@@ -238,7 +240,7 @@ test.describe("database-backed outcomes (denial, privacy, map cold read)", () =>
         const label = `${name} ${cookie ? "with forged cookies" : "anonymous"}`;
         expect(response.status(), label).toBe(200);
         expect(text, label).toContain('"ok":false');
-        expect(text, label).toContain('"code":"WORKFLOW_UNAVAILABLE"');
+        expect(text, label).toContain(`"code":"${expectedCode[name] ?? "WORKFLOW_UNAVAILABLE"}"`);
         expect(response.headers()["set-cookie"], `${label} must not mint a session`).toBeUndefined();
       }
     }

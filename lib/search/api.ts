@@ -120,7 +120,7 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
       const byId = new Map(index.documents.map((doc) => [doc.typedId, doc]));
       // Type and survival filters first: scoring, candidate caps and the group limit only ever see selected kinds.
       // Group identity still reads the whole index, so a perspective keeps its parent source's key.
-      const selected = index.documents.filter((doc) => (!input.types || input.types.includes(doc.kind)) && (options.isEligible?.(doc) ?? true));
+      const selected = index.documents.filter((doc) => (!input.types || input.types.includes(doc.kind)) && (!input.subtype || contentTypeFor(doc) === input.subtype) && (options.isEligible?.(doc) ?? true));
       const toResult = (doc: SearchDocument, evidence: SearchResultEvidence[]): SearchBrowseResult =>
         ({ reference: { kind: doc.kind, id: doc.typedId }, contentType: contentTypeFor(doc), title: doc.title, url: doc.url, evidence });
       const evidenceOf = new Map(selected.map((doc) => [doc.typedId, doc.evidence.map(({ fieldName, originalText, label, coverage, startOffset, endOffset }): SearchResultEvidence => ({ fieldName, originalText, label, coverage, startOffset, endOffset, evidenceKind: evidenceKindFor(doc, fieldName) }))]));

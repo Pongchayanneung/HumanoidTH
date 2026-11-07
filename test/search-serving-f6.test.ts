@@ -20,6 +20,7 @@ test("serving validates Unicode and body bounds with typed errors and caps limit
     const { status, data } = await run(handler, body); assert.equal(status, 400); assert.deepEqual(data.error, { code: "invalid_request", message: "Invalid search request." });
   }
   assert.equal((await run(handler, { query: ` ${"😀".repeat(300)} `, limit: 21 })).status, 200);
+  assert.equal((await run(handler, { query: "robot", types: ["source"], subtype: "paper" })).status, 200);
   assert.equal((await run(handler, { query: "", limit: 1 })).data.groups.length, 1);
 });
 

@@ -142,15 +142,21 @@ export type SearchResponse = {
 );
 export interface SearchError { error: { code: "invalid_request"; message: string } }
 
-export function validateSearchRequest(value: unknown): (SearchRequest & { limit: number }) | null {
+export function validateSearchRequest(value: unknown): (SearchRequest & { subtype?: string; limit: number }) | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const input = value as Record<string, unknown>;
-  if (Object.keys(input).some((key) => !["query", "types", "limit"].includes(key))) return null;
+  if (Object.keys(input).some((key) => !["query", "types", "subtype", "limit"].includes(key))) return null;
   if (typeof input.query !== "string") return null;
   const query = input.query.trim();
   if (Array.from(query).length > 300) return null;
   if (input.types !== undefined && (!Array.isArray(input.types) ||
     !input.types.every((kind) => typeof kind === "string" && SEARCH_RECORD_KINDS.includes(kind as SearchRecordKind)))) return null;
+  if (input.subtype !== undefined && (typeof input.subtype !== "string" || input.subtype.length > 50)) return null;
   if (input.limit !== undefined && (!Number.isInteger(input.limit) || (input.limit as number) < 1)) return null;
-  return { query, types: input.types as SearchRecordKind[] | undefined, limit: Math.min((input.limit as number | undefined) ?? 10, 20) };
+  return {
+    query,
+    types: input.types as SearchRecordKind[] | undefined,
+    ...(typeof input.subtype === "string" ? { subtype: input.subtype } : {}),
+    limit: Math.min((input.limit as number | undefined) ?? 10, 20),
+  };
 }

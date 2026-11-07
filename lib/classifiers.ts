@@ -1,3 +1,17 @@
+export {
+  classifyCalibratedRelevance,
+  extractCalibratedPerspective,
+  isKnownPlaceholder,
+  evaluateEvidenceSufficiency,
+  evaluateThailandConnection,
+  evaluateTopicalRelevance,
+  type CalibratedClassificationResult,
+  type CalibratedPerspectiveResult,
+  type EvidenceSufficiency,
+  type TopicalRelevance,
+  type RelevanceStatus
+} from "./classification/calibrated-classifier";
+
 const robotTerms = [
   "robot",
   "robotics",

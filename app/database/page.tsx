@@ -56,7 +56,14 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
     switch (table) {
       case "robots":
         data = await prisma.robotModel.findMany({
-          where: q ? { canonicalName: { contains: q, mode: "insensitive" } } : {},
+          where: q
+            ? {
+                OR: [
+                  { canonicalName: { contains: q, mode: "insensitive" } },
+                  { description: { contains: q, mode: "insensitive" } }
+                ]
+              }
+            : {},
           orderBy: { createdAt: "desc" },
           take: 250
         });
@@ -118,7 +125,11 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
           <p className="muted">{t.databaseDesc}</p>
         </div>
         <div className="toolbar">
-          <a className="button primary" href={`/api/export?table=${table}`} download>
+          <a
+            className="button primary"
+            href={`/api/export?table=${table}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+            download
+          >
             Export CSV ({table.replace(/_/g, " ")})
           </a>
         </div>

@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  isAllowedTable,
+  normalizeTableName,
+  ALLOWED_TABLES,
+  TABLE_COLUMNS,
+  buildExportPrismaQuery,
+  generateCsv,
+  MAX_EXPORT_ROWS,
+  type AllowedTable
+} from "@/lib/csv-export";
 
 export const dynamic = "force-dynamic";
 
@@ -41,73 +51,58 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const table = searchParams.get("table") || "sources";
+  const rawTable = searchParams.get("table") || "sources";
+  const normalized = normalizeTableName(rawTable);
+
+  // Validate allowed table selection (Audit D12 / S3)
+  if (!normalized) {
+    return NextResponse.json(
+      {
+        error: `Invalid table '${rawTable}'. Allowed tables: ${ALLOWED_TABLES.join(", ")}`
+      },
+      { status: 400 }
+    );
+  }
+
+  const table: AllowedTable = normalized;
+  const q = searchParams.get("q");
+  const limitParam = searchParams.get("limit");
+  const limit = limitParam ? parseInt(limitParam, 10) : MAX_EXPORT_ROWS;
 
   let data: any[] = [];
+  const query = buildExportPrismaQuery(table, q, limit);
 
   switch (table) {
     case "robots":
-      data = await prisma.robotModel.findMany();
+      data = await prisma.robotModel.findMany(query as any);
       break;
     case "contributions":
-      data = await prisma.contribution.findMany();
-      break;
-    case "submissions":
-      data = await prisma.submittedData.findMany();
+      data = await prisma.contribution.findMany(query as any);
       break;
     case "inventory":
     case "owned_inventory":
-      data = await prisma.ownedInventory.findMany();
+      data = await prisma.ownedInventory.findMany(query as any);
+      break;
+    case "submissions":
+      data = await prisma.submittedData.findMany(query as any);
       break;
     case "perspective_annotations":
-      data = await prisma.perspectiveAnnotation.findMany();
+      data = await prisma.perspectiveAnnotation.findMany(query as any);
       break;
     case "pull_jobs":
-      data = await prisma.sourcePullJob.findMany();
+      data = await prisma.sourcePullJob.findMany(query as any);
       break;
     case "sources":
-      data = await prisma.sourceRecord.findMany();
-      break;
     default:
-      return new NextResponse(JSON.stringify({ error: `Unknown export table '${table}'.` }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" }
-      });
+      data = await prisma.sourceRecord.findMany(query as any);
+      break;
   }
 
-  if (!data || data.length === 0) {
-    return new NextResponse("No data available", {
-      headers: {
-        "Content-Type": "text/plain",
-        "Content-Disposition": `attachment; filename="${table}.csv"`
-      }
-    });
-  }
+  const columns = TABLE_COLUMNS[table];
+  const csvContent = generateCsv(columns, data || []);
 
-  const headers = Object.keys(data[0]);
-
-  // Sanitize spreadsheet formula injection characters: =, +, -, @, \t, \r
-  const escapeCsvValue = (val: any) => {
-    if (val === null || val === undefined) return "";
-    let str = typeof val === "object" ? JSON.stringify(val) : String(val);
-
-    // If the value starts with risky formula trigger characters, prefix with single quote
-    if (/^[=+\-@\t\r]/.test(str)) {
-      str = `'${str}`;
-    }
-
-    if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
-      return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str;
-  };
-
-  const csvRows = [
-    headers.join(","),
-    ...data.map((row) => headers.map((header) => escapeCsvValue(row[header])).join(","))
-  ];
-
-  return new NextResponse(csvRows.join("\n"), {
+  return new NextResponse(csvContent, {
+    status: 200,
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="${table}.csv"`

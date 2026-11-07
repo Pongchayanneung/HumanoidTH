@@ -140,7 +140,8 @@ function denialActionIds(): Record<string, string> {
   };
   const ids: Record<string, string> = {};
   for (const [id, entry] of Object.entries(manifest.node)) {
-    if (entry.filename === "app/actions.ts") ids[entry.exportedName] = id;
+    // Next may include an absolute Windows filename in development.
+    if (/(^|\/)app\/actions\.ts$/.test(entry.filename.replaceAll("\\", "/"))) ids[entry.exportedName] = id;
   }
   return ids;
 }
@@ -422,6 +423,30 @@ test.describe("database-backed outcomes (denial, privacy, map cold read)", () =>
   test("2d privacy: no public page, payload, search response or exported corpus carries pending or private data", async ({ request }) => {
     const markers = [...PENDING_MARKERS, ...PRIVATE_UNIT.fields];
     for (const route of PUBLIC_PAGES) await expectNoMarkers(request, route, markers);
+
+    const { rows: [dinsaw] } = await sql.query<{ id: string }>(
+      `SELECT id FROM "RobotModel" WHERE "canonicalName" = 'Dinsaw Mini Home AI Assistance'`
+    );
+    expect(dinsaw?.id, "the checked Dinsaw model is seeded").toBeTruthy();
+    const publicRobot = await request.get("/robots?" + new URLSearchParams({ robot: dinsaw.id }));
+    const publicHtml = await publicRobot.text();
+    expect(publicRobot.status()).toBe(200);
+    expect(publicHtml).toContain("Care for older adults at home");
+    expect(publicHtml).toContain("https://www.nia.or.th/DinsawMiniHomeAI");
+
+    const excludedRobotId = "m7-fx-excluded-robot";
+    const excludedRobotTitle = "M7 Placeholder Robot Alpha";
+    await sql.query(`INSERT INTO "RobotModel" (id, "canonicalName", "updatedAt") VALUES ($1, $2, now())`,
+      [excludedRobotId, excludedRobotTitle]);
+    try {
+      const denied = await request.get("/robots?" + new URLSearchParams({ robot: excludedRobotId }));
+      expect(denied.status()).toBe(200);
+      const html = await denied.text();
+      expect(html).toContain("No public robot record was found.");
+      expect(html).not.toContain(excludedRobotTitle);
+    } finally {
+      await sql.query(`DELETE FROM "RobotModel" WHERE id = $1`, [excludedRobotId]);
+    }
 
     for (const query of ["Thai HRI research seed", "Placeholder contribution", PRIVATE_UNIT.name, "robot"]) {
       const response = await request.post("/api/search", { data: { query } });

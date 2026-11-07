@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { getTranslation, parseLanguage } from "@/lib/translations";
 import { isEligiblePublicRobot, publicRobotWhere } from "@/lib/public-projection";
 import Link from "next/link";
-import { dinsawSourceForRobot } from "@/lib/atlas-evidence";
+import { dinsawIntendedUse, dinsawSourceForRobot } from "@/lib/atlas-evidence";
 import { safeSourceUrl } from "@/app/search/searchClient";
 
 export const dynamic = "force-dynamic";
@@ -87,8 +87,8 @@ export default async function RobotsPage({ searchParams }: { searchParams: Searc
               <dl>
                 <dt>{thai ? "ผู้พัฒนา" : "Developer"}</dt>
                 <dd>{row.developerOrg ?? row.manufacturer ?? (thai ? "ไม่ระบุ" : "Unlisted")}</dd>
-                <dt>{thai ? "การใช้งาน" : "Intended use"}</dt>
-                <dd>{row.primaryUseCase ?? (thai ? "ไม่ระบุ" : "Unlisted")}</dd>
+                <dt>{result.evidence ? (thai ? "การใช้งานตามที่ NIA ระบุ" : "Intended use, as described by NIA") : (thai ? "การใช้งาน" : "Intended use")}</dt>
+                <dd>{result.evidence ? dinsawIntendedUse[lang] : row.primaryUseCase ?? (thai ? "ไม่ระบุ" : "Unlisted")}</dd>
                 <dt>{thai ? "ประเภท" : "Type"}</dt>
                 <dd>{row.robotType.replaceAll("_", " ")}</dd>
                 <dt>{thai ? "สถานะในประเทศไทย" : "Thailand status"}</dt>
@@ -99,7 +99,9 @@ export default async function RobotsPage({ searchParams }: { searchParams: Searc
               <div>
                 <h2>{thai ? "หลักฐานและแหล่งข้อมูล" : "Evidence and sources"}</h2>
                 {result.evidence ? (
-                  <p><a href={result.evidence.url} target="_blank" rel="noopener noreferrer">{result.evidence.title} ({t.opensInNewTab})</a></p>
+                  <p><a href={result.evidence.url} target="_blank" rel="noopener noreferrer">
+                    {thai ? "อ่านบทความจากสำนักงานนวัตกรรมแห่งชาติ" : "Read the National Innovation Agency article (Thai)"} ({t.opensInNewTab})
+                  </a></p>
                 ) : <p className="muted">{thai ? "ระเบียนนี้ยังไม่มีแหล่งอ้างอิงที่ตรวจสอบแล้ว" : "No verified supporting source is attached to this record."}</p>}
                 {official && official !== result.evidence?.url && <a href={official} target="_blank" rel="noopener noreferrer">{thai ? "เว็บไซต์ทางการ" : "Official site"} ({t.opensInNewTab})</a>}
               </div>

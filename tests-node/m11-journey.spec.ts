@@ -43,8 +43,7 @@ async function tabUntil(
   key: "Tab" | "Shift+Tab" = "Tab",
   cap = 40
 ): Promise<void> {
-  for (let i = 0; i < cap; i++) {
-    await page.keyboard.press(key);
+  for (let i = 0; i <= cap; i++) {
     const info = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement | null;
       if (!el || el === document.body) return null;
@@ -56,6 +55,7 @@ async function tabUntil(
       };
     });
     if (info && predicate(info)) return;
+    if (i < cap) await page.keyboard.press(key);
   }
   throw new Error(`Failed to focus ${desc} within ${cap} ${key} presses`);
 }
@@ -89,7 +89,7 @@ for (const vp of viewports) {
 
       // Reach each public destination that exists in the nav
       for (const dest of navDests) {
-        await tabUntil(page, el => el.tag === "BUTTON" && /^(Open navigation|เปิดเมนู)$/.test(el.label), "menu button");
+        await tabUntil(page, el => el.tag === "BUTTON" && /^(Open navigation|เปิดเมนู)$/.test(el.label), "menu button", "Shift+Tab");
         await assertFocusAndName(page, "menu button");
         await page.keyboard.press("Enter");
         await tabUntil(page, (el) => el.tag === "A" && el.path === dest.path, `nav link for ${dest.id} (${dest.path})`);

@@ -4,13 +4,17 @@ import { isEligiblePublicRobot, publicSourceRecordWhere } from "@/lib/public-pro
 
 const dinsawNames = ["Dinsaw Mini Home AI", "Dinsaw Mini Home AI Assistance"];
 const dinsawUrl = "https://www.nia.or.th/DinsawMiniHomeAI";
+export const dinsawIntendedUse = {
+  en: "Care for older adults at home",
+  th: "ดูแลผู้สูงอายุที่บ้าน"
+};
 
 export async function dinsawSourceForRobot(name: string) {
   if (!dinsawNames.includes(name) || !isEligiblePublicRobot(name) || !isPublicCheckedRecord("robot_model:dinsaw-mini-home-ai")) return null;
   const { prisma } = await import("@/lib/prisma");
   return prisma.sourceRecord.findFirst({
     where: { url: dinsawUrl, ...publicSourceRecordWhere },
-    select: { title: true, url: true }
+    select: { url: true }
   });
 }
 

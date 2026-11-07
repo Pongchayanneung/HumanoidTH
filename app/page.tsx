@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { loadDinsawExample } from "@/lib/atlas-evidence";
+import { dinsawIntendedUse, loadDinsawExample } from "@/lib/atlas-evidence";
 
 async function FeaturedRobot({ lang }: { lang: "en" | "th" }) {
   const example = await loadDinsawExample();
@@ -17,7 +17,7 @@ async function FeaturedRobot({ lang }: { lang: "en" | "th" }) {
             <dt>{thai ? "ผู้พัฒนา" : "Developer"}</dt>
             <dd>CT Asia Robotics</dd>
             <dt>{thai ? "การใช้งานตามที่ NIA ระบุ" : "Intended use, as described by NIA"}</dt>
-            <dd>{thai ? "ดูแลผู้สูงอายุที่บ้าน" : "Care for older adults at home"}</dd>
+            <dd>{dinsawIntendedUse[lang]}</dd>
           </dl>
         </div>
         <div>

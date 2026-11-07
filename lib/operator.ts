@@ -8,15 +8,15 @@ export type SessionResult =
 
 /**
  * Resolves the authenticated operator session principal.
- * Integrates with #36 operator session infrastructure when present,
- * or validates the authenticated operator session cookie.
+ * Integrates with #36 operator session infrastructure when present.
+ * Unsigned cookies (admin_session, user_role, user_email) are strictly ignored and never grant operator access.
  * Always fails closed if unauthenticated.
  */
-export async function getOperatorPrincipal(): Promise<SessionResult> {
+export async function getOperatorPrincipal(customCookies?: any): Promise<SessionResult> {
   try {
-    const cookieStore = await cookies();
+    const cookieStore = customCookies ?? (await cookies());
 
-    // 1. If #36 operator session token exists (__Host-operator_session or operator_session_dev)
+    // Verified operator session token check (__Host-operator_session or operator_session_dev)
     const operatorSessionToken =
       cookieStore.get("__Host-operator_session")?.value ||
       cookieStore.get("operator_session_dev")?.value;
@@ -28,23 +28,8 @@ export async function getOperatorPrincipal(): Promise<SessionResult> {
           return await authMod.getOperatorPrincipal();
         }
       } catch {
-        // Fall through if #36 module is not yet merged
+        return { ok: false, code: "UNAVAILABLE" };
       }
-    }
-
-    // 2. Verified admin session cookie check (requires ADMIN role and operator email)
-    const adminSession = cookieStore.get("admin_session")?.value;
-    const userRole = cookieStore.get("user_role")?.value;
-    const userEmail = cookieStore.get("user_email")?.value;
-
-    if (adminSession === "true" && userRole === "ADMIN" && userEmail) {
-      return {
-        ok: true,
-        principal: {
-          kind: "operator",
-          email: userEmail
-        }
-      };
     }
 
     return { ok: false, code: "UNAUTHENTICATED" };

@@ -50,7 +50,7 @@ export interface QueryEvaluationReport {
   latencyMs: {
     keyword: number;
     semantic: number;
-    hybrid: number;
+    hybrid: number; // Measures full end-to-end hybrid path
   };
   top3Results: {
     keyword: GroupedResult[];
@@ -67,13 +67,25 @@ export interface QueryEvaluationReport {
 }
 
 export interface PilotEvaluationSummary {
+  evaluationMode: "mock_fixture" | "production_semantic" | "lexical_only";
+  semanticStatus: "evaluated" | "unavailable";
   totalQueries: number;
   devQueries: number;
   reservedQueries: number;
   byCategory: {
-    supported: { count: number; mrr: { keyword: number; semantic: number; hybrid: number }; avgP3: { keyword: number; semantic: number; hybrid: number } };
-    unrelated: { count: number; suppressionRate: { keyword: number; semantic: number; hybrid: number } };
-    unsupported_condition: { count: number; inspectableGapPreserved: number };
+    supported: {
+      count: number;
+      mrr: { keyword: number; semantic: number | null; hybrid: number };
+      avgP3: { keyword: number; semantic: number | null; hybrid: number };
+    };
+    unrelated: {
+      count: number;
+      suppressionRate: { keyword: number; semantic: number | null; hybrid: number };
+    };
+    unsupported_condition: {
+      count: number;
+      inspectableGapPreserved: number;
+    };
   };
   byLanguage: Record<LanguageTag, { count: number; avgHybridP3: number }>;
   policy: SemanticRetrievalPolicy;
@@ -113,7 +125,6 @@ export function computeKeywordScore(
   }
 
   const rawScore = titleMatches * weights.title + bodyMatches * weights.body;
-  // Normalize by number of query tokens
   return rawScore / tokens.length;
 }
 
@@ -146,9 +157,10 @@ export function groupCandidates(
 
   const sortedGroups = Array.from(groups.entries())
     .map(([groupId, data]) => {
-      const isRelevant = data.members.some((m) =>
-        expectedRelevantIds.includes(m.typedId) ||
-        (m.url && expectedRelevantIds.some((id) => m.url?.includes(id)))
+      const isRelevant = data.members.some(
+        (m) =>
+          expectedRelevantIds.includes(m.typedId) ||
+          (m.url && expectedRelevantIds.some((id) => m.url?.includes(id)))
       );
       return {
         groupId,
@@ -170,29 +182,34 @@ export class RetrievalEvaluator {
   private documents: SearchDocument[];
   private vectorMap: Map<number, Float32Array>;
   private policy: SemanticRetrievalPolicy;
+  private evaluationMode: "mock_fixture" | "production_semantic" | "lexical_only";
 
   constructor(
     documents: SearchDocument[],
     vectorMap: Map<number, Float32Array> = new Map(),
-    policy: SemanticRetrievalPolicy = FROZEN_SEMANTIC_POLICY
+    policy: SemanticRetrievalPolicy = FROZEN_SEMANTIC_POLICY,
+    evaluationMode: "mock_fixture" | "production_semantic" | "lexical_only" = "mock_fixture"
   ) {
     this.documents = documents;
     this.vectorMap = vectorMap;
     this.policy = policy;
+    this.evaluationMode = evaluationMode;
   }
 
   /**
    * Evaluates a single pilot query across Keyword, Semantic, and Hybrid retrieval.
+   * Full hybrid path latency is measured from start of query execution to grouped results.
    */
   evaluateQuery(
     query: PilotQuery,
     intent: PilotIntent,
     queryVector?: Float32Array
   ): QueryEvaluationReport {
-    const tokens = normalizeQueryTokens(query.queryText);
+    const startFullHybrid = performance.now();
 
     // 1. Keyword Retrieval
     const startKw = performance.now();
+    const tokens = normalizeQueryTokens(query.queryText);
     const kwCandidates: { document: SearchDocument; score: number }[] = [];
     for (const doc of this.documents) {
       const score = computeKeywordScore(tokens, doc, this.policy.lexicalWeights);
@@ -207,7 +224,9 @@ export class RetrievalEvaluator {
     // 2. Semantic Retrieval
     const startSem = performance.now();
     const semCandidates: { document: SearchDocument; score: number }[] = [];
-    if (queryVector && this.vectorMap.size > 0) {
+    const hasVectors = queryVector && this.vectorMap.size > 0;
+
+    if (hasVectors) {
       for (const doc of this.documents) {
         if (doc.vectorRow !== null && doc.vectorRow !== undefined) {
           const docVec = this.vectorMap.get(doc.vectorRow);
@@ -225,7 +244,6 @@ export class RetrievalEvaluator {
     const semLatency = Number((endSem - startSem).toFixed(2));
 
     // 3. Hybrid Retrieval: Reciprocal Rank Fusion (RRF)
-    const startHyb = performance.now();
     const rrfScores = new Map<string, { doc: SearchDocument; rrf: number }>();
     const k = this.policy.rrfConstantK;
 
@@ -249,40 +267,49 @@ export class RetrievalEvaluator {
       .map((item) => ({ document: item.doc, score: item.rrf }))
       .sort((a, b) => b.score - a.score);
 
-    const endHyb = performance.now();
-    const hybLatency = Number((endHyb - startHyb).toFixed(2));
+    // Group candidates across full retrieval depth
+    const allKwGroups = groupCandidates(kwCandidates, query.expectedRelevantIds);
+    const allSemGroups = groupCandidates(semCandidates, query.expectedRelevantIds);
+    const allHybGroups = groupCandidates(hybCandidates, query.expectedRelevantIds);
 
-    // Group candidates
-    const kwGroups = groupCandidates(kwCandidates, query.expectedRelevantIds).slice(0, 3);
-    const semGroups = groupCandidates(semCandidates, query.expectedRelevantIds).slice(0, 3);
-    const hybGroups = groupCandidates(hybCandidates, query.expectedRelevantIds).slice(0, 3);
+    const endFullHybrid = performance.now();
+    const fullHybridLatency = Number((endFullHybrid - startFullHybrid).toFixed(2));
 
-    // Compute metrics
-    const calcMetrics = (groups: GroupedResult[]) => {
+    // Calculate metrics across full depth for MRR, and top 3 for Precision@3
+    const calcMetrics = (allGroups: GroupedResult[], available: boolean = true) => {
+      if (!available) {
+        return { firstUsefulRank: null, precisionAt3: 0 };
+      }
       let firstRank: number | null = null;
-      let relevantCount = 0;
-      for (let i = 0; i < groups.length; i++) {
-        if (groups[i].isRelevant) {
-          if (firstRank === null) firstRank = i + 1;
-          relevantCount++;
+      for (let i = 0; i < allGroups.length; i++) {
+        if (allGroups[i].isRelevant) {
+          firstRank = i + 1;
+          break;
         }
       }
-      const precisionAt3 = groups.length > 0 ? relevantCount / 3 : 0;
+      const top3 = allGroups.slice(0, 3);
+      const relevantInTop3 = top3.filter((g) => g.isRelevant).length;
+      const precisionAt3 = top3.length > 0 ? relevantInTop3 / 3 : 0;
       return { firstUsefulRank: firstRank, precisionAt3 };
     };
 
     const isUnrelated = intent.category === "unrelated";
     const unrelatedSuppressed = isUnrelated
-      ? (semGroups.length === 0 || semGroups[0].bestScore < this.policy.semanticCutoffThreshold)
+      ? (!hasVectors ? allKwGroups.length === 0 : allHybGroups.length === 0)
       : false;
 
     const notes: string[] = [];
-    if (intent.category === "unsupported_condition") {
-      notes.push("Partial match preserved: original evidence text reveals condition gap for user inspection");
+    if (!hasVectors) {
+      notes.push("Semantic vectors unavailable; evaluated lexical branch only");
     }
     if (isUnrelated && unrelatedSuppressed) {
-      notes.push("Cleanly suppressed below semantic cutoff without false match claim");
+      notes.push("Cleanly suppressed below cutoff without false match claim");
     }
+
+    // Top 3 groups for display
+    const kwGroups = allKwGroups.slice(0, 3);
+    const semGroups = allSemGroups.slice(0, 3);
+    const hybGroups = allHybGroups.slice(0, 3);
 
     return {
       queryId: query.queryId,
@@ -294,7 +321,7 @@ export class RetrievalEvaluator {
       latencyMs: {
         keyword: kwLatency,
         semantic: semLatency,
-        hybrid: hybLatency
+        hybrid: fullHybridLatency
       },
       top3Results: {
         keyword: kwGroups,
@@ -302,9 +329,9 @@ export class RetrievalEvaluator {
         hybrid: hybGroups
       },
       metrics: {
-        keyword: calcMetrics(kwGroups),
-        semantic: calcMetrics(semGroups),
-        hybrid: calcMetrics(hybGroups)
+        keyword: calcMetrics(allKwGroups, true),
+        semantic: calcMetrics(allSemGroups, hasVectors),
+        hybrid: calcMetrics(allHybGroups, true)
       },
       unrelatedSuppressed,
       notes
@@ -323,6 +350,7 @@ export class RetrievalEvaluator {
     summary: PilotEvaluationSummary;
   } {
     const reports: QueryEvaluationReport[] = [];
+    const hasVectors = this.vectorMap.size > 0 && queryVectorMap && queryVectorMap.size > 0;
 
     const intentsToRun = dataset.intents.filter(
       (intent) => !filterSplit || intent.split === filterSplit
@@ -336,7 +364,6 @@ export class RetrievalEvaluator {
       }
     }
 
-    // Aggregate statistics
     let devCount = 0;
     let resCount = 0;
 
@@ -349,7 +376,38 @@ export class RetrievalEvaluator {
       if (r.split === "reserved") resCount++;
     }
 
+    // Inspectable gap preservation verification:
+    let inspectableGapPreserved = 0;
+    for (const r of partialReports) {
+      const hyb = r.top3Results.hybrid;
+      if (hyb.length === 0) {
+        // Zero-result regression case: cleanly rejected, preserving gap
+        inspectableGapPreserved++;
+        r.notes.push("Condition gap preserved via complete rejection (0 false claims)");
+      } else {
+        // Check if returned primary documents have inspectable evidence text
+        const allHaveEvidence = hyb.every((g) => {
+          const doc = g.primaryDocument;
+          return (
+            Array.isArray(doc.evidence) &&
+            doc.evidence.length > 0 &&
+            doc.evidence.some((e) => e.originalText && e.originalText.length > 0)
+          );
+        });
+        if (allHaveEvidence) {
+          inspectableGapPreserved++;
+          r.notes.push(
+            "Partial match preserved: original evidence text reveals condition gap for user inspection"
+          );
+        } else {
+          r.notes.push("Evidence gap violation: candidate lacks verifiable source evidence");
+        }
+      }
+    }
+
+    // MRR calculation over full retrieval depth
     const calcMRR = (mode: "keyword" | "semantic" | "hybrid") => {
+      if (mode === "semantic" && !hasVectors) return null;
       if (supportedReports.length === 0) return 0;
       let rrSum = 0;
       for (const r of supportedReports) {
@@ -360,12 +418,14 @@ export class RetrievalEvaluator {
     };
 
     const calcAvgP3 = (mode: "keyword" | "semantic" | "hybrid") => {
+      if (mode === "semantic" && !hasVectors) return null;
       if (supportedReports.length === 0) return 0;
       const sum = supportedReports.reduce((acc, r) => acc + r.metrics[mode].precisionAt3, 0);
       return Number((sum / supportedReports.length).toFixed(3));
     };
 
     const calcSuppression = (mode: "keyword" | "semantic" | "hybrid") => {
+      if (mode === "semantic" && !hasVectors) return null;
       if (unrelatedReports.length === 0) return 1.0;
       const suppressed = unrelatedReports.filter((r) => r.top3Results[mode].length === 0).length;
       return Number((suppressed / unrelatedReports.length).toFixed(3));
@@ -384,11 +444,15 @@ export class RetrievalEvaluator {
     }
     for (const lang of Object.keys(byLang) as LanguageTag[]) {
       if (byLang[lang].count > 0) {
-        byLang[lang].avgHybridP3 = Number((byLang[lang].avgHybridP3 / byLang[lang].count).toFixed(3));
+        byLang[lang].avgHybridP3 = Number(
+          (byLang[lang].avgHybridP3 / byLang[lang].count).toFixed(3)
+        );
       }
     }
 
     const summary: PilotEvaluationSummary = {
+      evaluationMode: this.evaluationMode,
+      semanticStatus: hasVectors ? "evaluated" : "unavailable",
       totalQueries: reports.length,
       devQueries: devCount,
       reservedQueries: resCount,
@@ -396,27 +460,27 @@ export class RetrievalEvaluator {
         supported: {
           count: supportedReports.length,
           mrr: {
-            keyword: calcMRR("keyword"),
+            keyword: calcMRR("keyword") as number,
             semantic: calcMRR("semantic"),
-            hybrid: calcMRR("hybrid")
+            hybrid: calcMRR("hybrid") as number
           },
           avgP3: {
-            keyword: calcAvgP3("keyword"),
+            keyword: calcAvgP3("keyword") as number,
             semantic: calcAvgP3("semantic"),
-            hybrid: calcAvgP3("hybrid")
+            hybrid: calcAvgP3("hybrid") as number
           }
         },
         unrelated: {
           count: unrelatedReports.length,
           suppressionRate: {
-            keyword: calcSuppression("keyword"),
+            keyword: calcSuppression("keyword") as number,
             semantic: calcSuppression("semantic"),
-            hybrid: calcSuppression("hybrid")
+            hybrid: calcSuppression("hybrid") as number
           }
         },
         unsupported_condition: {
           count: partialReports.length,
-          inspectableGapPreserved: partialReports.length
+          inspectableGapPreserved
         }
       },
       byLanguage: byLang,

@@ -203,6 +203,24 @@ test("F4 Model Profile & Generator Protection: rejects Qwen production profile w
         embeddingGenerator: new DeterministicMockEmbeddingGenerator(1024)
       });
     }, /DeterministicMockEmbeddingGenerator cannot be labelled as production model profile/);
+
+    // Attempting to instantiate production profile without real service or generator must throw
+    const origTei = process.env.TEI_ENDPOINT;
+    const origEmb = process.env.EMBEDDING_SERVICE_URL;
+    delete process.env.TEI_ENDPOINT;
+    delete process.env.EMBEDDING_SERVICE_URL;
+    try {
+      assert.throws(() => {
+        new VectorReleaseBuilder({
+          documentsPath,
+          outputDir: tempDir,
+          profile: DEFAULT_MODEL_PROFILE
+        });
+      }, /requires a real embedding service/);
+    } finally {
+      if (origTei) process.env.TEI_ENDPOINT = origTei;
+      if (origEmb) process.env.EMBEDDING_SERVICE_URL = origEmb;
+    }
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
@@ -358,6 +376,9 @@ test("F4 Atomic Promotion & Manifest Preservation: preserves F3 metadata and wri
     assert.equal(pointer.releaseId, result.manifest.releaseId);
     assert.equal(pointer.recordsSha256, result.manifest.recordsSha256);
     assert.equal(pointer.modelProfileHash, MOCK_MODEL_PROFILE.profileHash);
+    assert.ok(pointer.releaseDir?.includes(result.manifest.releaseId));
+    assert.ok(pointer.files.manifest.startsWith("releases/"));
+    assert.ok(pointer.files.documents.startsWith("releases/"));
 
     // 3. Verify versioned release directory was created
     const releaseDir = join(docsDir, "releases", result.manifest.releaseId);
@@ -456,4 +477,21 @@ test("F4 Hour 3 Completion Forecast: computes 50% contingency and gate verdict a
   assert.equal(forecastFast.remainingDocuments, 746);
   assert.equal(forecastFast.meetsDeadline, true);
   assert.ok(forecastFast.formattedSummary.includes("ON TRACK (Meets Hour 4½ Gate)"));
+
+  // Zero or non-positive measured progress must throw
+  assert.throws(() => {
+    calculateCompletionForecast({
+      totalDocuments: 6746,
+      completedDocuments: 0,
+      elapsedSeconds: 0
+    });
+  }, /valid measured progress is required/);
+
+  assert.throws(() => {
+    calculateCompletionForecast({
+      totalDocuments: 6746,
+      completedDocuments: -5,
+      elapsedSeconds: 100
+    });
+  }, /valid measured progress is required/);
 });

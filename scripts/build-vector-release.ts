@@ -1,6 +1,10 @@
 import { resolve, join } from "node:path";
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
-import { VectorReleaseBuilder } from "../lib/search/vector-builder";
+import {
+  VectorReleaseBuilder,
+  TeiEmbeddingGenerator,
+  DeterministicMockEmbeddingGenerator
+} from "../lib/search/vector-builder";
 import {
   validateVectorRelease,
   calculateCompletionForecast
@@ -49,6 +53,13 @@ async function main() {
       if (existsSync(checkpointDir)) {
         const cpFiles = readdirSync(checkpointDir).filter((f) => f.endsWith(".json"));
         if (cpFiles.length > 0) {
+          const targetProfileHash = DEFAULT_MODEL_PROFILE.profileHash;
+          const currentDocHashMap = new Map<string, string>();
+          for (const d of docs) {
+            const h = d.textHash || d.hash;
+            if (d.id && h) currentDocHashMap.set(d.id, h);
+          }
+
           let count = 0;
           let minMtime = Infinity;
           let maxMtime = -Infinity;
@@ -56,17 +67,26 @@ async function main() {
             try {
               const p = join(checkpointDir, file);
               const stat = statSync(p);
-              if (stat.mtimeMs < minMtime) minMtime = stat.mtimeMs;
-              if (stat.mtimeMs > maxMtime) maxMtime = stat.mtimeMs;
               const content = JSON.parse(readFileSync(p, "utf8"));
+              // Check profile hash: only checkpoints matching target model profile are valid
+              if (content.modelProfileHash !== targetProfileHash) {
+                continue;
+              }
               if (Array.isArray(content.entries)) {
-                count += content.entries.length;
+                for (const entry of content.entries) {
+                  // Verify document hash matches current document set
+                  if (entry.id && currentDocHashMap.get(entry.id) === entry.hash) {
+                    count++;
+                  }
+                }
+                if (stat.mtimeMs < minMtime) minMtime = stat.mtimeMs;
+                if (stat.mtimeMs > maxMtime) maxMtime = stat.mtimeMs;
               }
             } catch {
               // ignore unreadable checkpoint
             }
           }
-          if (count > 0) {
+          if (count > 0 && Number.isFinite(minMtime) && Number.isFinite(maxMtime)) {
             completedDocuments = completedDocuments ?? count;
             const diffSec = Math.max(1, (maxMtime - minMtime) / 1000);
             elapsedSeconds = elapsedSeconds ?? diffSec;
@@ -78,13 +98,14 @@ async function main() {
       }
     }
 
-    // If still undefined, fallback with explicit warning
-    if (completedDocuments === undefined || elapsedSeconds === undefined) {
-      console.warn(
-        "Warning: No active checkpoints or CLI inputs found. Using sample baseline (1,500 docs in 3.0 hrs) for demonstration."
+    // Fail clearly if valid measured progress is unavailable
+    if (completedDocuments === undefined || elapsedSeconds === undefined || completedDocuments <= 0 || elapsedSeconds <= 0) {
+      console.error(
+        "Error: Cannot compute completion forecast without valid measured progress.\n" +
+        "Provide valid checkpoints in .cache/search-vector-checkpoints matching the current document set and target model profile, " +
+        "or supply explicit measured progress flags: --completed <N> --elapsed-sec <S>"
       );
-      completedDocuments = 1500;
-      elapsedSeconds = 3 * 3600;
+      process.exit(1);
     }
 
     const forecast = calculateCompletionForecast({
@@ -137,21 +158,36 @@ async function main() {
     return;
   }
 
-  // Choose profile based on mode
-  const profile = isMock ? MOCK_MODEL_PROFILE : undefined;
+  // Production vs Mock vs Keyword-only configuration
+  let profile = isMock ? MOCK_MODEL_PROFILE : DEFAULT_MODEL_PROFILE;
+  let embeddingGenerator;
+
+  if (isKeywordOnly) {
+    console.log("Building release (Mode: Keyword-only, Limit: 0 vectors)...");
+  } else if (isMock) {
+    console.log(`Building release (Mode: Mock semantic (deterministic), Limit: ${maxVectors ?? "All"})...`);
+    embeddingGenerator = new DeterministicMockEmbeddingGenerator(profile.dimensions);
+  } else {
+    // Production mode requires configured embedding service
+    const endpoint = process.env.EMBEDDING_SERVICE_URL || process.env.TEI_ENDPOINT;
+    if (!endpoint) {
+      console.error(
+        "Error: Production semantic builds require a real embedding service.\n" +
+        "Configure EMBEDDING_SERVICE_URL (or TEI_ENDPOINT) in your environment, or pass --mock for deterministic local testing, or --keyword-only for keyword releases."
+      );
+      process.exit(1);
+    }
+    console.log(`Building release (Mode: Production semantic (${profile.modelId}), Endpoint: ${endpoint}, Limit: ${maxVectors ?? "All"})...`);
+    embeddingGenerator = new TeiEmbeddingGenerator(endpoint, profile.dimensions);
+  }
 
   const builder = new VectorReleaseBuilder({
     documentsPath,
     outputDir: dataDir,
     profile,
+    embeddingGenerator,
     maxVectorsToGenerate: isKeywordOnly ? 0 : maxVectors
   });
-
-  console.log(
-    `Building release (Mode: ${
-      isKeywordOnly ? "Keyword-only" : isMock ? "Mock semantic (deterministic)" : "Production semantic"
-    }, Limit: ${maxVectors ?? "All"})...`
-  );
 
   const result = await builder.build();
 

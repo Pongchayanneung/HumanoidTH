@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 import { PUBLIC_DATASET_SCOPE_LABEL } from "@/lib/public-projection";
+import { loadWholeCorpusAnalytics } from "@/lib/analytics/corpus-analytics";
 import AnalyticsPlayground from "./AnalyticsPlayground";
 import AnalyticsBpmn from "./AnalyticsBpmn";
 
@@ -34,240 +34,69 @@ export const metadata: Metadata = {
     description: "Statistical breakdown and charts tracking public sentiment, attention, and stance on embodied AI and robotics across Thailand.",
     images: ["/logo.png"]
   }
-};export default async function AnalyticsPage() {
+};
+
+export default async function AnalyticsPage() {
   const cookieStore = await cookies();
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
-  let events: Array<any> = [];
-  let summary = {
-    sourceCount: 0,
-    robotCount: 0,
-    contributionCount: 0,
-    perspectiveCount: 0,
-    submissionCount: 0,
-    sourceConfidenceCount: 0
-  };
-  let dbOffline = false;
-
-  try {
-    const [
-      sources,
-      robots,
-      contributions,
-      perspectives
-    ] = await Promise.all([
-      prisma.sourceRecord.findMany({
-        where: { relevanceStatus: "ACCEPTED" },
-        select: {
-          sourceType: true,
-          relevanceStatus: true,
-          platform: true,
-          publishedAt: true,
-          createdAt: true,
-          relevanceConfidence: true,
-          title: true
-        },
-        orderBy: { publishedAt: "desc" },
-        take: 5000
-      }),
-      prisma.robotModel.findMany({
-        select: {
-          canonicalName: true,
-          robotType: true,
-          thailandStatus: true,
-          countryOfOrigin: true,
-          statusConfidence: true,
-          firstSeenYear: true,
-          createdAt: true
-        },
-        orderBy: { createdAt: "desc" },
-        take: 5000
-      }),
-      prisma.contribution.findMany({
-        where: { visibility: "public", verificationStatus: "APPROVED" },
-        select: {
-          title: true,
-          contributionType: true,
-          verificationStatus: true,
-          visibility: true,
-          organization: true,
-          createdAt: true
-        },
-        orderBy: { createdAt: "desc" },
-        take: 5000
-      }),
-      prisma.perspectiveAnnotation.findMany({
-        where: { source: { relevanceStatus: "ACCEPTED" } },
-        select: {
-          perspectiveTheme: true,
-          stance: true,
-          sentiment: true,
-          targetEntity: true,
-          confidence: true,
-          createdAt: true,
-          evidenceExcerpt: true
-        },
-        orderBy: { createdAt: "desc" },
-        take: 5000
-      })
-    ]);
-
-    events = [
-      ...sources.map((item) => ({
-        scope: "sources",
-        date: (item.publishedAt ?? item.createdAt).toISOString(),
-        year: (item.publishedAt ?? item.createdAt).getFullYear(),
-        monthKey: (item.publishedAt ?? item.createdAt).toISOString().slice(0, 7),
-        label: item.title,
-        confidence: item.relevanceConfidence,
-        eventType: "source",
-        sourceType: item.sourceType,
-        relevanceStatus: item.relevanceStatus,
-        platform: item.platform || "unknown",
-        robotType: "unknown",
-        thailandStatus: "unknown",
-        contributionType: "unknown",
-        verificationStatus: "unknown",
-        perspectiveTheme: "unknown",
-        stance: "unknown",
-        sentiment: "unknown",
-        submissionType: "unknown",
-        status: "unknown",
-        visibility: "unknown",
-        countryOfOrigin: "unknown",
-        ownerOrg: "unknown"
-      })),
-      ...robots.map((item) => {
-        const date = item.firstSeenYear ? new Date(item.firstSeenYear, 0, 1) : item.createdAt;
-        return {
-          scope: "robots",
-          date: date.toISOString(),
-          year: date.getFullYear(),
-          monthKey: date.toISOString().slice(0, 7),
-          label: item.canonicalName,
-          confidence: item.statusConfidence,
-          eventType: "robot",
-          sourceType: "unknown",
-          relevanceStatus: "unknown",
-          platform: "unknown",
-          robotType: item.robotType,
-          thailandStatus: item.thailandStatus,
-          contributionType: "unknown",
-          verificationStatus: "unknown",
-          perspectiveTheme: "unknown",
-          stance: "unknown",
-          sentiment: "unknown",
-          submissionType: "unknown",
-          status: "unknown",
-          visibility: "unknown",
-          countryOfOrigin: item.countryOfOrigin || "unknown",
-          ownerOrg: "unknown"
-        };
-      }),
-      ...contributions.map((item) => ({
-        scope: "contributions",
-        date: item.createdAt.toISOString(),
-        year: item.createdAt.getFullYear(),
-        monthKey: item.createdAt.toISOString().slice(0, 7),
-        label: item.title,
-        confidence: null,
-        eventType: "contribution",
-        sourceType: "unknown",
-        relevanceStatus: "unknown",
-        platform: "unknown",
-        robotType: "unknown",
-        thailandStatus: "unknown",
-        contributionType: item.contributionType,
-        verificationStatus: item.verificationStatus,
-        perspectiveTheme: "unknown",
-        stance: "unknown",
-        sentiment: "unknown",
-        submissionType: "unknown",
-        status: "unknown",
-        visibility: item.visibility,
-        countryOfOrigin: "unknown",
-        ownerOrg: item.organization || "unknown"
-      })),
-      ...perspectives.map((item) => ({
-        scope: "perspectives",
-        date: item.createdAt.toISOString(),
-        year: item.createdAt.getFullYear(),
-        monthKey: item.createdAt.toISOString().slice(0, 7),
-        label: item.perspectiveTheme,
-        confidence: item.confidence,
-        eventType: "perspective",
-        sourceType: "unknown",
-        relevanceStatus: "unknown",
-        platform: "unknown",
-        robotType: "unknown",
-        thailandStatus: "unknown",
-        contributionType: "unknown",
-        verificationStatus: "unknown",
-        perspectiveTheme: item.perspectiveTheme,
-        stance: item.stance,
-        sentiment: item.sentiment,
-        submissionType: "unknown",
-        status: "unknown",
-        visibility: "unknown",
-        countryOfOrigin: "unknown",
-        ownerOrg: "unknown"
-      }))
-    ];
-
-    summary = {
-      sourceCount: sources.length,
-      robotCount: robots.length,
-      contributionCount: contributions.length,
-      perspectiveCount: perspectives.length,
-      submissionCount: 0,
-      sourceConfidenceCount: sources.filter((item) => item.relevanceConfidence > 0).length
-    };
-  } catch (error) {
-    console.error("Database query failed in analytics page:", error);
-    dbOffline = true;
-  }
+  const { summary, events, dbOffline } = await loadWholeCorpusAnalytics();
 
   return (
     <>
       <h1>{t.analyticsTitle}</h1>
       <p className="muted" style={{ marginBottom: "18px" }}>{t.analyticsDesc}</p>
+      
       <div className="notice" style={{ background: "rgba(59, 130, 246, 0.08)", borderColor: "var(--accent)", marginBottom: "16px" }}>
-        <strong>Dataset Scope:</strong> {PUBLIC_DATASET_SCOPE_LABEL}. Analytics aggregate verified public records only. Pending submissions, private inventory, and unaccepted sources are strictly excluded.
+        <strong>Dataset Scope:</strong> Whole Eligible Public Corpus. Analytics aggregate all verified public records (accepted sources, verified robots, and approved contributions). Unreviewed submissions, private inventory, and excluded placeholders are strictly omitted.
       </div>
+
+      <div className="notice" style={{ background: "rgba(100, 116, 139, 0.08)", borderColor: "#94a3b8", marginBottom: "16px" }}>
+        <strong>Temporal Completeness:</strong> {summary.dateDisclosures.sourcesWithPublicationDate.toLocaleString()} of {summary.totalEligibleSources.toLocaleString()} internet sources ({((1 - summary.dateDisclosures.sourcesMissingPublicationDateRate) * 100).toFixed(1)}%) have explicit publication dates ({summary.dateDisclosures.sourcesMissingPublicationDate.toLocaleString()} undated, missing-date rate: {(summary.dateDisclosures.sourcesMissingPublicationDateRate * 100).toFixed(1)}%). {summary.dateDisclosures.robotsWithFirstSeenYear} of {summary.totalEligibleRobots} robots have verified observation years.
+      </div>
+
+      {summary.isSampleTruncated && (
+        <div className="notice" style={{ background: "rgba(245, 158, 11, 0.08)", borderColor: "#f59e0b", marginBottom: "16px" }}>
+          <strong>Sampled Visualization Active:</strong> Charts plot a bounded sample of {summary.totalAnalyzedEvents.toLocaleString()} records ({summary.coveragePercent}% coverage of {summary.totalVerifiedPublicRecords.toLocaleString()} verified public records). Summary metric cards and BPMN pipeline lanes reflect the complete un-truncated corpus.
+        </div>
+      )}
+
       {dbOffline && (
         <div className="notice" style={{ marginBottom: 16 }}>
           Live analytics are unavailable. This page needs PostgreSQL to build the analysis workspace.
         </div>
       )}
+
       <div className="grid" style={{ margin: "18px 0" }}>
         <div className="panel motion-panel motion-pop">
           <div className="muted">Internet Sources</div>
-          <div className="stat">{summary.sourceCount}</div>
+          <div className="stat">{summary.totalEligibleSources}</div>
         </div>
         <div className="panel motion-panel motion-pop" style={{ animationDelay: "60ms" }}>
           <div className="muted">Robot Models</div>
-          <div className="stat">{summary.robotCount}</div>
+          <div className="stat">{summary.totalEligibleRobots}</div>
         </div>
         <div className="panel motion-panel motion-pop" style={{ animationDelay: "120ms" }}>
           <div className="muted">Contributions</div>
-          <div className="stat">{summary.contributionCount}</div>
+          <div className="stat">{summary.totalEligibleContributions}</div>
         </div>
         <div className="panel motion-panel motion-pop" style={{ animationDelay: "180ms" }}>
           <div className="muted">Scored Records</div>
-          <div className="stat">{summary.sourceConfidenceCount}</div>
+          <div className="stat">{summary.totalScoredSources}</div>
         </div>
       </div>
 
-      <AnalyticsPlayground events={events} />
+      <AnalyticsPlayground events={events} summary={summary} />
+
       <div style={{ marginTop: "16px" }}>
         <AnalyticsBpmn
           counts={{
-            sources: summary.sourceCount,
-            robots: summary.robotCount,
-            contributions: summary.contributionCount,
-            perspectives: summary.perspectiveCount,
-            submissions: summary.submissionCount
+            sources: summary.totalEligibleSources,
+            robots: summary.totalEligibleRobots,
+            contributions: summary.totalEligibleContributions,
+            perspectives: summary.totalEligiblePerspectives,
+            submissions: summary.totalEligibleSubmissions
           }}
         />
       </div>

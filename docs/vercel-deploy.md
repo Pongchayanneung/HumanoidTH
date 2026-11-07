@@ -16,6 +16,14 @@ Apply the additive auth migration to the intended database before activating ope
 
 Use `node --import tsx scripts/operator-auth.ts init` for the first explicit activation. For rotation, record the current public fingerprint using `node --import tsx scripts/operator-auth.ts fingerprint` before changing settings; set a fresh `OPERATOR_AUTH_EPOCH`, then run `node --import tsx scripts/operator-auth.ts activate --expected <CURRENT-ACTIVE-FINGERPRINT>`. `node --import tsx scripts/operator-auth.ts revoke-all` revokes all existing sessions. Do not replace these explicit operations with runtime startup or build hooks.
 
+## Legacy development seeding
+
+Never seed a hosted or production database. The legacy seed is for disposable local development databases only. It requires `ATLAS_ALLOW_SEED=1` and a `DATABASE_URL` pointing to `localhost` or `127.0.0.1`. The flag is ignored in env files loaded by the repository, but not in files loaded into the process separately, such as with `node --env-file` or a `dotenv/config` preload. The guard checks only the hostname, so a tunnel to a remote database through localhost also passes.
+
+Seeding resets the review status of seeded source records, re-grants the seed admin role, overwrites perspective stance and sentiment, and appends duplicate pull-job and submission rows. For an isolated local database, use `ATLAS_ALLOW_SEED=1 pnpm db:seed`. A database reset is destructive before the seed guard runs.
+
+Ordinary startup does not seed. `pnpm dev` starts the legacy watcher only when both `WATCH_SEED=1` and `ATLAS_ALLOW_SEED=1` are set; `pnpm seed:watch` requires the seed flag and a local database.
+
 ## Access and readiness
 
 There are no default credentials and no Basic Auth fallback. Legacy `User` rows, roles and email cookies do not grant operator access. Signing in is intended to provide session status only; business inspection and writes remain disabled, including ingestion and export. Public data projections (#5) and map behavior (#6) remain separately pending.

@@ -61,6 +61,12 @@ I built this platform using a modern, scalable, and developer-friendly stack:
 
 Follow these simple steps to spin up the Thailand Humanoid Atlas on your local machine:
 
+### ✅ Supported setup
+- Node.js `>=20.11` (engines). Checked on Node 26.9.0 only.
+- PostgreSQL 14 or newer, direct `postgresql://` connection (Prisma Accelerate proxy URLs do not work with `@prisma/adapter-pg`). Checked on 16.15.
+- pnpm 9.15.9 was observed working in a pristine clone: install, `pnpm run test|typecheck|build`, `pnpm dev` and `pnpm db:generate|db:seed`. It needs a clone without the placeholder `pnpm-workspace.yaml` that pnpm 11 creates. pnpm 11.10.0 fails install and every `pnpm run` with `ERR_PNPM_IGNORED_BUILDS`; the underlying commands work when called directly (for example `./node_modules/.bin/prisma migrate deploy`). Checked on macOS only; Windows and Linux untested.
+- Use a disposable local database for development. `DATABASE_URL` is never committed; keep it in your own `.env` or export it inline.
+
 ### 📥 1. Clone the repository and install dependencies
 ```bash
 # Clone the repository
@@ -70,6 +76,7 @@ cd HumanoidTH
 # Install dependencies using pnpm
 pnpm install --frozen-lockfile --ignore-scripts
 ```
+`pnpm install` runs `prisma generate`, which does not need `DATABASE_URL`. Every other Prisma command does.
 
 ### ⚙️ 2. Configure Environment Variables
 Create a local `.env` file by copying the template:
@@ -79,7 +86,7 @@ cp .env.example .env
 
 Set the database link for your local PostgreSQL instance. Leave operator fields blank until following the [operator provisioning procedure](docs/operator-auth.md):
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/thailand_humanoid_atlas?schema=public"
+DATABASE_URL="postgresql://user:password@host:5432/dbname?schema=public"
 OPERATOR_EMAIL=""
 OPERATOR_PASSWORD_HASH=""
 OPERATOR_AUTH_EPOCH=""
@@ -101,6 +108,8 @@ pnpm db:generate
 # Apply the reviewed migration history to the selected database
 pnpm exec prisma migrate deploy
 ```
+> [!WARNING]
+> Seeding is refused unless `ATLAS_ALLOW_SEED=1` is set and `DATABASE_URL` points at `localhost` or `127.0.0.1`. The flag is read only from the command line; a value in `.env` is ignored. This does not cover a file you load into the environment yourself, for example `node --env-file` or a `dotenv/config` preload. Running it resets the review status of seeded source records, re-grants the ADMIN role to the seed admin, and appends duplicate pull-job and submission rows. `pnpm dev` and restarts never seed, unless started with `WATCH_SEED=1 ATLAS_ALLOW_SEED=1` inline.
 
 `pnpm db:seed` is an optional legacy import for an isolated development database only. Do not use it for production setup or operator-auth acceptance. Review the target database before running any migration or import.
 
@@ -108,7 +117,7 @@ pnpm exec prisma migrate deploy
 ```bash
 pnpm dev:next
 ```
-`pnpm dev` also starts the legacy seed watcher, which writes to the database. Use the Next-only command for authentication work.
+`pnpm dev` does not start the legacy seed watcher by default. It starts only when both `WATCH_SEED=1` and `ATLAS_ALLOW_SEED=1` are set. Use the Next-only command for authentication work.
 Open [http://localhost:3000](http://localhost:3000) inside your browser to see the atlas alive! 🟢✨
 
 ---
@@ -126,7 +135,7 @@ Explore the main app modules:
 - `🟡 /robots` — 🤖 Registry of robot models deployed, researched, or observed in Thailand.
 - `🟢 /perspectives` — 📣 Media coverage database, platform sentiment, and safety metrics.
 - `🟡 /contributions` — 📂 Directory of open-source repositories, makers, and papers.
-- `🟡 /map` — 🗺️ Unavailable while read-only public cache behavior is addressed in #6.
+- `⚪ /map` — 🗺️ Ecosystem contribution map: unavailable in this release (no validated public map result is shown).
 - `🟢 /network` — 🔗 Dynamic Cytoscape network graph mapping connections between institutions, developers, and robots.
 - `🟡 /analytics` — 📈 Statistics, sentiment graphs, and attention metrics over time.
 - `🟡 /data-pulls` — 🔌 Unavailable; web ingestion is disabled.
@@ -274,9 +283,9 @@ The platform provides a suite of developer utilities for testing, data integrity
 
 | Script Command | Purpose | Details |
 | :--- | :--- | :--- |
-| `pnpm dev` | Run full dev suite | Boots the Next.js local server *and* starts the background dataset hot-reloader. |
+| `pnpm dev` | Run dev server | Boots the Next.js local server. The dataset hot-reloader is off by default. |
 | `pnpm dev:next` | Next.js server only | Launches only the local Next.js client (`localhost:3000`). |
-| `pnpm seed:watch` | Hot-reloading seed sync | Watches [thailand_humanoid_atlas_seed_records.json](thailand_humanoid_atlas_seed_records.json) for modifications and automatically synchronizes updates into PostgreSQL. |
+| `pnpm seed:watch` | Hot-reloading seed sync (opt in) | Watches [thailand_humanoid_atlas_seed_records.json](thailand_humanoid_atlas_seed_records.json) and reseeds PostgreSQL on every change. Needs `ATLAS_ALLOW_SEED=1` and a local database; `WATCH_SEED=1 ATLAS_ALLOW_SEED=1 pnpm dev` starts it alongside the server. |
 | `pnpm check:no-mock-data` | Audit data integrity | Checks page components under `/app` to ensure no mock constants, fallback placeholders, or static records are used, enforcing active DB routing. |
 | `pnpm seo:audit` | Audit metadata and tags | Scans Next.js dynamic routing structures to verify Title, Meta Descriptions, Canonicals, OpenGraph schemas, and headers. |
 | `pnpm seo:optimize` | Auto-apply SEO fixes | Programmatically rewrites page component metadata blocks with audit-approved SEO structures. |
@@ -284,7 +293,7 @@ The platform provides a suite of developer utilities for testing, data integrity
 | `pnpm db:generate` | Generate Prisma Client | Re-compiles types and schemas into `generated/prisma` client files. |
 | `pnpm exec prisma migrate deploy` | Apply reviewed migrations | Applies migration history to the selected PostgreSQL database; use this for operator-auth setup. |
 | `pnpm db:push` | Legacy direct schema sync | Not part of the operator-auth setup or production procedure. |
-| `pnpm db:seed` | Legacy seed import | Explicit use on isolated development data only; not part of auth acceptance. |
+| `pnpm db:seed` | Legacy seed import | Isolated development data only; requires `ATLAS_ALLOW_SEED=1` and a local database, and resets review status (see step 3). |
 
 ---
 

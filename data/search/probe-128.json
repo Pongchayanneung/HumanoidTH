@@ -99,471 +99,6 @@
     }
   },
   {
-    "typedId": "entity:seed-1",
-    "kind": "entity",
-    "title": "CT Asia Robotics / Asia Robotic Company",
-    "body": "organization",
-    "retrievalText": "CT Asia Robotics / Asia Robotic Company organization",
-    "url": "https://www.dinsaw.com/en/home-english/",
-    "groupId": "https://www.dinsaw.com/en/home-english/",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "55199cf9230d5235057357c7b2691a60ea321babe6d50cb22b22220dda06083c",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "CT Asia Robotics / Asia Robotic Company",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 39
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://www.dinsaw.com/en/home-english/"
-    }
-  },
-  {
-    "typedId": "entity:seed-10",
-    "kind": "entity",
-    "title": "Chulalongkorn University Robotics and Automation Center",
-    "body": "organization",
-    "retrievalText": "Chulalongkorn University Robotics and Automation Center organization",
-    "url": "https://www.chula.ac.th/en/highlight/59061/",
-    "groupId": "https://www.chula.ac.th/en/highlight/59061/",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "38dcad40efc44a674ea0c052507b417a45149a3ff6ea363ab4b5f5a57fcb343b",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "Chulalongkorn University Robotics and Automation Center",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 55
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://www.chula.ac.th/en/highlight/59061/"
-    }
-  },
-  {
-    "typedId": "entity:seed-11",
-    "kind": "entity",
-    "title": "The Straits Times",
-    "body": "organization",
-    "retrievalText": "The Straits Times organization",
-    "url": "https://www.straitstimes.com/asia/se-asia/thailand-unveils-robocop-style-ai-police-cyborg-1-0-officer-to-enhance-songkran-safety",
-    "groupId": "https://www.straitstimes.com/asia/se-asia/thailand-unveils-robocop-style-ai-police-cyborg-1-0-officer-to-enhance-songkran-safety",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "55ae2848c78e33b9018f626fa18bb0fd1df1be98a3f18cda193575ada4865059",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "The Straits Times",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 17
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://www.straitstimes.com/asia/se-asia/thailand-unveils-robocop-style-ai-police-cyborg-1-0-officer-to-enhance-songkran-safety"
-    }
-  },
-  {
-    "typedId": "entity:seed-12",
-    "kind": "entity",
-    "title": "Noetix Robotics",
-    "body": "organization",
-    "retrievalText": "Noetix Robotics organization",
-    "url": "https://noetixrobotics.com/en/news/events/962",
-    "groupId": "https://noetixrobotics.com/en/news/events/962",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "07801b2d5214e4606e763dc6d43b4ef88795f067ffd12222ebec28d48bbc9621",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "Noetix Robotics",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 15
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://noetixrobotics.com/en/news/events/962"
-    }
-  },
-  {
-    "typedId": "entity:seed-13",
-    "kind": "entity",
-    "title": "University of Wisconsin–Milwaukee",
-    "body": "organization",
-    "retrievalText": "University of Wisconsin–Milwaukee organization",
-    "url": "https://doi.org/10.1137/050631562",
-    "groupId": "https://doi.org/10.1137/050631562",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "5de61bb9c9f863fe281092e33d53bbf74b218e34de55a4c7d0c590170ea50069",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "University of Wisconsin–Milwaukee",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 33
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://doi.org/10.1137/050631562"
-    }
-  },
-  {
-    "typedId": "entity:seed-14",
-    "kind": "entity",
-    "title": "Academic Publisher",
-    "body": "organization",
-    "retrievalText": "Academic Publisher organization",
-    "url": "https://doi.org/10.31256/hsmr2017.14",
-    "groupId": "https://doi.org/10.31256/hsmr2017.14",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "eb9085906aead78b7a11bbd4595a0278ead37ff33084569afb6a2265491af9ee",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "Academic Publisher",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 18
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://doi.org/10.31256/hsmr2017.14"
-    }
-  },
-  {
-    "typedId": "entity:seed-15",
-    "kind": "entity",
-    "title": "Mahidol University",
-    "body": "organization",
-    "retrievalText": "Mahidol University organization",
-    "url": "https://doi.org/10.1007/s12553-020-00489-4",
-    "groupId": "https://doi.org/10.1007/s12553-020-00489-4",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "9d46261472010ee865c5c2ad3cd7872c1784b3890b9a8dc2949d0f75bf0c56ae",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "Mahidol University",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 18
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://doi.org/10.1007/s12553-020-00489-4"
-    }
-  },
-  {
-    "typedId": "entity:seed-2",
-    "kind": "entity",
-    "title": "CT Asia Robotics",
-    "body": "organization",
-    "retrievalText": "CT Asia Robotics organization",
-    "url": "https://www.dinsaw.com/about/",
-    "groupId": "https://www.dinsaw.com/about/",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "cd68f34d3b71118817aec8b07b1263bbd0b6169e20f386337b2281e749ef5df5",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "CT Asia Robotics",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 16
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://www.dinsaw.com/about/"
-    }
-  },
-  {
-    "typedId": "entity:seed-3",
-    "kind": "entity",
-    "title": "Thailand.go.th",
-    "body": "organization",
-    "retrievalText": "Thailand.go.th organization",
-    "url": "https://thailand.go.th/public/issue-focus-detail/thai-innovation-goes-global-dinsaw-mini-robot-takes-care-of-the-elderly",
-    "groupId": "https://thailand.go.th/public/issue-focus-detail/thai-innovation-goes-global-dinsaw-mini-robot-takes-care-of-the-elderly",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "8fd48e38baf26fc813c2b2497c9a64539237806fcff38129f856901a1fc7c579",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "Thailand.go.th",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 14
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://thailand.go.th/public/issue-focus-detail/thai-innovation-goes-global-dinsaw-mini-robot-takes-care-of-the-elderly"
-    }
-  },
-  {
-    "typedId": "entity:seed-4",
-    "kind": "entity",
-    "title": "National Innovation Agency",
-    "body": "organization",
-    "retrievalText": "National Innovation Agency organization",
-    "url": "https://www.nia.or.th/DinsawMiniHomeAI",
-    "groupId": "https://www.nia.or.th/DinsawMiniHomeAI",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "e1dbaaab66ff463867192eb46303547acf0f5c765e0002373f2b8a4a168f920b",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "National Innovation Agency",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 26
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://www.nia.or.th/DinsawMiniHomeAI"
-    }
-  },
-  {
-    "typedId": "entity:seed-5",
-    "kind": "entity",
-    "title": "Chulalongkorn University",
-    "body": "organization",
-    "retrievalText": "Chulalongkorn University organization",
-    "url": "https://www.chula.ac.th/en/news/42184/",
-    "groupId": "https://www.chula.ac.th/en/news/42184/",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "a10d572f6b1a0ea95a1440f435901f5d663d2eca4715e3f18e95cd943b914039",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "Chulalongkorn University",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 24
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://www.chula.ac.th/en/news/42184/"
-    }
-  },
-  {
-    "typedId": "entity:seed-6",
-    "kind": "entity",
-    "title": "Obodroid",
-    "body": "organization",
-    "retrievalText": "Obodroid organization",
-    "url": "https://www.obodroid.com/about-us/",
-    "groupId": "https://www.obodroid.com/about-us/",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "49aa644fd5f9c83691a6f07a7f3fd5401a6f9e9f7efa2b882580e1ce8bd519e6",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "Obodroid",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 8
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://www.obodroid.com/about-us/"
-    }
-  },
-  {
-    "typedId": "entity:seed-7",
-    "kind": "entity",
-    "title": "True Digital Group / King Chulalongkorn Memorial Hospital",
-    "body": "organization",
-    "retrievalText": "True Digital Group / King Chulalongkorn Memorial Hospital organization",
-    "url": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
-    "groupId": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "7382774994ded09c3c0f331a8d903c90715cac97b691c4fc241930d52e94f53f",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "True Digital Group / King Chulalongkorn Memorial Hospital",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 57
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/"
-    }
-  },
-  {
-    "typedId": "entity:seed-8",
-    "kind": "entity",
-    "title": "King Chulalongkorn Memorial Hospital / Chulalongkorn University",
-    "body": "organization",
-    "retrievalText": "King Chulalongkorn Memorial Hospital / Chulalongkorn University organization",
-    "url": "https://www.chula.ac.th/en/news/287038/",
-    "groupId": "https://www.chula.ac.th/en/news/287038/",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "63f54d1d0e83ee9335b00f5e4a0a577e561b1cdc8ad1a0b73ece3c4e5d919e9e",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "King Chulalongkorn Memorial Hospital / Chulalongkorn University",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 63
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://www.chula.ac.th/en/news/287038/"
-    }
-  },
-  {
-    "typedId": "entity:seed-9",
-    "kind": "entity",
-    "title": "Bangkok Post",
-    "body": "organization",
-    "retrievalText": "Bangkok Post organization",
-    "url": "https://www.bangkokpost.com/thailand/general/2726860/robots-to-speed-up-service-at-chulalongkorn-hospital",
-    "groupId": "https://www.bangkokpost.com/thailand/general/2726860/robots-to-speed-up-service-at-chulalongkorn-hospital",
-    "origin": "seed",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "f7f97ff57b701701e44c7c4784cffcd793a28f686b97da167617ab35f093a80b",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "name",
-        "originalText": "Bangkok Post",
-        "label": "Verified Entity Name",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 12
-      }
-    ],
-    "metadata": {
-      "entityType": "organization",
-      "provenanceUrl": "https://www.bangkokpost.com/thailand/general/2726860/robots-to-speed-up-service-at-chulalongkorn-hospital"
-    }
-  },
-  {
     "typedId": "perspective:seed-20",
     "kind": "perspective",
     "title": "quality_of_life_and_service_robotics: The Story Thailand",
@@ -575,9 +110,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://www.thestorythailand.com/en/thai-robot-developer-obodroid-arrives-along-with-servants-of-the-future/",
+    "parentTypedId": null,
     "contentHash": "4221b269ead709be1684be6f7120ff137e4c0abfe14cf84113f2f3b5de6b7fc3",
-    "dependencyHash": "eaa208ed0ca52e489c9edfb87508be791e156f8db65fadeb516d14619fa3e65b",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
@@ -610,9 +145,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "parentTypedId": null,
     "contentHash": "51d3a4164551656913935936e829704d0e69f36389645b59f671c7316776d6e8",
-    "dependencyHash": "24fb56de9f90194c3b979d52c630e3e3daad284759cf6a2a72ec4394a6bd3fa4",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
@@ -645,9 +180,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://www.bangkokpost.com/business/general/3257948/humanoid-robots-set-to-reshape-manufacturing",
+    "parentTypedId": "source:seed-43",
     "contentHash": "accf2fafa5006c6173f61a0d7664428218caefdabcbb117e002fedf0d5c4e3d0",
-    "dependencyHash": "d10644eab7aed0a4274706cecb9738c8288ff7e117f184a49cecdfd4b12d4acf",
+    "dependencyHash": "d665d0eccfea9e4c44f5a7f5c4c758eaf46cfb4742390dc9b6d88bfb6e07670a",
     "vectorRow": null,
     "evidence": [
       {
@@ -680,9 +215,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://www.chula.ac.th/en/highlight/198924/",
+    "parentTypedId": null,
     "contentHash": "fc9892f05f656564dcf5643c9f9274687d4e90036402a6e19fad5b5e1b40c658",
-    "dependencyHash": "b677f349cf7fe51b2c8fbc8f5387de3ca553ec8c5eab9ab31460d91280217da2",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
@@ -715,9 +250,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://www.chula.ac.th/en/news/42184/",
+    "parentTypedId": "source:seed-9",
     "contentHash": "a440f40fd4bfb7da50a48db26119a4a0233dfbef1f14ea2411cb24f1ac2fb698",
-    "dependencyHash": "ecb0a66a5a7cca3822966a651de098ec8cd3590486dc702b02f2b73f0765a449",
+    "dependencyHash": "0f80c58c80ffc22fb1638124f170352caea704ffbbda59f15dd9cd3452ace985",
     "vectorRow": null,
     "evidence": [
       {
@@ -749,9 +284,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://www.obodroid.com/about-us/",
+    "parentTypedId": "source:seed-15",
     "contentHash": "eb7473ef69659e72caad5acad1cc2dcb3e89a974f9557593e84c5adc94b17814",
-    "dependencyHash": "eec5b06bf8a35a5c7efbb6e8fbf0eebc9d0106160223885fec5ad4b5d7619b1d",
+    "dependencyHash": "2053e95775bea452ae8e179154758582fc290a7c49b6de85d8483786e9d1c729",
     "vectorRow": null,
     "evidence": [
       {
@@ -783,9 +318,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://www.ctasia.com/about-us/",
+    "parentTypedId": null,
     "contentHash": "e0de4f8cbe610e2c4c285247b23fcdf74c91f85f55e6429d03de7703ab10ab4f",
-    "dependencyHash": "86ae09d4f40c99ae39c000a23be8e94f61b1c123dfd19a3791bcb7214ba562ee",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
@@ -817,9 +352,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+    "parentTypedId": "source:seed-21",
     "contentHash": "7b5268562773f76ca410ea319436c19c3fbd9f495cd472ce4b224033c3cd22b0",
-    "dependencyHash": "c3863b8c27231cd4912254b80271ac4ca5fa33202b5c22dfa8d25b6f2b11e27b",
+    "dependencyHash": "aa040065d6545e2974ecd2a24b04453e0f89db773864c41bdd7759637f962de0",
     "vectorRow": null,
     "evidence": [
       {
@@ -851,9 +386,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E/",
+    "parentTypedId": "source:seed-24",
     "contentHash": "f58ae88df36a9af866c5a4eef5c0b90f87ef376c006e1e4533d79436b7f52515",
-    "dependencyHash": "7a81c6d6d0eb30f69a4d53eb45ed9c4a81a0394d3aa611a8223ba4b82c731c8a",
+    "dependencyHash": "a63b1cf3d436454d18138338574d20192e38202b5cd2b38506aed303ff253c24",
     "vectorRow": null,
     "evidence": [
       {
@@ -885,9 +420,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall/",
+    "parentTypedId": null,
     "contentHash": "a221e8ef9de2aae7db74acae6bf6916734d676bfab604bbb1164583bad09bddd",
-    "dependencyHash": "c2dde45392fe134ea5b85c440a236538774a8c92d7439a4a90c6200201f79464",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
@@ -919,9 +454,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "parentTypedId": null,
     "contentHash": "38a2776a9a6b27da3d34a07d82084447b5ad64d339447479db5cd2a93f2a6185",
-    "dependencyHash": "24fb56de9f90194c3b979d52c630e3e3daad284759cf6a2a72ec4394a6bd3fa4",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
@@ -953,9 +488,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "parentTypedId": null,
     "contentHash": "fd2dadecccda663d0e615925b9d1b97c78d9ce15604a3d6bb15eb669f193c310",
-    "dependencyHash": "24fb56de9f90194c3b979d52c630e3e3daad284759cf6a2a72ec4394a6bd3fa4",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
@@ -987,9 +522,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://noetixrobotics.com/en/news/events/962",
+    "parentTypedId": "source:seed-45",
     "contentHash": "50de6b967e360ba4472aa7a6d827b1adfc907f7d77a550c4889d4c73ecb47750",
-    "dependencyHash": "55f250ca514cdd0f5de5e56540058478a2da16ec0313fa2a577722f5be4992ad",
+    "dependencyHash": "6fb63034ba88116412d293e268c3ef1285a5ce0f95c2135bad07a88279104501",
     "vectorRow": null,
     "evidence": [
       {
@@ -1021,9 +556,9 @@
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
-    "parentTypedId": "source:https://www.nia.or.th/DinsawMiniHomeAI",
+    "parentTypedId": "source:seed-7",
     "contentHash": "379c37c5038714eb90b385eeea8021ec934af8ce7d391f299a4c25d5097fb270",
-    "dependencyHash": "dc935a0c2dc5644c05b87144bf7d48561dd9ab72d7635af2247c1ca2c2952473",
+    "dependencyHash": "8d141744b08c327729c5f1189d9bfeb2c0198dc5c9c58d24155a564b4bb27afe",
     "vectorRow": null,
     "evidence": [
       {
@@ -1548,162 +1083,234 @@
     }
   },
   {
-    "typedId": "source:seed-0",
+    "typedId": "source:seed-1111",
     "kind": "source",
-    "title": "Home - English - Dinsaw Robot",
-    "body": "Dinsaw Robot is an artificial intelligence or AI that can listen and respond to commands.",
-    "retrievalText": "Home - English - Dinsaw Robot official_company_website Dinsaw Robot is an artificial intelligence or AI that can listen and respond to commands.",
-    "url": "https://www.dinsaw.com/en/home-english/",
-    "groupId": "https://www.dinsaw.com/en/home-english/",
-    "origin": "web",
+    "title": "Are physically embodied social agents better than disembodied social agents?: The effects of physical embodiment, tactile interaction, and people's loneliness in human–robot interaction",
+    "body": "",
+    "retrievalText": "Are physically embodied social agents better than disembodied social agents?: The effects of physical embodiment, tactile interaction, and people's loneliness in human–robot interaction Kwan Min Lee openalex",
+    "url": "https://doi.org/10.1016/j.ijhcs.2006.05.002",
+    "groupId": "https://doi.org/10.1016/j.ijhcs.2006.05.002",
+    "origin": "openalex",
     "language": "en",
-    "isTitleOnly": false,
+    "isTitleOnly": true,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "d1c03fbe6c207c1182637c3ea31f90454a0f45c2e0c35d6bf7328fc3de59092c",
+    "contentHash": "6b467f34266cb93ebed00068d635c3a9f7aee8f57b417fdcd3dbc3f6f869e96b",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Dinsaw Robot is an artificial intelligence or AI that can listen and respond to commands.",
-        "label": "Source Excerpt",
-        "coverage": "full",
+        "fieldName": "title",
+        "originalText": "Are physically embodied social agents better than disembodied social agents?: The effects of physical embodiment, tactile interaction, and people's loneliness in human–robot interaction",
+        "label": "Title Only",
+        "coverage": "title-only",
         "startOffset": 0,
-        "endOffset": 89
+        "endOffset": 185
       }
     ],
     "metadata": {
-      "platform": "official_company_website",
-      "canonicalName": "Dinsaw Robot official website"
+      "author": "Kwan Min Lee",
+      "platform": "openalex",
+      "publishedAt": "2006-01-01",
+      "canonicalName": "OpenAlex work: Are physically embodied social agents better than "
     }
   },
   {
-    "typedId": "source:seed-15",
+    "typedId": "source:seed-1227",
     "kind": "source",
-    "title": "Obodroid About Us",
-    "body": "Obodroid supplies hospitals with over 100 Pinto delivery robots.",
-    "retrievalText": "Obodroid About Us official_company_website Obodroid supplies hospitals with over 100 Pinto delivery robots.",
-    "url": "https://www.obodroid.com/about-us/",
-    "groupId": "https://www.obodroid.com/about-us/",
-    "origin": "web",
+    "title": "Integrating aesthetic and emotional preferences in social robot design: An affective design approach with Kansei Engineering and Deep Convolutional Generative Adversarial Network",
+    "body": "",
+    "retrievalText": "Integrating aesthetic and emotional preferences in social robot design: An affective design approach with Kansei Engineering and Deep Convolutional Generative Adversarial Network Yan Gan openalex",
+    "url": "https://doi.org/10.1016/j.ergon.2021.103128",
+    "groupId": "https://doi.org/10.1016/j.ergon.2021.103128",
+    "origin": "openalex",
     "language": "en",
-    "isTitleOnly": false,
+    "isTitleOnly": true,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "626b7101253af2af94c40b565ad48b7ea63b6430c98535dd47044f675f88dbd1",
+    "contentHash": "b7d3eb225bfa99971fedab5a136ec8db57fd2f2b9a4ec6910d0f7b4f65361d8b",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Obodroid supplies hospitals with over 100 Pinto delivery robots.",
-        "label": "Source Excerpt",
-        "coverage": "full",
+        "fieldName": "title",
+        "originalText": "Integrating aesthetic and emotional preferences in social robot design: An affective design approach with Kansei Engineering and Deep Convolutional Generative Adversarial Network",
+        "label": "Title Only",
+        "coverage": "title-only",
         "startOffset": 0,
-        "endOffset": 64
+        "endOffset": 178
       }
     ],
     "metadata": {
-      "platform": "official_company_website",
-      "canonicalName": "Obodroid official timeline"
+      "author": "Yan Gan",
+      "platform": "openalex",
+      "publishedAt": "2021-01-01",
+      "canonicalName": "OpenAlex work: Integrating aesthetic and emotional preferences in"
     }
   },
   {
-    "typedId": "source:seed-18",
+    "typedId": "source:seed-154",
     "kind": "source",
-    "title": "Kaitomm Hospital and Pinto at Light of Heart Field Hospital",
-    "body": "Kaitomm Hospital helped nurses at Light of Heart Field Hospital.",
-    "retrievalText": "Kaitomm Hospital and Pinto at Light of Heart Field Hospital official_company_website Kaitomm Hospital helped nurses at Light of Heart Field Hospital.",
-    "url": "https://www.obodroid.com/project/kaitomm-hospital-and-pinto-at-light-of-heart-field-hospital/",
-    "groupId": "https://www.obodroid.com/project/kaitomm-hospital-and-pinto-at-light-of-heart-field-hospital/",
-    "origin": "web",
+    "title": "Retzius Space Preservation Technique for Robotic-Assisted Laparoscopic Radical Prostatectomy in a Kidney Transplant Patient: First Case in Thailand and Our First Experience",
+    "body": "",
+    "retrievalText": "Retzius Space Preservation Technique for Robotic-Assisted Laparoscopic Radical Prostatectomy in a Kidney Transplant Patient: First Case in Thailand and Our First Experience Pocharapong Jenjitranant openalex",
+    "url": "https://doi.org/10.1016/j.transproceed.2016.03.035",
+    "groupId": "https://doi.org/10.1016/j.transproceed.2016.03.035",
+    "origin": "openalex",
     "language": "en",
-    "isTitleOnly": false,
+    "isTitleOnly": true,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "3e07f13ea893461ea27b4ea9a38bbe63fe1098ad5a539a3f8d9c7fa2802e59e8",
+    "contentHash": "b8ccbb50c0328a0627e78bba85e38cca60fe424a8432113bfd90d9bb3a8e2055",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Kaitomm Hospital helped nurses at Light of Heart Field Hospital.",
-        "label": "Source Excerpt",
-        "coverage": "full",
+        "fieldName": "title",
+        "originalText": "Retzius Space Preservation Technique for Robotic-Assisted Laparoscopic Radical Prostatectomy in a Kidney Transplant Patient: First Case in Thailand and Our First Experience",
+        "label": "Title Only",
+        "coverage": "title-only",
         "startOffset": 0,
-        "endOffset": 64
+        "endOffset": 172
       }
     ],
     "metadata": {
-      "platform": "official_company_website",
-      "canonicalName": "Kaitomm Hospital and Pinto field hospital deployment"
+      "author": "Pocharapong Jenjitranant",
+      "platform": "openalex",
+      "publishedAt": "2016-01-01",
+      "canonicalName": "OpenAlex work: Retzius Space Preservation Technique for Robotic-A"
     }
   },
   {
-    "typedId": "source:seed-21",
+    "typedId": "source:seed-1611",
     "kind": "source",
-    "title": "First Time in Thailand, Introducing a Medical Assistant Robot That Supports Nuclear Medicine",
-    "body": "Medical assistant robot that supports nuclear medicine ... thyroid cancer treatment with radioactive iodine therapy.",
-    "retrievalText": "First Time in Thailand, Introducing a Medical Assistant Robot That Supports Nuclear Medicine PR True company_blog Medical assistant robot that supports nuclear medicine ... thyroid cancer treatment with radioactive iodine therapy.",
-    "url": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
-    "groupId": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
-    "origin": "web",
+    "title": "Real-Time Localization and Mapping Utilizing Multi-Sensor Fusion and Visual–IMU–Wheel Odometry for Agricultural Robots in Unstructured, Dynamic and GPS-Denied Greenhouse Environments",
+    "body": "",
+    "retrievalText": "Real-Time Localization and Mapping Utilizing Multi-Sensor Fusion and Visual–IMU–Wheel Odometry for Agricultural Robots in Unstructured, Dynamic and GPS-Denied Greenhouse Environments Yaxuan Yan openalex",
+    "url": "https://doi.org/10.3390/agronomy12081740",
+    "groupId": "https://doi.org/10.3390/agronomy12081740",
+    "origin": "openalex",
     "language": "en",
-    "isTitleOnly": false,
+    "isTitleOnly": true,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "4c7cb16c13867f2534277b680ecc90d24a19537d691764c0050b9d776849530a",
+    "contentHash": "7d0892ca1343f2da566b024a0d2b5d5d6c14c5902281629c4c7416f27c496bd8",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Medical assistant robot that supports nuclear medicine ... thyroid cancer treatment with radioactive iodine therapy.",
-        "label": "Source Excerpt",
-        "coverage": "full",
+        "fieldName": "title",
+        "originalText": "Real-Time Localization and Mapping Utilizing Multi-Sensor Fusion and Visual–IMU–Wheel Odometry for Agricultural Robots in Unstructured, Dynamic and GPS-Denied Greenhouse Environments",
+        "label": "Title Only",
+        "coverage": "title-only",
         "startOffset": 0,
-        "endOffset": 116
+        "endOffset": 182
       }
     ],
     "metadata": {
-      "author": "PR True",
-      "platform": "company_blog",
-      "publishedAt": "2023-10-27",
-      "canonicalName": "True Digital nuclear medicine assistant robot"
+      "author": "Yaxuan Yan",
+      "platform": "openalex",
+      "publishedAt": "2022-01-01",
+      "canonicalName": "OpenAlex work: Real-Time Localization and Mapping Utilizing Multi"
     }
   },
   {
-    "typedId": "source:seed-24",
+    "typedId": "source:seed-187",
     "kind": "source",
-    "title": "True Digital Partners with King Chulalongkorn Memorial Hospital to Launch Digital Hospital Powered by Physical AI",
-    "body": "Healthcare and Physical Therapy Assistant Robot named CORGI.",
-    "retrievalText": "True Digital Partners with King Chulalongkorn Memorial Hospital to Launch Digital Hospital Powered by Physical AI True Digital Group company_blog Healthcare and Physical Therapy Assistant Robot named CORGI.",
-    "url": "https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E/",
-    "groupId": "https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E/",
-    "origin": "web",
+    "title": "The Impact of Arterial Clamping Technique in Robot-Assisted Partial Nephrectomy on Renal Function and Surgical Outcomes: Six-Year Experience at Siriraj Hospital, Thailand",
+    "body": "",
+    "retrievalText": "The Impact of Arterial Clamping Technique in Robot-Assisted Partial Nephrectomy on Renal Function and Surgical Outcomes: Six-Year Experience at Siriraj Hospital, Thailand Tawatchai Taweemonkongsap openalex",
+    "url": "https://doi.org/10.1159/000486319",
+    "groupId": "https://doi.org/10.1159/000486319",
+    "origin": "openalex",
     "language": "en",
-    "isTitleOnly": false,
+    "isTitleOnly": true,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "1c6c4074b4fecaca75369f703a3ae189a800c3a1e3e472bb1953e8da3b7ea538",
+    "contentHash": "212a3e81973100688d574c6bb9bdd719c970a4dbd2b1fcae99b6729300bbd393",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Healthcare and Physical Therapy Assistant Robot named CORGI.",
-        "label": "Source Excerpt",
-        "coverage": "full",
+        "fieldName": "title",
+        "originalText": "The Impact of Arterial Clamping Technique in Robot-Assisted Partial Nephrectomy on Renal Function and Surgical Outcomes: Six-Year Experience at Siriraj Hospital, Thailand",
+        "label": "Title Only",
+        "coverage": "title-only",
         "startOffset": 0,
-        "endOffset": 60
+        "endOffset": 170
       }
     ],
     "metadata": {
-      "author": "True Digital Group",
-      "platform": "company_blog",
-      "publishedAt": "2026-02-09",
-      "canonicalName": "True Digital CORGI physical therapy assistant robot launch"
+      "author": "Tawatchai Taweemonkongsap",
+      "platform": "openalex",
+      "publishedAt": "2018-01-01",
+      "canonicalName": "OpenAlex work: The Impact of Arterial Clamping Technique in Robot"
+    }
+  },
+  {
+    "typedId": "source:seed-2392",
+    "kind": "source",
+    "title": "The ‘third mission’ and ‘triple helix mission’ of universities as evolutionary processes in the development of the network of knowledge production: Reflections on SME experiences in Thailand",
+    "body": "",
+    "retrievalText": "The ‘third mission’ and ‘triple helix mission’ of universities as evolutionary processes in the development of the network of knowledge production: Reflections on SME experiences in Thailand Karantarat Nakwa openalex",
+    "url": "https://doi.org/10.1093/scipol/scw030",
+    "groupId": "https://doi.org/10.1093/scipol/scw030",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "b11b9ac8dc5fee73e83461a721bd730df369f7dec62d00c8a5147f95251091dd",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "The ‘third mission’ and ‘triple helix mission’ of universities as evolutionary processes in the development of the network of knowledge production: Reflections on SME experiences in Thailand",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 190
+      }
+    ],
+    "metadata": {
+      "author": "Karantarat Nakwa",
+      "platform": "openalex",
+      "publishedAt": "2016-01-01",
+      "canonicalName": "OpenAlex work: The ‘third mission’ and ‘triple helix mission’ of "
+    }
+  },
+  {
+    "typedId": "source:seed-2409",
+    "kind": "source",
+    "title": "Hybrid Adaptive Impedance and Admittance Control Based on the Sensorless Estimation of Interaction Joint Torque for Exoskeletons: A Case Study of an Upper Limb Rehabilitation Robot",
+    "body": "",
+    "retrievalText": "Hybrid Adaptive Impedance and Admittance Control Based on the Sensorless Estimation of Interaction Joint Torque for Exoskeletons: A Case Study of an Upper Limb Rehabilitation Robot Auwalu M. Abdullahi openalex",
+    "url": "https://doi.org/10.3390/jsan13020024",
+    "groupId": "https://doi.org/10.3390/jsan13020024",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "0c5d4b72ce926261290df0ec6c59f342d6a20c0221cf1187af669020f05b2238",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Hybrid Adaptive Impedance and Admittance Control Based on the Sensorless Estimation of Interaction Joint Torque for Exoskeletons: A Case Study of an Upper Limb Rehabilitation Robot",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 180
+      }
+    ],
+    "metadata": {
+      "author": "Auwalu M. Abdullahi",
+      "platform": "openalex",
+      "publishedAt": "2024-01-01",
+      "canonicalName": "OpenAlex work: Hybrid Adaptive Impedance and Admittance Control B"
     }
   },
   {
@@ -1740,67 +1347,762 @@
     }
   },
   {
-    "typedId": "source:seed-27",
+    "typedId": "source:seed-2448",
     "kind": "source",
-    "title": "King Chulalongkorn Memorial Hospital Launches Physical AI Robot Initiative",
-    "body": "Robots help enhance patient services, reduce risks for physicians and medical staff.",
-    "retrievalText": "King Chulalongkorn Memorial Hospital Launches Physical AI Robot Initiative Chulalongkorn University university_news Robots help enhance patient services, reduce risks for physicians and medical staff.",
-    "url": "https://www.chula.ac.th/en/news/287038/",
-    "groupId": "https://www.chula.ac.th/en/news/287038/",
-    "origin": "web",
+    "title": "Activity Based Learning Kits for Children in a Disadvantaged Community According to the Project “Vocational Teachers Teach Children to Create Virtuous Robots from Garbage”",
+    "body": "",
+    "retrievalText": "Activity Based Learning Kits for Children in a Disadvantaged Community According to the Project “Vocational Teachers Teach Children to Create Virtuous Robots from Garbage” Kuntida Thamwipat openalex",
+    "url": "https://doi.org/10.14569/ijacsa.2014.050825",
+    "groupId": "https://doi.org/10.14569/ijacsa.2014.050825",
+    "origin": "openalex",
     "language": "en",
-    "isTitleOnly": false,
+    "isTitleOnly": true,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "31d02e9d823ce8bb6fe8ef9a831bd7d9b0144f7a90b764c92f43f3f82ad9fa84",
+    "contentHash": "23765b26878315eed77323e71772c37123eed623d9cb233a033a223742ab45f8",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Robots help enhance patient services, reduce risks for physicians and medical staff.",
-        "label": "Source Excerpt",
-        "coverage": "full",
+        "fieldName": "title",
+        "originalText": "Activity Based Learning Kits for Children in a Disadvantaged Community According to the Project “Vocational Teachers Teach Children to Create Virtuous Robots from Garbage”",
+        "label": "Title Only",
+        "coverage": "title-only",
         "startOffset": 0,
-        "endOffset": 84
+        "endOffset": 171
       }
     ],
     "metadata": {
-      "author": "Chulalongkorn University",
-      "platform": "university_news",
-      "publishedAt": "2026-02-11",
-      "canonicalName": "KCMH Physical AI smart medical robots launch"
+      "author": "Kuntida Thamwipat",
+      "platform": "openalex",
+      "publishedAt": "2014-01-01",
+      "canonicalName": "OpenAlex work: Activity Based Learning Kits for Children in a Dis"
     }
   },
   {
-    "typedId": "source:seed-3",
+    "typedId": "source:seed-2503",
     "kind": "source",
-    "title": "About - Dinsaw Robot",
-    "body": "Dinsaw is used in hospitals, public medical universities, and private hospitals more than 50 places.",
-    "retrievalText": "About - Dinsaw Robot official_company_website Dinsaw is used in hospitals, public medical universities, and private hospitals more than 50 places.",
-    "url": "https://www.dinsaw.com/about/",
-    "groupId": "https://www.dinsaw.com/about/",
-    "origin": "web",
+    "title": "Home-based exercise using balance disc and smartphone inclinometer application improves balance and activity of daily living in individuals with stroke: A randomized controlled trial",
+    "body": "",
+    "retrievalText": "Home-based exercise using balance disc and smartphone inclinometer application improves balance and activity of daily living in individuals with stroke: A randomized controlled trial Pantawit Aphiphaksakul openalex",
+    "url": "https://doi.org/10.1371/journal.pone.0277870",
+    "groupId": "https://doi.org/10.1371/journal.pone.0277870",
+    "origin": "openalex",
     "language": "en",
-    "isTitleOnly": false,
+    "isTitleOnly": true,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "10704359d6a4a6cdb3c03c24a33c9114c8c47ad414626a1b2bb59562cb88f82c",
+    "contentHash": "e55e42dc44f2927935ac7e93315cdb05bec17d01579d5e6fe0fcab5a9ce8d834",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Dinsaw is used in hospitals, public medical universities, and private hospitals more than 50 places.",
-        "label": "Source Excerpt",
-        "coverage": "full",
+        "fieldName": "title",
+        "originalText": "Home-based exercise using balance disc and smartphone inclinometer application improves balance and activity of daily living in individuals with stroke: A randomized controlled trial",
+        "label": "Title Only",
+        "coverage": "title-only",
         "startOffset": 0,
-        "endOffset": 100
+        "endOffset": 182
       }
     ],
     "metadata": {
-      "platform": "official_company_website",
-      "canonicalName": "Dinsaw Robot about page"
+      "author": "Pantawit Aphiphaksakul",
+      "platform": "openalex",
+      "publishedAt": "2022-01-01",
+      "canonicalName": "OpenAlex work: Home-based exercise using balance disc and smartph"
+    }
+  },
+  {
+    "typedId": "source:seed-2513",
+    "kind": "source",
+    "title": "United in Fight against prOstate cancer (UFO) registry: first results from a large, multi‐centre, prospective, longitudinal cohort study of advanced prostate cancer in Asia",
+    "body": "",
+    "retrievalText": "United in Fight against prOstate cancer (UFO) registry: first results from a large, multi‐centre, prospective, longitudinal cohort study of advanced prostate cancer in Asia Hirotsugu Uemura openalex",
+    "url": "https://doi.org/10.1111/bju.14980",
+    "groupId": "https://doi.org/10.1111/bju.14980",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "c182d38811415c54c1683ca35febba27729f9fb70c16e1015ee35cb7bdab25e9",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "United in Fight against prOstate cancer (UFO) registry: first results from a large, multi‐centre, prospective, longitudinal cohort study of advanced prostate cancer in Asia",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 172
+      }
+    ],
+    "metadata": {
+      "author": "Hirotsugu Uemura",
+      "platform": "openalex",
+      "publishedAt": "2019-01-01",
+      "canonicalName": "OpenAlex work: United in Fight against prOstate cancer (UFO) regi"
+    }
+  },
+  {
+    "typedId": "source:seed-2514",
+    "kind": "source",
+    "title": "Electronic cleansing in computed tomography colonography using AT layer identification with integration of gradient directional second derivative and material fraction model",
+    "body": "",
+    "retrievalText": "Electronic cleansing in computed tomography colonography using AT layer identification with integration of gradient directional second derivative and material fraction model Krisorn Chunhapongpipat openalex",
+    "url": "https://doi.org/10.1186/s12880-017-0224-6",
+    "groupId": "https://doi.org/10.1186/s12880-017-0224-6",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "95fc2511217897ad55b070679ee0d6508cfd502d2af4bb4959b1a9150b01e44a",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Electronic cleansing in computed tomography colonography using AT layer identification with integration of gradient directional second derivative and material fraction model",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 173
+      }
+    ],
+    "metadata": {
+      "author": "Krisorn Chunhapongpipat",
+      "platform": "openalex",
+      "publishedAt": "2017-01-01",
+      "canonicalName": "OpenAlex work: Electronic cleansing in computed tomography colono"
+    }
+  },
+  {
+    "typedId": "source:seed-2521",
+    "kind": "source",
+    "title": "Development of a laser induced graphene (LIG) and polylactic acid (PLA) shape memory polymer composite with simultaneous multi-stimuli response and deformation self-sensing characteristics",
+    "body": "",
+    "retrievalText": "Development of a laser induced graphene (LIG) and polylactic acid (PLA) shape memory polymer composite with simultaneous multi-stimuli response and deformation self-sensing characteristics Reza Gholami openalex",
+    "url": "https://doi.org/10.1039/d4na00450g",
+    "groupId": "https://doi.org/10.1039/d4na00450g",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "2bce6ace199f2d2c69f197840d2f28b2be7ea8f0e1596134f03b3e40b514ee07",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Development of a laser induced graphene (LIG) and polylactic acid (PLA) shape memory polymer composite with simultaneous multi-stimuli response and deformation self-sensing characteristics",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 188
+      }
+    ],
+    "metadata": {
+      "author": "Reza Gholami",
+      "platform": "openalex",
+      "publishedAt": "2024-01-01",
+      "canonicalName": "OpenAlex work: Development of a laser induced graphene (LIG) and "
+    }
+  },
+  {
+    "typedId": "source:seed-2543",
+    "kind": "source",
+    "title": "Residual effects of combined vibratory and plantar stimulation while seated influences plantar pressure and spatiotemporal gait measures in individuals with Parkinson’s disease exhibiting freezing of gait",
+    "body": "",
+    "retrievalText": "Residual effects of combined vibratory and plantar stimulation while seated influences plantar pressure and spatiotemporal gait measures in individuals with Parkinson’s disease exhibiting freezing of gait Warongporn Phuenpathom openalex",
+    "url": "https://doi.org/10.3389/fnagi.2023.1280324",
+    "groupId": "https://doi.org/10.3389/fnagi.2023.1280324",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "8e3ec6a88e2848d88e378d4244836b63f2cd3df5ca98dff252fc3b84e9acf484",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Residual effects of combined vibratory and plantar stimulation while seated influences plantar pressure and spatiotemporal gait measures in individuals with Parkinson’s disease exhibiting freezing of gait",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 204
+      }
+    ],
+    "metadata": {
+      "author": "Warongporn Phuenpathom",
+      "platform": "openalex",
+      "publishedAt": "2024-01-01",
+      "canonicalName": "OpenAlex work: Residual effects of combined vibratory and plantar"
+    }
+  },
+  {
+    "typedId": "source:seed-2560",
+    "kind": "source",
+    "title": "Outcomes and Trends of Open Thoracotomy and Video-Assisted Thoracic Surgery for Surgical Management of Catamenial Pneumothorax: A 10-Year Retrospective Cohort Study of a Thai Population",
+    "body": "",
+    "retrievalText": "Outcomes and Trends of Open Thoracotomy and Video-Assisted Thoracic Surgery for Surgical Management of Catamenial Pneumothorax: A 10-Year Retrospective Cohort Study of a Thai Population Pacharadanai Charoensup openalex",
+    "url": "https://doi.org/10.7759/cureus.74083",
+    "groupId": "https://doi.org/10.7759/cureus.74083",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "8d4689f5aead81b806c614c995ec5e76f6656ed6145de9e4e89c08b86c649045",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Outcomes and Trends of Open Thoracotomy and Video-Assisted Thoracic Surgery for Surgical Management of Catamenial Pneumothorax: A 10-Year Retrospective Cohort Study of a Thai Population",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 185
+      }
+    ],
+    "metadata": {
+      "author": "Pacharadanai Charoensup",
+      "platform": "openalex",
+      "publishedAt": "2024-01-01",
+      "canonicalName": "OpenAlex work: Outcomes and Trends of Open Thoracotomy and Video-"
+    }
+  },
+  {
+    "typedId": "source:seed-2610",
+    "kind": "source",
+    "title": "The Bangkok Urbanscapes Dataset for Semantic Urban Scene Understanding Using Enhanced Encoder-Decoder With Atrous Depthwise Separable A1 Convolutional Neural Networks",
+    "body": "",
+    "retrievalText": "The Bangkok Urbanscapes Dataset for Semantic Urban Scene Understanding Using Enhanced Encoder-Decoder With Atrous Depthwise Separable A1 Convolutional Neural Networks Kitsaphon Thitisiriwech openalex",
+    "url": "https://doi.org/10.1109/access.2022.3176712",
+    "groupId": "https://doi.org/10.1109/access.2022.3176712",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "fe237ad7b262f0f8c2fe0cc9ce9e1390008436297bd04eb0ad9a7cb56174b1a2",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "The Bangkok Urbanscapes Dataset for Semantic Urban Scene Understanding Using Enhanced Encoder-Decoder With Atrous Depthwise Separable A1 Convolutional Neural Networks",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 166
+      }
+    ],
+    "metadata": {
+      "author": "Kitsaphon Thitisiriwech",
+      "platform": "openalex",
+      "publishedAt": "2022-01-01",
+      "canonicalName": "OpenAlex work: The Bangkok Urbanscapes Dataset for Semantic Urban"
+    }
+  },
+  {
+    "typedId": "source:seed-2624",
+    "kind": "source",
+    "title": "Effects of the Instructional Model Based on Creative Problem-Solving Principles with Social Media to Promote the Creation of Educational Innovation for Pre-service Teachers",
+    "body": "",
+    "retrievalText": "Effects of the Instructional Model Based on Creative Problem-Solving Principles with Social Media to Promote the Creation of Educational Innovation for Pre-service Teachers Thapanee Seechaliao openalex",
+    "url": "https://doi.org/10.5539/hes.v11n3p56",
+    "groupId": "https://doi.org/10.5539/hes.v11n3p56",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "faef27c36ed8c1c3cba2c51b24e0f622a9f794b8582023098c2c3083245ef0f9",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Effects of the Instructional Model Based on Creative Problem-Solving Principles with Social Media to Promote the Creation of Educational Innovation for Pre-service Teachers",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 172
+      }
+    ],
+    "metadata": {
+      "author": "Thapanee Seechaliao",
+      "platform": "openalex",
+      "publishedAt": "2021-01-01",
+      "canonicalName": "OpenAlex work: Effects of the Instructional Model Based on Creati"
+    }
+  },
+  {
+    "typedId": "source:seed-2629",
+    "kind": "source",
+    "title": "Comparison of precision of implant placement between two different guided systems for static computer-assisted implant surgery: A simulation-based experimental study",
+    "body": "",
+    "retrievalText": "Comparison of precision of implant placement between two different guided systems for static computer-assisted implant surgery: A simulation-based experimental study Papon Pattanasirikun openalex",
+    "url": "https://doi.org/10.1016/j.jds.2024.07.017",
+    "groupId": "https://doi.org/10.1016/j.jds.2024.07.017",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "c440e47a925a5e59c6e6ca73ba0804c96f4d75feaf51915266b88628773f2651",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Comparison of precision of implant placement between two different guided systems for static computer-assisted implant surgery: A simulation-based experimental study",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 165
+      }
+    ],
+    "metadata": {
+      "author": "Papon Pattanasirikun",
+      "platform": "openalex",
+      "publishedAt": "2024-01-01",
+      "canonicalName": "OpenAlex work: Comparison of precision of implant placement betwe"
+    }
+  },
+  {
+    "typedId": "source:seed-2645",
+    "kind": "source",
+    "title": "MULTICULTURAL EDUCATION SYSTEM VALUE ENGINEERING MODEL IN STRENGTHENING NATIONAL IDENTITY IN THE ERA OF THE INDUSTRIAL REVOLUTION AND SOCIETY 5.0 (R&amp;D STUDY IN TEBU IRENG HIGHER EDUCATION IN EAST JAVA)",
+    "body": "",
+    "retrievalText": "MULTICULTURAL EDUCATION SYSTEM VALUE ENGINEERING MODEL IN STRENGTHENING NATIONAL IDENTITY IN THE ERA OF THE INDUSTRIAL REVOLUTION AND SOCIETY 5.0 (R&amp;D STUDY IN TEBU IRENG HIGHER EDUCATION IN EAST JAVA) Ade Tutty Rokhayati Rosa openalex",
+    "url": "https://doi.org/10.26480/ess.01.2020.01.04",
+    "groupId": "https://doi.org/10.26480/ess.01.2020.01.04",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "7fa61b77a6d45436f7daa1d997be7eec7e77981af0784225950e1e893991b1a0",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "MULTICULTURAL EDUCATION SYSTEM VALUE ENGINEERING MODEL IN STRENGTHENING NATIONAL IDENTITY IN THE ERA OF THE INDUSTRIAL REVOLUTION AND SOCIETY 5.0 (R&amp;D STUDY IN TEBU IRENG HIGHER EDUCATION IN EAST JAVA)",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 205
+      }
+    ],
+    "metadata": {
+      "author": "Ade Tutty Rokhayati Rosa",
+      "platform": "openalex",
+      "publishedAt": "2020-01-01",
+      "canonicalName": "OpenAlex work: MULTICULTURAL EDUCATION SYSTEM VALUE ENGINEERING M"
+    }
+  },
+  {
+    "typedId": "source:seed-2651",
+    "kind": "source",
+    "title": "One-step 3D printing of flexible poly(acrylamide-co-acrylic acid) hydrogels for enhanced mechanical and electrical performance in wearable strain sensors",
+    "body": "",
+    "retrievalText": "One-step 3D printing of flexible poly(acrylamide-co-acrylic acid) hydrogels for enhanced mechanical and electrical performance in wearable strain sensors Phanthanyaphon Tsupphayakorn-Aek openalex",
+    "url": "https://doi.org/10.1038/s41598-025-97120-1",
+    "groupId": "https://doi.org/10.1038/s41598-025-97120-1",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "269c4e1fa1b357d0251c545e791f5224342c0e36fb2d68670af23943b7f7b420",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "One-step 3D printing of flexible poly(acrylamide-co-acrylic acid) hydrogels for enhanced mechanical and electrical performance in wearable strain sensors",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 153
+      }
+    ],
+    "metadata": {
+      "author": "Phanthanyaphon Tsupphayakorn-Aek",
+      "platform": "openalex",
+      "publishedAt": "2025-01-01",
+      "canonicalName": "OpenAlex work: One-step 3D printing of flexible poly(acrylamide-c"
+    }
+  },
+  {
+    "typedId": "source:seed-2669",
+    "kind": "source",
+    "title": "Using 3D Printing Technology for Corrective Biplanar Chevron Osteotomy with Customized Osteotomy Guide and Patient-Matched Monoblock Crosslink Plate in Treatment of Cubitus Varus Deformity: A Case Report and Technical Note",
+    "body": "",
+    "retrievalText": "Using 3D Printing Technology for Corrective Biplanar Chevron Osteotomy with Customized Osteotomy Guide and Patient-Matched Monoblock Crosslink Plate in Treatment of Cubitus Varus Deformity: A Case Report and Technical Note Nithid Sri-utenc openalex",
+    "url": "https://doi.org/10.21203/rs.3.rs-61558/v1",
+    "groupId": "https://doi.org/10.21203/rs.3.rs-61558/v1",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "fd14ccf8fa54555f2c022ecc65bb628414ef41f49b9c4a2cb745f6061df87b05",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Using 3D Printing Technology for Corrective Biplanar Chevron Osteotomy with Customized Osteotomy Guide and Patient-Matched Monoblock Crosslink Plate in Treatment of Cubitus Varus Deformity: A Case Report and Technical Note",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 222
+      }
+    ],
+    "metadata": {
+      "author": "Nithid Sri-utenc",
+      "platform": "openalex",
+      "publishedAt": "2020-01-01",
+      "canonicalName": "OpenAlex work: Using 3D Printing Technology for Corrective Biplan"
+    }
+  },
+  {
+    "typedId": "source:seed-2710",
+    "kind": "source",
+    "title": "Research Group Introduction : Chowarit Mitsantisuk Haptics and Robotics Laboratory, Department of Electrical and Electronic Engineering, Kasetsart University, Thailand",
+    "body": "",
+    "retrievalText": "Research Group Introduction : Chowarit Mitsantisuk Haptics and Robotics Laboratory, Department of Electrical and Electronic Engineering, Kasetsart University, Thailand Chowarit Mitsantisuk openalex",
+    "url": "https://doi.org/10.1541/ieejias.135.nl4_5",
+    "groupId": "https://doi.org/10.1541/ieejias.135.nl4_5",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "1731dd31d0a87650f185e26fc00face1904edfa48a6f68c8960a5cb4013e1674",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Research Group Introduction : Chowarit Mitsantisuk Haptics and Robotics Laboratory, Department of Electrical and Electronic Engineering, Kasetsart University, Thailand",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 167
+      }
+    ],
+    "metadata": {
+      "author": "Chowarit Mitsantisuk",
+      "platform": "openalex",
+      "publishedAt": "2015-01-01",
+      "canonicalName": "OpenAlex work: Research Group Introduction : Chowarit Mitsantisuk"
+    }
+  },
+  {
+    "typedId": "source:seed-280",
+    "kind": "source",
+    "title": "Ensuring Environmental Performance of Pharmaceutical Companies of Thailand: Role of Robotics and AI Awareness and Technical Content Knowledge in Industry 4.0 Era",
+    "body": "",
+    "retrievalText": "Ensuring Environmental Performance of Pharmaceutical Companies of Thailand: Role of Robotics and AI Awareness and Technical Content Knowledge in Industry 4.0 Era Paitoon Chetthamrongchai openalex",
+    "url": "https://openalex.org/W3007339959",
+    "groupId": "https://openalex.org/W3007339959",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "0b764369690e6016682376d2247840ae27ee9f9a03bfdd1f0b082463478d7904",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Ensuring Environmental Performance of Pharmaceutical Companies of Thailand: Role of Robotics and AI Awareness and Technical Content Knowledge in Industry 4.0 Era",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 161
+      }
+    ],
+    "metadata": {
+      "author": "Paitoon Chetthamrongchai",
+      "platform": "openalex",
+      "publishedAt": "2020-01-01",
+      "canonicalName": "OpenAlex work: Ensuring Environmental Performance of Pharmaceutic"
+    }
+  },
+  {
+    "typedId": "source:seed-2827",
+    "kind": "source",
+    "title": "Unfolding sustainable auditing ecosystem formation path through digitalization transformation: How digital intelligence of accountant fosters the digitalization capabilities",
+    "body": "",
+    "retrievalText": "Unfolding sustainable auditing ecosystem formation path through digitalization transformation: How digital intelligence of accountant fosters the digitalization capabilities Pham Quang Huy openalex",
+    "url": "https://doi.org/10.1016/j.heliyon.2023.e13392",
+    "groupId": "https://doi.org/10.1016/j.heliyon.2023.e13392",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "aa1501e8f623ec3e4c7da4f430dbe5247ba915394f70c1f36b4fdeae633dde46",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Unfolding sustainable auditing ecosystem formation path through digitalization transformation: How digital intelligence of accountant fosters the digitalization capabilities",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 173
+      }
+    ],
+    "metadata": {
+      "author": "Pham Quang Huy",
+      "platform": "openalex",
+      "publishedAt": "2023-01-01",
+      "canonicalName": "OpenAlex work: Unfolding sustainable auditing ecosystem formation"
+    }
+  },
+  {
+    "typedId": "source:seed-2830",
+    "kind": "source",
+    "title": "Exploring the Gender Gap: Motivation, Procrastination, Environment, and Academic Performance in an Introductory Physics Course in a Human-Centered Private University in Northeast Mexico—A Case Study",
+    "body": "",
+    "retrievalText": "Exploring the Gender Gap: Motivation, Procrastination, Environment, and Academic Performance in an Introductory Physics Course in a Human-Centered Private University in Northeast Mexico—A Case Study H. Martínez-Huerta openalex",
+    "url": "https://doi.org/10.3390/educsci14020186",
+    "groupId": "https://doi.org/10.3390/educsci14020186",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "d45a1115c0347890ca464f907df96f8bcd1ea706d16834b41fac7bd52cbe3678",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Exploring the Gender Gap: Motivation, Procrastination, Environment, and Academic Performance in an Introductory Physics Course in a Human-Centered Private University in Northeast Mexico—A Case Study",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 198
+      }
+    ],
+    "metadata": {
+      "author": "H. Martínez-Huerta",
+      "platform": "openalex",
+      "publishedAt": "2024-01-01",
+      "canonicalName": "OpenAlex work: Exploring the Gender Gap: Motivation, Procrastinat"
+    }
+  },
+  {
+    "typedId": "source:seed-2843",
+    "kind": "source",
+    "title": "Improving Problem-Solving and Communication Skills in Automotive Vocational Education through the Development of Teaching Factory Model with Problem-Based Learning (TEFA-PBL) Concept",
+    "body": "",
+    "retrievalText": "Improving Problem-Solving and Communication Skills in Automotive Vocational Education through the Development of Teaching Factory Model with Problem-Based Learning (TEFA-PBL) Concept Hasan Maksum openalex",
+    "url": "https://doi.org/10.46328/ijemst.3941",
+    "groupId": "https://doi.org/10.46328/ijemst.3941",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "6812c96d835ace7263b884b189fbc076db76c46d0e5c7d124f1d272f64dadbc3",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Improving Problem-Solving and Communication Skills in Automotive Vocational Education through the Development of Teaching Factory Model with Problem-Based Learning (TEFA-PBL) Concept",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 182
+      }
+    ],
+    "metadata": {
+      "author": "Hasan Maksum",
+      "platform": "openalex",
+      "publishedAt": "2023-01-01",
+      "canonicalName": "OpenAlex work: Improving Problem-Solving and Communication Skills"
+    }
+  },
+  {
+    "typedId": "source:seed-2844",
+    "kind": "source",
+    "title": "The Role of Knowledge and Epistemological Beliefs in Chemistry Teachers STEM Professional Development and Instructional Practices: Examination of STEM-Integrated Classrooms",
+    "body": "",
+    "retrievalText": "The Role of Knowledge and Epistemological Beliefs in Chemistry Teachers STEM Professional Development and Instructional Practices: Examination of STEM-Integrated Classrooms Olubusayo Foluso Adebusuyi openalex",
+    "url": "https://doi.org/10.30935/scimath/11799",
+    "groupId": "https://doi.org/10.30935/scimath/11799",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "74e27e183911c9f51c95e79d289e144338ccf144d0383aeadc8293c845a95bdb",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "The Role of Knowledge and Epistemological Beliefs in Chemistry Teachers STEM Professional Development and Instructional Practices: Examination of STEM-Integrated Classrooms",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 172
+      }
+    ],
+    "metadata": {
+      "author": "Olubusayo Foluso Adebusuyi",
+      "platform": "openalex",
+      "publishedAt": "2022-01-01",
+      "canonicalName": "OpenAlex work: The Role of Knowledge and Epistemological Beliefs "
+    }
+  },
+  {
+    "typedId": "source:seed-2928",
+    "kind": "source",
+    "title": "Exploring the Nexus of Technology Availability, Child-Friendly Interface Design, Early Childhood Digital Literacy, Cognitive Skills, and Creativity in Language Learning in the Context of Banten Javanese Language",
+    "body": "",
+    "retrievalText": "Exploring the Nexus of Technology Availability, Child-Friendly Interface Design, Early Childhood Digital Literacy, Cognitive Skills, and Creativity in Language Learning in the Context of Banten Javanese Language Universitas Islam Negeri Sultan Maulana Hasanuddin Banten, Indonesia openalex",
+    "url": "https://doi.org/10.47191/ijcsrr/v6-i12-17",
+    "groupId": "https://doi.org/10.47191/ijcsrr/v6-i12-17",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "9c3845ee368c81fb7e4b038fa229ac96b6ec66c8e5b22d1443dea103bdf9f02e",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Exploring the Nexus of Technology Availability, Child-Friendly Interface Design, Early Childhood Digital Literacy, Cognitive Skills, and Creativity in Language Learning in the Context of Banten Javanese Language",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 211
+      }
+    ],
+    "metadata": {
+      "author": "Universitas Islam Negeri Sultan Maulana Hasanuddin Banten, Indonesia",
+      "platform": "openalex",
+      "publishedAt": "2023-01-01",
+      "canonicalName": "OpenAlex work: Exploring the Nexus of Technology Availability, Ch"
+    }
+  },
+  {
+    "typedId": "source:seed-2948",
+    "kind": "source",
+    "title": "Computational Literacy as an Important Element of a Digitized Science Teacher Education—A Systematic Review of Curriculum Patterns in Physics Teacher Education Degrees in Germany",
+    "body": "",
+    "retrievalText": "Computational Literacy as an Important Element of a Digitized Science Teacher Education—A Systematic Review of Curriculum Patterns in Physics Teacher Education Degrees in Germany Daniel Braun openalex",
+    "url": "https://doi.org/10.3390/educsci13101063",
+    "groupId": "https://doi.org/10.3390/educsci13101063",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "ecb405e5494e0ac5512bf5c731260d7d6fab35910b7fa52c911eeca2b4112853",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Computational Literacy as an Important Element of a Digitized Science Teacher Education—A Systematic Review of Curriculum Patterns in Physics Teacher Education Degrees in Germany",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 178
+      }
+    ],
+    "metadata": {
+      "author": "Daniel Braun",
+      "platform": "openalex",
+      "publishedAt": "2023-01-01",
+      "canonicalName": "OpenAlex work: Computational Literacy as an Important Element of "
+    }
+  },
+  {
+    "typedId": "source:seed-2972",
+    "kind": "source",
+    "title": "Exploring How Consumers’ Perceptions of Corporate Social Responsibility Impact Dining Intentions in Times of Crisis: An Application of the Social Identity Theory and Theory of Perceived Risk",
+    "body": "",
+    "retrievalText": "Exploring How Consumers’ Perceptions of Corporate Social Responsibility Impact Dining Intentions in Times of Crisis: An Application of the Social Identity Theory and Theory of Perceived Risk Yooin Noh openalex",
+    "url": "https://doi.org/10.3390/jrfm17020044",
+    "groupId": "https://doi.org/10.3390/jrfm17020044",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "324fba0f4ad76b51c017020314ee93f2a332b1a525674a26c780d8f8700bd679",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Exploring How Consumers’ Perceptions of Corporate Social Responsibility Impact Dining Intentions in Times of Crisis: An Application of the Social Identity Theory and Theory of Perceived Risk",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 190
+      }
+    ],
+    "metadata": {
+      "author": "Yooin Noh",
+      "platform": "openalex",
+      "publishedAt": "2024-01-01",
+      "canonicalName": "OpenAlex work: Exploring How Consumers’ Perceptions of Corporate "
+    }
+  },
+  {
+    "typedId": "source:seed-3061",
+    "kind": "source",
+    "title": "Актуальні проблеми та перспективи цифровізації культурної спадщини Карпатського Єврорегіону : Збірник праць Міжнар. наук.-практ. студент. конф., Івано-Франківськ, 4-5 грудня 2025 р.",
+    "body": "",
+    "retrievalText": "Актуальні проблеми та перспективи цифровізації культурної спадщини Карпатського Єврорегіону : Збірник праць Міжнар. наук.-практ. студент. конф., Івано-Франківськ, 4-5 грудня 2025 р. Л. М. Архипова, Я. О. Адаменко, О. Р. Онисько та ін. openalex",
+    "url": "https://doi.org/10.31471/root4dig2025",
+    "groupId": "https://doi.org/10.31471/root4dig2025",
+    "origin": "openalex",
+    "language": "unknown",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "86d3bfe2dbee9e7c097daac63e1b891dd128670e86322c8a681b3e6c91dde2c5",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Актуальні проблеми та перспективи цифровізації культурної спадщини Карпатського Єврорегіону : Збірник праць Міжнар. наук.-практ. студент. конф., Івано-Франківськ, 4-5 грудня 2025 р.",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 181
+      }
+    ],
+    "metadata": {
+      "author": "Л. М. Архипова, Я. О. Адаменко, О. Р. Онисько та ін.",
+      "platform": "openalex",
+      "publishedAt": "2025-01-01",
+      "canonicalName": "OpenAlex work: Актуальні проблеми та перспективи цифровізації кул"
     }
   },
   {
@@ -1837,6 +2139,138 @@
     }
   },
   {
+    "typedId": "source:seed-3074",
+    "kind": "source",
+    "title": "Metodología para la construcción de una memoria integradora de fuentes de información documental para el ámbito académico gestionada con tecnologías semánticas (MIIDAS)",
+    "body": "",
+    "retrievalText": "Metodología para la construcción de una memoria integradora de fuentes de información documental para el ámbito académico gestionada con tecnologías semánticas (MIIDAS) Cristal Karina Galindo Durán openalex",
+    "url": "https://doi.org/10.24275/uami.vd66w0157",
+    "groupId": "https://doi.org/10.24275/uami.vd66w0157",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "32c0c441ca4e1679623a15397d649375f22dce275a011271dea8c5df5ac4883b",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Metodología para la construcción de una memoria integradora de fuentes de información documental para el ámbito académico gestionada con tecnologías semánticas (MIIDAS)",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 168
+      }
+    ],
+    "metadata": {
+      "author": "Cristal Karina Galindo Durán",
+      "platform": "openalex",
+      "publishedAt": "2021-01-01",
+      "canonicalName": "OpenAlex work: Metodología para la construcción de una memoria in"
+    }
+  },
+  {
+    "typedId": "source:seed-3207",
+    "kind": "source",
+    "title": "A Critical Review of Emerging Technologies for Flash Flood Prediction: Examining Artificial Intelligence, Machine Learning, Internet of Things, Cloud Computing, and Robotics Techniques",
+    "body": "",
+    "retrievalText": "A Critical Review of Emerging Technologies for Flash Flood Prediction: Examining Artificial Intelligence, Machine Learning, Internet of Things, Cloud Computing, and Robotics Techniques Ghazi Al-Rawas openalex",
+    "url": "https://doi.org/10.3390/w16142069",
+    "groupId": "https://doi.org/10.3390/w16142069",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "a17b537f1c9dadc71ec87f9af48a58277a9eaa03734a78064b93485f660ce775",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "A Critical Review of Emerging Technologies for Flash Flood Prediction: Examining Artificial Intelligence, Machine Learning, Internet of Things, Cloud Computing, and Robotics Techniques",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 184
+      }
+    ],
+    "metadata": {
+      "author": "Ghazi Al-Rawas",
+      "platform": "openalex",
+      "publishedAt": "2024-01-01",
+      "canonicalName": "OpenAlex work: A Critical Review of Emerging Technologies for Fla"
+    }
+  },
+  {
+    "typedId": "source:seed-3401",
+    "kind": "source",
+    "title": "Context-Aware Embedding Techniques for Addressing Meaning Conflation Deficiency in Morphologically Rich Languages Word Embedding: A Systematic Review and Meta Analysis",
+    "body": "",
+    "retrievalText": "Context-Aware Embedding Techniques for Addressing Meaning Conflation Deficiency in Morphologically Rich Languages Word Embedding: A Systematic Review and Meta Analysis Mosima Anna Masethe openalex",
+    "url": "https://doi.org/10.3390/computers13100271",
+    "groupId": "https://doi.org/10.3390/computers13100271",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "1d26133d31888bb9c453324108974c10db63d4e85cfb4eab51ed3395731b78bc",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Context-Aware Embedding Techniques for Addressing Meaning Conflation Deficiency in Morphologically Rich Languages Word Embedding: A Systematic Review and Meta Analysis",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 167
+      }
+    ],
+    "metadata": {
+      "author": "Mosima Anna Masethe",
+      "platform": "openalex",
+      "publishedAt": "2024-01-01",
+      "canonicalName": "OpenAlex work: Context-Aware Embedding Techniques for Addressing "
+    }
+  },
+  {
+    "typedId": "source:seed-3421",
+    "kind": "source",
+    "title": "xTrek: An Influence-Aware Technique for Dijkstra’s and A<mml:math xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" id=\"M1\"><mml:mrow><mml:msup><mml:mrow/><mml:mrow><mml:mo>⁎</mml:mo></mml:mrow></mml:msup></mml:mrow></mml:math> Pathfinders",
+    "body": "",
+    "retrievalText": "xTrek: An Influence-Aware Technique for Dijkstra’s and A<mml:math xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" id=\"M1\"><mml:mrow><mml:msup><mml:mrow/><mml:mrow><mml:mo>⁎</mml:mo></mml:mrow></mml:msup></mml:mrow></mml:math> Pathfinders Gonçalo N. P. Amador openalex",
+    "url": "https://doi.org/10.1155/2018/5184605",
+    "groupId": "https://doi.org/10.1155/2018/5184605",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "002d6743eedf77e8027fbf1ea6e0314051edb2436a7ea7319274b3b1f7016664",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "xTrek: An Influence-Aware Technique for Dijkstra’s and A<mml:math xmlns:mml=\"http://www.w3.org/1998/Math/MathML\" id=\"M1\"><mml:mrow><mml:msup><mml:mrow/><mml:mrow><mml:mo>⁎</mml:mo></mml:mrow></mml:msup></mml:mrow></mml:math> Pathfinders",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 236
+      }
+    ],
+    "metadata": {
+      "author": "Gonçalo N. P. Amador",
+      "platform": "openalex",
+      "publishedAt": "2018-01-01",
+      "canonicalName": "OpenAlex work: xTrek: An Influence-Aware Technique for Dijkstra’s"
+    }
+  },
+  {
     "typedId": "source:seed-3524",
     "kind": "source",
     "title": "ระบบควบคมแบบปรบตวไดพรอมการควบคมแรงฉดลากสำหรบหนยนตขบเคลอนสองลอ",
@@ -1870,333 +2304,102 @@
     }
   },
   {
-    "typedId": "source:seed-3598",
+    "typedId": "source:seed-3753",
     "kind": "source",
-    "title": "AtsushiSakai/PythonRobotics",
-    "body": "Stars: 29926, Language: Python. Description: Python sample codes and textbook for robotics algorithms.",
-    "retrievalText": "AtsushiSakai/PythonRobotics AtsushiSakai github Stars: 29926, Language: Python. Description: Python sample codes and textbook for robotics algorithms.",
-    "url": "https://github.com/AtsushiSakai/PythonRobotics",
-    "groupId": "https://github.com/AtsushiSakai/PythonRobotics",
+    "title": "cognitoware/robotics",
+    "body": "Stars: 44, Language: C++. Description: Probabilistic state estimation for robotics applications. Bayes filters include Kalman, Markov chains; Gaussian, uniform and discrete mapping probability distributions representations; Distribution sampling, marginalization, multiplication; Distribution composition independent pairs and Bayes rule; Linear algebra, matrix, vector, inverse, square root, LU decomposition, Cholesky decomposition; piecewise linear approximation of functions; Sensor models, Markov action chains <X,U,X>.",
+    "retrievalText": "cognitoware/robotics cognitoware github Stars: 44, Language: C++. Description: Probabilistic state estimation for robotics applications. Bayes filters include Kalman, Markov chains; Gaussian, uniform and discrete mapping probability distributions representations; Distribution sampling, marginalization, multiplication; Distribution composition independent pairs and Bayes rule; Linear algebra, matrix, vector, inverse, square root, LU decomposition, Cholesky decomposition; piecewise linear approximation of functions; Sensor models, Markov action chains <X,U,X>.",
+    "url": "https://github.com/cognitoware/robotics",
+    "groupId": "https://github.com/cognitoware/robotics",
     "origin": "github",
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "bdc37e9a7026c4915cfa1598c5b8468d6d7ba7f07dbcdb4563488f974a4e3bf6",
+    "contentHash": "d1fdedef3156fe0a8898939c73c6776b08846f985f31444b00f7c70c9b2b9b1f",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
         "fieldName": "evidence_excerpt",
-        "originalText": "Stars: 29926, Language: Python. Description: Python sample codes and textbook for robotics algorithms.",
+        "originalText": "Stars: 44, Language: C++. Description: Probabilistic state estimation for robotics applications. Bayes filters include Kalman, Markov chains; Gaussian, uniform and discrete mapping probability distributions representations; Distribution sampling, marginalization, multiplication; Distribution composition independent pairs and Bayes rule; Linear algebra, matrix, vector, inverse, square root, LU decomposition, Cholesky decomposition; piecewise linear approximation of functions; Sensor models, Markov action chains <X,U,X>.",
         "label": "Source Excerpt",
         "coverage": "full",
         "startOffset": 0,
-        "endOffset": 102
+        "endOffset": 524
       }
     ],
     "metadata": {
-      "author": "AtsushiSakai",
+      "author": "cognitoware",
       "platform": "github",
-      "publishedAt": "2016-03-21",
-      "canonicalName": "GitHub Repository: AtsushiSakai/PythonRobotics"
+      "publishedAt": "2015-05-20",
+      "canonicalName": "GitHub Repository: cognitoware/robotics"
     }
   },
   {
-    "typedId": "source:seed-3599",
+    "typedId": "source:seed-3812",
     "kind": "source",
-    "title": "kiloreux/awesome-robotics",
-    "body": "Stars: 6718, Language: None. Description: A list of awesome Robotics resources",
-    "retrievalText": "kiloreux/awesome-robotics kiloreux github Stars: 6718, Language: None. Description: A list of awesome Robotics resources",
-    "url": "https://github.com/kiloreux/awesome-robotics",
-    "groupId": "https://github.com/kiloreux/awesome-robotics",
+    "title": "Forage-Simulations/Johnson-Johnson-Robotics-Controls",
+    "body": "Stars: 38, Language: Jupyter Notebook. Description: This repository contains a Control Systems Diagnostic T for Task 1 of the Johnson & Johnson Robotics Control System Simulation. The notebook provides exercises for diagnosing and optimizing control code in robotic systems. Participants can download the .ipynb file to work through diagnostics, analyze response times, and complete practical exercises",
+    "retrievalText": "Forage-Simulations/Johnson-Johnson-Robotics-Controls Forage-Simulations github Stars: 38, Language: Jupyter Notebook. Description: This repository contains a Control Systems Diagnostic T for Task 1 of the Johnson & Johnson Robotics Control System Simulation. The notebook provides exercises for diagnosing and optimizing control code in robotic systems. Participants can download the .ipynb file to work through diagnostics, analyze response times, and complete practical exercises",
+    "url": "https://github.com/Forage-Simulations/Johnson-Johnson-Robotics-Controls",
+    "groupId": "https://github.com/Forage-Simulations/Johnson-Johnson-Robotics-Controls",
     "origin": "github",
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "bd3e300e8de251c13f84089d65cd1dbccdc91c046ef583a9682af2f611629324",
+    "contentHash": "f76ec29a44c9e5851849b2b18b9a57d2f2822bae3493841c528379d0dec418d4",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
         "fieldName": "evidence_excerpt",
-        "originalText": "Stars: 6718, Language: None. Description: A list of awesome Robotics resources",
+        "originalText": "Stars: 38, Language: Jupyter Notebook. Description: This repository contains a Control Systems Diagnostic T for Task 1 of the Johnson & Johnson Robotics Control System Simulation. The notebook provides exercises for diagnosing and optimizing control code in robotic systems. Participants can download the .ipynb file to work through diagnostics, analyze response times, and complete practical exercises",
         "label": "Source Excerpt",
         "coverage": "full",
         "startOffset": 0,
-        "endOffset": 78
+        "endOffset": 402
       }
     ],
     "metadata": {
-      "author": "kiloreux",
+      "author": "Forage-Simulations",
       "platform": "github",
-      "publishedAt": "2015-11-26",
-      "canonicalName": "GitHub Repository: kiloreux/awesome-robotics"
+      "publishedAt": "2024-11-12",
+      "canonicalName": "GitHub Repository: Forage-Simulations/Johnson-Johnson-Robotics-Controls"
     }
   },
   {
-    "typedId": "source:seed-3600",
+    "typedId": "source:seed-4473",
     "kind": "source",
-    "title": "mithi/robotics-coursework",
-    "body": "Stars: 4987, Language: None. Description: 🤖 Places where you can learn robotics (and stuff like that) online 🤖",
-    "retrievalText": "mithi/robotics-coursework mithi github Stars: 4987, Language: None. Description: 🤖 Places where you can learn robotics (and stuff like that) online 🤖",
-    "url": "https://github.com/mithi/robotics-coursework",
-    "groupId": "https://github.com/mithi/robotics-coursework",
+    "title": "nitinsh99/Prim-s-Algorithm-Using-Fibonnaci-Heap",
+    "body": "Stars: 2, Language: C++. Description: Implement Prim’s Minimum Cost Spanning Tree algorithm, MST, using a simple data structure and fibonacci heap, called heap scheme, and measure the relative performance of the two implementations. Both of the schemes used the adjacency lists representation for graphs. The simple scheme used an array to determine the next edge to include while the f-heap scheme uses a Fibonacci heap.",
+    "retrievalText": "nitinsh99/Prim-s-Algorithm-Using-Fibonnaci-Heap nitinsh99 github Stars: 2, Language: C++. Description: Implement Prim’s Minimum Cost Spanning Tree algorithm, MST, using a simple data structure and fibonacci heap, called heap scheme, and measure the relative performance of the two implementations. Both of the schemes used the adjacency lists representation for graphs. The simple scheme used an array to determine the next edge to include while the f-heap scheme uses a Fibonacci heap.",
+    "url": "https://github.com/nitinsh99/Prim-s-Algorithm-Using-Fibonnaci-Heap",
+    "groupId": "https://github.com/nitinsh99/Prim-s-Algorithm-Using-Fibonnaci-Heap",
     "origin": "github",
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "e71fe07bddf9f35c6b40883f77ab5270853dcc3e4d302983574cb60913aefdb9",
+    "contentHash": "d4a1877b41cd7f757b04b0bcdfba997070bb6cc522da47b33d1d8399ce4819c2",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
         "fieldName": "evidence_excerpt",
-        "originalText": "Stars: 4987, Language: None. Description: 🤖 Places where you can learn robotics (and stuff like that) online 🤖",
+        "originalText": "Stars: 2, Language: C++. Description:  Implement Prim’s Minimum Cost Spanning Tree algorithm, MST, using a simple  data structure and fibonacci heap, called heap scheme, and measure the  relative performance of the two implementations.    Both of the schemes used the adjacency lists representation for graphs. The simple scheme used  an array to determine the next edge to include while the f-heap scheme uses a Fibonacci heap.",
         "label": "Source Excerpt",
         "coverage": "full",
         "startOffset": 0,
-        "endOffset": 112
+        "endOffset": 428
       }
     ],
     "metadata": {
-      "author": "mithi",
+      "author": "nitinsh99",
       "platform": "github",
-      "publishedAt": "2017-06-24",
-      "canonicalName": "GitHub Repository: mithi/robotics-coursework"
-    }
-  },
-  {
-    "typedId": "source:seed-3601",
-    "kind": "source",
-    "title": "NxRLab/ModernRobotics",
-    "body": "Stars: 2831, Language: Python. Description: Modern Robotics: Mechanics, Planning, and Control Code Library --- The primary purpose of the provided software is to be easy to read and educational, reinforcing the concepts in the book. The code is optimized neither for efficiency nor robustness.",
-    "retrievalText": "NxRLab/ModernRobotics NxRLab github Stars: 2831, Language: Python. Description: Modern Robotics: Mechanics, Planning, and Control Code Library --- The primary purpose of the provided software is to be easy to read and educational, reinforcing the concepts in the book. The code is optimized neither for efficiency nor robustness.",
-    "url": "https://github.com/NxRLab/ModernRobotics",
-    "groupId": "https://github.com/NxRLab/ModernRobotics",
-    "origin": "github",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "8703a77a7e908694ed8bc1eea2947d42271caec120bf051702814420f007c593",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Stars: 2831, Language: Python. Description: Modern Robotics: Mechanics, Planning, and Control Code Library --- The primary purpose of the provided software is to be easy to read and educational, reinforcing the concepts in the book. The code is optimized neither for efficiency nor robustness.",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 293
-      }
-    ],
-    "metadata": {
-      "author": "NxRLab",
-      "platform": "github",
-      "publishedAt": "2016-10-04",
-      "canonicalName": "GitHub Repository: NxRLab/ModernRobotics"
-    }
-  },
-  {
-    "typedId": "source:seed-3602",
-    "kind": "source",
-    "title": "JdeRobot/RoboticsAcademy",
-    "body": "Stars: 476, Language: Python. Description: Learn Robotics with JdeRobot",
-    "retrievalText": "JdeRobot/RoboticsAcademy JdeRobot github Stars: 476, Language: Python. Description: Learn Robotics with JdeRobot",
-    "url": "https://github.com/JdeRobot/RoboticsAcademy",
-    "groupId": "https://github.com/JdeRobot/RoboticsAcademy",
-    "origin": "github",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "7fb9fe7eed26b87476130e4598ee4f849bf22dd7df50507ad892d9fea3659c35",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Stars: 476, Language: Python. Description: Learn Robotics with JdeRobot",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 71
-      }
-    ],
-    "metadata": {
-      "author": "JdeRobot",
-      "platform": "github",
-      "publishedAt": "2015-07-23",
-      "canonicalName": "GitHub Repository: JdeRobot/RoboticsAcademy"
-    }
-  },
-  {
-    "typedId": "source:seed-3603",
-    "kind": "source",
-    "title": "onlytailei/CppRobotics",
-    "body": "Stars: 2216, Language: C++. Description: cpp implementation of robotics algorithms including localization, mapping, SLAM, path planning and control",
-    "retrievalText": "onlytailei/CppRobotics onlytailei github Stars: 2216, Language: C++. Description: cpp implementation of robotics algorithms including localization, mapping, SLAM, path planning and control",
-    "url": "https://github.com/onlytailei/CppRobotics",
-    "groupId": "https://github.com/onlytailei/CppRobotics",
-    "origin": "github",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "120c7cd69a33d5d11361f3e485b13e0462898e8c90c87339660dcf82d57d2e75",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Stars: 2216, Language: C++. Description: cpp implementation of robotics algorithms including localization, mapping, SLAM, path planning and control",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 147
-      }
-    ],
-    "metadata": {
-      "author": "onlytailei",
-      "platform": "github",
-      "publishedAt": "2019-03-28",
-      "canonicalName": "GitHub Repository: onlytailei/CppRobotics"
-    }
-  },
-  {
-    "typedId": "source:seed-3604",
-    "kind": "source",
-    "title": "thu-ml/RoboticsDiffusionTransformer",
-    "body": "Stars: 1736, Language: Python. Description: RDT-1B: a Diffusion Foundation Model for Bimanual Manipulation",
-    "retrievalText": "thu-ml/RoboticsDiffusionTransformer thu-ml github Stars: 1736, Language: Python. Description: RDT-1B: a Diffusion Foundation Model for Bimanual Manipulation",
-    "url": "https://github.com/thu-ml/RoboticsDiffusionTransformer",
-    "groupId": "https://github.com/thu-ml/RoboticsDiffusionTransformer",
-    "origin": "github",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "6a6902629829c517c821996628fd21b29bece7256545d611c2dd53723bef4d35",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Stars: 1736, Language: Python. Description: RDT-1B: a Diffusion Foundation Model for Bimanual Manipulation",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 106
-      }
-    ],
-    "metadata": {
-      "author": "thu-ml",
-      "platform": "github",
-      "publishedAt": "2024-10-07",
-      "canonicalName": "GitHub Repository: thu-ml/RoboticsDiffusionTransformer"
-    }
-  },
-  {
-    "typedId": "source:seed-3605",
-    "kind": "source",
-    "title": "gtbook/robotics",
-    "body": "Stars: 769, Language: Jupyter Notebook. Description: Notebook-based book \"Introduction to Robotics and Perception\" by Frank Dellaert and Seth Hutchinson",
-    "retrievalText": "gtbook/robotics gtbook github Stars: 769, Language: Jupyter Notebook. Description: Notebook-based book \"Introduction to Robotics and Perception\" by Frank Dellaert and Seth Hutchinson",
-    "url": "https://github.com/gtbook/robotics",
-    "groupId": "https://github.com/gtbook/robotics",
-    "origin": "github",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "2f13a3c35039124e2e561b4c941981bd1a2dd425dd20d0b7fe120ccaf9bd558a",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Stars: 769, Language: Jupyter Notebook. Description: Notebook-based book \"Introduction to Robotics and Perception\" by Frank Dellaert and Seth Hutchinson",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 152
-      }
-    ],
-    "metadata": {
-      "author": "gtbook",
-      "platform": "github",
-      "publishedAt": "2022-01-06",
-      "canonicalName": "GitHub Repository: gtbook/robotics"
-    }
-  },
-  {
-    "typedId": "source:seed-3606",
-    "kind": "source",
-    "title": "petercorke/robotics-toolbox-python",
-    "body": "Stars: 3150, Language: C++. Description: Robotics Toolbox for Python",
-    "retrievalText": "petercorke/robotics-toolbox-python petercorke github Stars: 3150, Language: C++. Description: Robotics Toolbox for Python",
-    "url": "https://github.com/petercorke/robotics-toolbox-python",
-    "groupId": "https://github.com/petercorke/robotics-toolbox-python",
-    "origin": "github",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "275ce331c8ab49aa829d2c59f2ecad91269b94f12714f069e4ecbb26a4645011",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Stars: 3150, Language: C++. Description: Robotics Toolbox for Python",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 68
-      }
-    ],
-    "metadata": {
-      "author": "petercorke",
-      "platform": "github",
-      "publishedAt": "2015-04-06",
-      "canonicalName": "GitHub Repository: petercorke/robotics-toolbox-python"
-    }
-  },
-  {
-    "typedId": "source:seed-3607",
-    "kind": "source",
-    "title": "jslee02/awesome-robotics-libraries",
-    "body": "Stars: 2974, Language: Python. Description: :sunglasses: A curated list of robotics libraries and software",
-    "retrievalText": "jslee02/awesome-robotics-libraries jslee02 github Stars: 2974, Language: Python. Description: :sunglasses: A curated list of robotics libraries and software",
-    "url": "https://github.com/jslee02/awesome-robotics-libraries",
-    "groupId": "https://github.com/jslee02/awesome-robotics-libraries",
-    "origin": "github",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "8fd13df42f0fbeddb3291b9dab84b84371df90055ed21860f0e0a66f583bf4e4",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Stars: 2974, Language: Python. Description: :sunglasses: A curated list of robotics libraries and software",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 106
-      }
-    ],
-    "metadata": {
-      "author": "jslee02",
-      "platform": "github",
-      "publishedAt": "2016-04-16",
-      "canonicalName": "GitHub Repository: jslee02/awesome-robotics-libraries"
+      "publishedAt": "2014-03-20",
+      "canonicalName": "GitHub Repository: nitinsh99/Prim-s-Algorithm-Using-Fibonnaci-Heap"
     }
   },
   {
@@ -2431,365 +2634,432 @@
     }
   },
   {
-    "typedId": "source:seed-50",
+    "typedId": "source:seed-5130",
     "kind": "source",
-    "title": "Erratum: Distributed Anonymous Mobile Robots: Formation of Geometric Patterns",
-    "body": "",
-    "retrievalText": "Erratum: Distributed Anonymous Mobile Robots: Formation of Geometric Patterns I. Suzuki openalex",
-    "url": "https://doi.org/10.1137/050631562",
-    "groupId": "https://doi.org/10.1137/050631562",
-    "origin": "openalex",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "a19c56c895e52caea8180f87b86cde81b88219f2473799a9a1dab44f52e0c8be",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "Erratum: Distributed Anonymous Mobile Robots: Formation of Geometric Patterns",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 77
-      }
-    ],
-    "metadata": {
-      "author": "I. Suzuki",
-      "platform": "openalex",
-      "publishedAt": "2006-01-01",
-      "canonicalName": "OpenAlex work: Erratum: Distributed Anonymous Mobile Robots: Form"
-    }
-  },
-  {
-    "typedId": "source:seed-51",
-    "kind": "source",
-    "title": "Self-Supervised Siamese Learning on Stereo Image Pairs for Depth Estimation in Robotic Surgery",
-    "body": "",
-    "retrievalText": "Self-Supervised Siamese Learning on Stereo Image Pairs for Depth Estimation in Robotic Surgery M Ye openalex",
-    "url": "https://doi.org/10.31256/hsmr2017.14",
-    "groupId": "https://doi.org/10.31256/hsmr2017.14",
-    "origin": "openalex",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "773ded958a8909f7a9a90cdd0ad05722f02d31bc28b29c53fe5a23e813554d1c",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "Self-Supervised Siamese Learning on Stereo Image Pairs for Depth Estimation in Robotic Surgery",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 94
-      }
-    ],
-    "metadata": {
-      "author": "M Ye",
-      "platform": "openalex",
-      "publishedAt": "2017-01-01",
-      "canonicalName": "OpenAlex work: Self-Supervised Siamese Learning on Stereo Image P"
-    }
-  },
-  {
-    "typedId": "source:seed-52",
-    "kind": "source",
-    "title": "Factors of healthcare robot adoption by medical staff in Thai government hospitals",
-    "body": "Academic paper about thailand robot indexed on OpenAlex.",
-    "retrievalText": "Factors of healthcare robot adoption by medical staff in Thai government hospitals Paniti Vichitkraivin openalex Academic paper about thailand robot indexed on OpenAlex.",
-    "url": "https://doi.org/10.1007/s12553-020-00489-4",
-    "groupId": "https://doi.org/10.1007/s12553-020-00489-4",
-    "origin": "openalex",
+    "title": "saifullah3396/Constrained-Minimum-Time-Cubic-Splines-for-Trajectory-Planning",
+    "body": "Stars: 35, Language: Matlab. Description: A simple and easy to follow matlab code for generating optimized minimum time cubic splines with general boundary velocities and maximum velocity constraints. It also includes multivariable spline generation as usually is the case for robotic manipulator. Further constraints can be easily added for single or multiple variables.",
+    "retrievalText": "saifullah3396/Constrained-Minimum-Time-Cubic-Splines-for-Trajectory-Planning saifullah3396 github Stars: 35, Language: Matlab. Description: A simple and easy to follow matlab code for generating optimized minimum time cubic splines with general boundary velocities and maximum velocity constraints. It also includes multivariable spline generation as usually is the case for robotic manipulator. Further constraints can be easily added for single or multiple variables.",
+    "url": "https://github.com/saifullah3396/Constrained-Minimum-Time-Cubic-Splines-for-Trajectory-Planning",
+    "groupId": "https://github.com/saifullah3396/Constrained-Minimum-Time-Cubic-Splines-for-Trajectory-Planning",
+    "origin": "github",
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "4c4302baa1dc2d2634f6e594a8767c15e186894301a532c55eef8cdd07f3a830",
+    "contentHash": "e633e1250fd2ae9e37ec5fe87a350676a766e083816c9cdae809ff83dd4827de",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
         "fieldName": "evidence_excerpt",
-        "originalText": "Academic paper about thailand robot indexed on OpenAlex.",
+        "originalText": "Stars: 35, Language: Matlab. Description: A simple and easy to follow matlab code for generating optimized minimum time cubic splines with general boundary velocities and maximum velocity constraints. It also includes multivariable spline generation as usually is the case for robotic manipulator. Further constraints can be easily added for single or multiple variables.",
         "label": "Source Excerpt",
         "coverage": "full",
         "startOffset": 0,
-        "endOffset": 56
+        "endOffset": 371
       }
     ],
     "metadata": {
-      "author": "Paniti Vichitkraivin",
-      "platform": "openalex",
+      "author": "saifullah3396",
+      "platform": "github",
+      "publishedAt": "2017-08-11",
+      "canonicalName": "GitHub Repository: saifullah3396/Constrained-Minimum-Time-Cubic-Splines-for-Trajectory-Planning"
+    }
+  },
+  {
+    "typedId": "source:seed-5145",
+    "kind": "source",
+    "title": "Walid-khaled/6DOF-Robot-Trajectory-Planning",
+    "body": "Stars: 38, Language: MATLAB. Description: In this repository, trajectory planning for a 6DOF manipulator is implemented. Synchronization and numerical control are applied. In addition, propagated error in end-effector position is calculated. Finally, polynomial trajectory and trajectory junction are solved. The repository is also a solution for Assignment3 in Dynamics of Nonlinear Robotics Systems course for ROCV master's program at Innopolis University.",
+    "retrievalText": "Walid-khaled/6DOF-Robot-Trajectory-Planning Walid-khaled github Stars: 38, Language: MATLAB. Description: In this repository, trajectory planning for a 6DOF manipulator is implemented. Synchronization and numerical control are applied. In addition, propagated error in end-effector position is calculated. Finally, polynomial trajectory and trajectory junction are solved. The repository is also a solution for Assignment3 in Dynamics of Nonlinear Robotics Systems course for ROCV master's program at Innopolis University.",
+    "url": "https://github.com/Walid-khaled/6DOF-Robot-Trajectory-Planning",
+    "groupId": "https://github.com/Walid-khaled/6DOF-Robot-Trajectory-Planning",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "ea4664ba05e8c5e2cc752879c73d13fded1414a54ebb81c47f3cf57540752211",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 38, Language: MATLAB. Description: In this repository, trajectory planning for a 6DOF manipulator is implemented. Synchronization and numerical control are applied. In addition, propagated error in end-effector position is calculated. Finally, polynomial trajectory and trajectory junction are solved. The repository is also a solution for Assignment3 in Dynamics of Nonlinear Robotics Systems course for ROCV master's program at Innopolis University.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 458
+      }
+    ],
+    "metadata": {
+      "author": "Walid-khaled",
+      "platform": "github",
+      "publishedAt": "2021-12-18",
+      "canonicalName": "GitHub Repository: Walid-khaled/6DOF-Robot-Trajectory-Planning"
+    }
+  },
+  {
+    "typedId": "source:seed-5252",
+    "kind": "source",
+    "title": "lamfur07/Flight-Dynamics-and-Control-UAVs",
+    "body": "Stars: 159, Language: MATLAB. Description: Understanding of flight control systems, including dynamic models for UAVs, low level autopilot design, trajectory following, and path planning. The essential physics and sensors of UAV problems, including low-level autopilot for stability and higher-level autopilot functions of path planning will be explored. Rigid-body dynamics through aerodynamics, stability augmentation, and state estimation using onboard sensors, to maneuvering through obstacles. Files include simulation projects using the MATLAB/Simulink environment. Projects start from modeling rigid-body dynamics, then add aerodynamics and sensor models. Furthermore, low-level autopilot code, extended Kalman filters for state estimation, path-following routines, and high-level path-planning algorithms.",
+    "retrievalText": "lamfur07/Flight-Dynamics-and-Control-UAVs lamfur07 github Stars: 159, Language: MATLAB. Description: Understanding of flight control systems, including dynamic models for UAVs, low level autopilot design, trajectory following, and path planning. The essential physics and sensors of UAV problems, including low-level autopilot for stability and higher-level autopilot functions of path planning will be explored. Rigid-body dynamics through aerodynamics, stability augmentation, and state estimation using onboard sensors, to maneuvering through obstacles. Files include simulation projects using the MATLAB/Simulink environment. Projects start from modeling rigid-body dynamics, then add aerodynamics and sensor models. Furthermore, low-level autopilot code, extended Kalman filters for state estimation, path-following routines, and high-level path-planning algorithms.",
+    "url": "https://github.com/lamfur07/Flight-Dynamics-and-Control-UAVs",
+    "groupId": "https://github.com/lamfur07/Flight-Dynamics-and-Control-UAVs",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "eb2f02b827fe0d37f3e85cd3757d0b262ef85041390a372948ad8c3588677998",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 159, Language: MATLAB. Description: Understanding of flight control systems, including dynamic models for UAVs, low level autopilot design, trajectory following, and path planning. The essential physics and sensors of UAV problems, including low-level autopilot for stability and higher-level autopilot functions of path planning will be explored. Rigid-body dynamics through aerodynamics, stability augmentation, and state estimation using onboard sensors, to maneuvering through obstacles. Files include simulation projects using the MATLAB/Simulink environment. Projects start from modeling rigid-body dynamics, then add aerodynamics and sensor models. Furthermore, low-level autopilot code, extended Kalman filters for state estimation, path-following routines, and high-level path-planning algorithms.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 813
+      }
+    ],
+    "metadata": {
+      "author": "lamfur07",
+      "platform": "github",
+      "publishedAt": "2022-05-25",
+      "canonicalName": "GitHub Repository: lamfur07/Flight-Dynamics-and-Control-UAVs"
+    }
+  },
+  {
+    "typedId": "source:seed-5303",
+    "kind": "source",
+    "title": "SHITIANYU-hue/Efficient-motion-planning",
+    "body": "Stars: 71, Language: MATLAB. Description: To guarantee safe and efficient driving for automated vehicles in complicated traffic conditions, the motion planning module of automated vehicles are expected to generate collision-free driving policies as soon as possible in varying traffic environment. However, there always exist a tradeoff between efficiency and accuracy for the motion planning algorithms. Besides, most motion planning methods cannot find the desired trajectory under extreme scenarios (e.g., lane change in crowded traffic scenarios). This study proposed an efficient motion planning strategy for automated lane change based on Mixed-Integer Quadratic Optimization (MIQP) and Neural Networks. We modeled the lane change task as a mixed-integer quadratic optimization problem with logical constraints, which allows the planning module to generate feasible, safe and comfortable driving actions for lane changing process. Then, a hierarchical machine learning structure that consists of SVM-based classification layer and NN-based action learning layer is established to generate desired driving policies that can make online, fast and generalized motion planning. Our model is validated in crowded lane change scenarios through numerical simulations and results indicate that our model can provide optimal and efficient motion planning for automated vehicles",
+    "retrievalText": "SHITIANYU-hue/Efficient-motion-planning SHITIANYU-hue github Stars: 71, Language: MATLAB. Description: To guarantee safe and efficient driving for automated vehicles in complicated traffic conditions, the motion planning module of automated vehicles are expected to generate collision-free driving policies as soon as possible in varying traffic environment. However, there always exist a tradeoff between efficiency and accuracy for the motion planning algorithms. Besides, most motion planning methods cannot find the desired trajectory under extreme scenarios (e.g., lane change in crowded traffic scenarios). This study proposed an efficient motion planning strategy for automated lane change based on Mixed-Integer Quadratic Optimization (MIQP) and Neural Networks. We modeled the lane change task as a mixed-integer quadratic optimization problem with logical constraints, which allows the planning module to generate feasible, safe and comfortable driving actions for lane changing process. Then, a hierarchical machine learning structure that consists of SVM-based classification layer and NN-based action learning layer is established to generate desired driving policies that can make online, fast and generalized motion planning. Our model is validated in crowded lane change scenarios through numerical simulations and results indicate that our model can provide optimal and efficient motion planning for automated vehicles",
+    "url": "https://github.com/SHITIANYU-hue/Efficient-motion-planning",
+    "groupId": "https://github.com/SHITIANYU-hue/Efficient-motion-planning",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "ed1c96c3013f868ac12837c8e5ba9c217d8acc4d0cd23965e018697f946776f1",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 71, Language: MATLAB. Description: To guarantee safe and efficient driving for automated vehicles in complicated traffic conditions, the motion planning module of automated vehicles are expected to generate collision-free driving policies as soon as possible in varying traffic environment. However, there always exist a tradeoff between efficiency and accuracy for the motion planning algorithms. Besides, most motion planning methods cannot find the desired trajectory under extreme scenarios (e.g., lane change in crowded traffic scenarios). This study proposed an efficient motion planning strategy for automated lane change based on Mixed-Integer Quadratic Optimization (MIQP) and Neural Networks. We modeled the lane change task as a mixed-integer quadratic optimization problem with logical constraints, which allows the planning module to generate feasible, safe and comfortable driving actions for lane changing process. Then, a hierarchical machine learning structure that consists of SVM-based classification layer and NN-based action learning layer is established to generate desired driving policies that can make online, fast and generalized motion planning. Our model is validated in crowded lane change scenarios through numerical simulations and results indicate that our model can provide optimal and efficient motion planning for automated vehicles",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 1374
+      }
+    ],
+    "metadata": {
+      "author": "SHITIANYU-hue",
+      "platform": "github",
+      "publishedAt": "2019-08-31",
+      "canonicalName": "GitHub Repository: SHITIANYU-hue/Efficient-motion-planning"
+    }
+  },
+  {
+    "typedId": "source:seed-5334",
+    "kind": "source",
+    "title": "nmohank101/Energy-efficient-trajectory-planning-in-time-varying-ocean-environments",
+    "body": "Stars: 12, Language: MATLAB. Description: We consider the problem of online trajectory design under time-varying environments. We formulate the general trajectory optimization problem within the framework of time-varying constrained convex optimization and propose a novel version of online gradient ascent algorithm that guarantees sublinear offline regret up to the pathlength of the offline solution, cumulative gradient and error in gradient variations.",
+    "retrievalText": "nmohank101/Energy-efficient-trajectory-planning-in-time-varying-ocean-environments nmohank101 github Stars: 12, Language: MATLAB. Description: We consider the problem of online trajectory design under time-varying environments. We formulate the general trajectory optimization problem within the framework of time-varying constrained convex optimization and propose a novel version of online gradient ascent algorithm that guarantees sublinear offline regret up to the pathlength of the offline solution, cumulative gradient and error in gradient variations.",
+    "url": "https://github.com/nmohank101/Energy-efficient-trajectory-planning-in-time-varying-ocean-environments",
+    "groupId": "https://github.com/nmohank101/Energy-efficient-trajectory-planning-in-time-varying-ocean-environments",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "5d3c5fadcfdece068eeac7009ab7a7eaec4bd95bf42cea1bdf362f85f4fc568e",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 12, Language: MATLAB. Description: We consider the problem of online trajectory design under time-varying environments. We formulate the general trajectory optimization problem within the framework of time-varying constrained convex optimization and propose a novel version of online gradient ascent algorithm that guarantees sublinear offline regret up to the pathlength of the offline solution, cumulative gradient and error in gradient variations. ",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 458
+      }
+    ],
+    "metadata": {
+      "author": "nmohank101",
+      "platform": "github",
       "publishedAt": "2020-01-01",
-      "canonicalName": "OpenAlex work: Factors of healthcare robot adoption by medical st"
+      "canonicalName": "GitHub Repository: nmohank101/Energy-efficient-trajectory-planning-in-time-varying-ocean-environments"
     }
   },
   {
-    "typedId": "source:seed-53",
+    "typedId": "source:seed-5338",
     "kind": "source",
-    "title": "Multiple cues produced by a robotic fish modulate aggressive behaviour in Siamese fighting fishes",
-    "body": "",
-    "retrievalText": "Multiple cues produced by a robotic fish modulate aggressive behaviour in Siamese fighting fishes Donato Romano openalex",
-    "url": "https://doi.org/10.1038/s41598-017-04840-0",
-    "groupId": "https://doi.org/10.1038/s41598-017-04840-0",
-    "origin": "openalex",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "cd8f661416a8d5f72335a672aec08116c53573ac781fd446c8f4505e798461fd",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "Multiple cues produced by a robotic fish modulate aggressive behaviour in Siamese fighting fishes",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 97
-      }
-    ],
-    "metadata": {
-      "author": "Donato Romano",
-      "platform": "openalex",
-      "publishedAt": "2017-01-01",
-      "canonicalName": "OpenAlex work: Multiple cues produced by a robotic fish modulate "
-    }
-  },
-  {
-    "typedId": "source:seed-54",
-    "kind": "source",
-    "title": "Restaurant Service Robots Development in Thailand and Their Real Environment Evaluation",
-    "body": "",
-    "retrievalText": "Restaurant Service Robots Development in Thailand and Their Real Environment Evaluation Akkharaphong Eksiri openalex",
-    "url": "https://doi.org/10.20965/jrm.2015.p0091",
-    "groupId": "https://doi.org/10.20965/jrm.2015.p0091",
-    "origin": "openalex",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "455158963851416613d92fcafce53d8770211a4419ba925a3a9dda982676a0c2",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "Restaurant Service Robots Development in Thailand and Their Real Environment Evaluation",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 87
-      }
-    ],
-    "metadata": {
-      "author": "Akkharaphong Eksiri",
-      "platform": "openalex",
-      "publishedAt": "2015-01-01",
-      "canonicalName": "OpenAlex work: Restaurant Service Robots Development in Thailand "
-    }
-  },
-  {
-    "typedId": "source:seed-55",
-    "kind": "source",
-    "title": "A Review of Point Cloud Registration Algorithms for Mobile Robotics",
-    "body": "",
-    "retrievalText": "A Review of Point Cloud Registration Algorithms for Mobile Robotics François Pomerleau openalex",
-    "url": "https://doi.org/10.1561/2300000035",
-    "groupId": "https://doi.org/10.1561/2300000035",
-    "origin": "openalex",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "08c3f2e3c9752647bd06416c5712595ae5e2606838f969b167aa2adcc9d6b451",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "A Review of Point Cloud Registration Algorithms for Mobile Robotics",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 67
-      }
-    ],
-    "metadata": {
-      "author": "François Pomerleau",
-      "platform": "openalex",
-      "publishedAt": "2015-01-01",
-      "canonicalName": "OpenAlex work: A Review of Point Cloud Registration Algorithms fo"
-    }
-  },
-  {
-    "typedId": "source:seed-56",
-    "kind": "source",
-    "title": "The Rise of Robots in China",
-    "body": "",
-    "retrievalText": "The Rise of Robots in China Hong Cheng openalex",
-    "url": "https://doi.org/10.1257/jep.33.2.71",
-    "groupId": "https://doi.org/10.1257/jep.33.2.71",
-    "origin": "openalex",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "04c7013f6d2b74da913695beaeebd7433efb5186dbb3a1addfd82d287a2759ee",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "The Rise of Robots in China",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 27
-      }
-    ],
-    "metadata": {
-      "author": "Hong Cheng",
-      "platform": "openalex",
-      "publishedAt": "2019-01-01",
-      "canonicalName": "OpenAlex work: The Rise of Robots in China"
-    }
-  },
-  {
-    "typedId": "source:seed-57",
-    "kind": "source",
-    "title": "Lower-Limb Robotic Rehabilitation: Literature Review and Challenges",
-    "body": "",
-    "retrievalText": "Lower-Limb Robotic Rehabilitation: Literature Review and Challenges Iñaki Díaz openalex",
-    "url": "https://doi.org/10.1155/2011/759764",
-    "groupId": "https://doi.org/10.1155/2011/759764",
-    "origin": "openalex",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "f10178b0293946ccf789e28e31979ecb4664b014d4ea962c6a74b75f4d6de784",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "Lower-Limb Robotic Rehabilitation: Literature Review and Challenges",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 67
-      }
-    ],
-    "metadata": {
-      "author": "Iñaki Díaz",
-      "platform": "openalex",
-      "publishedAt": "2011-01-01",
-      "canonicalName": "OpenAlex work: Lower-Limb Robotic Rehabilitation: Literature Revi"
-    }
-  },
-  {
-    "typedId": "source:seed-58",
-    "kind": "source",
-    "title": "LSFP-Tracker: An Autonomous Laser Stripe Feature Point Extraction Algorithm Based on Siamese Network for Robotic Welding Seam Tracking",
-    "body": "",
-    "retrievalText": "LSFP-Tracker: An Autonomous Laser Stripe Feature Point Extraction Algorithm Based on Siamese Network for Robotic Welding Seam Tracking Runquan Xiao openalex",
-    "url": "https://doi.org/10.1109/tie.2023.3243265",
-    "groupId": "https://doi.org/10.1109/tie.2023.3243265",
-    "origin": "openalex",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "ed8631ff2ba5409488c40a82f4f562761842f3d4e53b0e17265e6ea77bee38ee",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "LSFP-Tracker: An Autonomous Laser Stripe Feature Point Extraction Algorithm Based on Siamese Network for Robotic Welding Seam Tracking",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 134
-      }
-    ],
-    "metadata": {
-      "author": "Runquan Xiao",
-      "platform": "openalex",
-      "publishedAt": "2023-01-01",
-      "canonicalName": "OpenAlex work: LSFP-Tracker: An Autonomous Laser Stripe Feature P"
-    }
-  },
-  {
-    "typedId": "source:seed-59",
-    "kind": "source",
-    "title": "Cyclic coordinate descent: A robotics algorithm for protein loop closure",
-    "body": "",
-    "retrievalText": "Cyclic coordinate descent: A robotics algorithm for protein loop closure Adrian A. Canutescu openalex",
-    "url": "https://doi.org/10.1110/ps.0242703",
-    "groupId": "https://doi.org/10.1110/ps.0242703",
-    "origin": "openalex",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "c2d25772e56637fa0fbdcd800c17f48a3954f2c125570edf8ef99f9beeaaeb28",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "Cyclic coordinate descent: A robotics algorithm for protein loop closure",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 72
-      }
-    ],
-    "metadata": {
-      "author": "Adrian A. Canutescu",
-      "platform": "openalex",
-      "publishedAt": "2003-01-01",
-      "canonicalName": "OpenAlex work: Cyclic coordinate descent: A robotics algorithm fo"
-    }
-  },
-  {
-    "typedId": "source:seed-6",
-    "kind": "source",
-    "title": "Thai Innovation on the World Stage: Dinsaw Mini Robot for Elderly Care",
-    "body": "The robot supports mental health and daily living by playing music ... and offering memory games.",
-    "retrievalText": "Thai Innovation on the World Stage: Dinsaw Mini Robot for Elderly Care government_portal The robot supports mental health and daily living by playing music ... and offering memory games.",
-    "url": "https://thailand.go.th/public/issue-focus-detail/thai-innovation-goes-global-dinsaw-mini-robot-takes-care-of-the-elderly",
-    "groupId": "https://thailand.go.th/public/issue-focus-detail/thai-innovation-goes-global-dinsaw-mini-robot-takes-care-of-the-elderly",
-    "origin": "web",
+    "title": "SonamYeshe/ENPM661-Planning-for-Autonomous-Robots",
+    "body": "Stars: 8, Language: Matlab. Description: Planning is a fundamental capability needed to realize autonomous robots. Planning in the context of autonomous robots is carried out at multiple different levels. At the top level, task planning is performed to identify and sequence the tasks needed to meet mission requirements. At the next level, planning is performed to determine a sequence of motion goals that satisfy individual task goals and constraints. Finally, at the lowest level, trajectory planning is performed to determine actuator actions to realize the motion goals. Different algorithms are used to achieve planning at different levels. This graduate course will introduce planning techniques for realizing autonomous robots. In addition to covering traditional motion planning techniques, this course will emphasize the role of physics in the planning process. This course will also discuss how the planning component is integrated with control component. Mobile robots will be used as examples to illustrate the concepts during this course. However, techniques introduced in the course will be equally applicable to robot manipulators.",
+    "retrievalText": "SonamYeshe/ENPM661-Planning-for-Autonomous-Robots SonamYeshe github Stars: 8, Language: Matlab. Description: Planning is a fundamental capability needed to realize autonomous robots. Planning in the context of autonomous robots is carried out at multiple different levels. At the top level, task planning is performed to identify and sequence the tasks needed to meet mission requirements. At the next level, planning is performed to determine a sequence of motion goals that satisfy individual task goals and constraints. Finally, at the lowest level, trajectory planning is performed to determine actuator actions to realize the motion goals. Different algorithms are used to achieve planning at different levels. This graduate course will introduce planning techniques for realizing autonomous robots. In addition to covering traditional motion planning techniques, this course will emphasize the role of physics in the planning process. This course will also discuss how the planning component is integrated with control component. Mobile robots will be used as examples to illustrate the concepts during this course. However, techniques introduced in the course will be equally applicable to robot manipulators.",
+    "url": "https://github.com/SonamYeshe/ENPM661-Planning-for-Autonomous-Robots",
+    "groupId": "https://github.com/SonamYeshe/ENPM661-Planning-for-Autonomous-Robots",
+    "origin": "github",
     "language": "en",
     "isTitleOnly": false,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "1b09038bf2ae36c30779609be3043694d3bc72ac337b9134ecb6e78699f59120",
+    "contentHash": "8ba5af882f6ad77298021dd2abfaef86b44bcf4bc0dd806904d39e4a1bd7787f",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
         "fieldName": "evidence_excerpt",
-        "originalText": "The robot supports mental health and daily living by playing music ... and offering memory games.",
+        "originalText": "Stars: 8, Language: Matlab. Description: Planning is a fundamental capability needed to realize autonomous robots. Planning in the context of autonomous robots is carried out at multiple different levels. At the top level, task planning is performed to identify and sequence the tasks needed to meet mission requirements. At the next level, planning is performed to determine a sequence of motion goals that satisfy individual task goals and constraints. Finally, at the lowest level, trajectory planning is performed to determine actuator actions to realize the motion goals. Different algorithms are used to achieve planning at different levels. This graduate course will introduce planning techniques for realizing autonomous robots. In addition to covering traditional motion planning techniques, this course will emphasize the role of physics in the planning process. This course will also discuss how the planning component is integrated with control component. Mobile robots will be used as examples to illustrate the concepts during this course. However, techniques introduced in the course will be equally applicable to robot manipulators.",
         "label": "Source Excerpt",
         "coverage": "full",
         "startOffset": 0,
-        "endOffset": 97
+        "endOffset": 1148
       }
     ],
     "metadata": {
-      "platform": "government_portal",
-      "publishedAt": "2025-05-19",
-      "canonicalName": "Thailand.go.th Dinsaw Mini coverage"
+      "author": "SonamYeshe",
+      "platform": "github",
+      "publishedAt": "2018-07-20",
+      "canonicalName": "GitHub Repository: SonamYeshe/ENPM661-Planning-for-Autonomous-Robots"
+    }
+  },
+  {
+    "typedId": "source:seed-5391",
+    "kind": "source",
+    "title": "abdulkadrtr/ROS2-FrontierBaseExplorationForAutonomousRobot",
+    "body": "Stars: 104, Language: Python. Description: Our autonomous ground vehicle uses Frontier Based exploration to navigate and map unknown environments. Equipped with sensors, it can avoid obstacles and make real-time decisions. It has potential applications in search and rescue, agriculture, and logistics, and represents an important step forward in autonomous ground vehicle development.",
+    "retrievalText": "abdulkadrtr/ROS2-FrontierBaseExplorationForAutonomousRobot abdulkadrtr github Stars: 104, Language: Python. Description: Our autonomous ground vehicle uses Frontier Based exploration to navigate and map unknown environments. Equipped with sensors, it can avoid obstacles and make real-time decisions. It has potential applications in search and rescue, agriculture, and logistics, and represents an important step forward in autonomous ground vehicle development.",
+    "url": "https://github.com/abdulkadrtr/ROS2-FrontierBaseExplorationForAutonomousRobot",
+    "groupId": "https://github.com/abdulkadrtr/ROS2-FrontierBaseExplorationForAutonomousRobot",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "7bc1390c69d7cc1e9ef70b06a22f56e54c5549b4ce70c24bd1d89cabba551d08",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 104, Language: Python. Description: Our autonomous ground vehicle uses Frontier Based exploration to navigate and map unknown environments. Equipped with sensors, it can avoid obstacles and make real-time decisions. It has potential applications in search and rescue, agriculture, and logistics, and represents an important step forward in autonomous ground vehicle development.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 385
+      }
+    ],
+    "metadata": {
+      "author": "abdulkadrtr",
+      "platform": "github",
+      "publishedAt": "2023-02-14",
+      "canonicalName": "GitHub Repository: abdulkadrtr/ROS2-FrontierBaseExplorationForAutonomousRobot"
+    }
+  },
+  {
+    "typedId": "source:seed-5414",
+    "kind": "source",
+    "title": "Elsayed-Ayman-Habib/Autonomous_Robotic_Forklift",
+    "body": "Stars: 12, Language: C. Description: this project showcases the successful development of an autonomous robotic forklift system, highlighting its potential impact on enhancing warehouse efficiency and optimizing material handling operations. The insights gained from this project contribute to the advancement of robotics technology in the field of logistics and automation.",
+    "retrievalText": "Elsayed-Ayman-Habib/Autonomous_Robotic_Forklift Elsayed-Ayman-Habib github Stars: 12, Language: C. Description: this project showcases the successful development of an autonomous robotic forklift system, highlighting its potential impact on enhancing warehouse efficiency and optimizing material handling operations. The insights gained from this project contribute to the advancement of robotics technology in the field of logistics and automation.",
+    "url": "https://github.com/Elsayed-Ayman-Habib/Autonomous_Robotic_Forklift",
+    "groupId": "https://github.com/Elsayed-Ayman-Habib/Autonomous_Robotic_Forklift",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "cb882dbda120191209386502673417960183713eacf5f714aec35f6853c00611",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 12, Language: C. Description: this project showcases the successful development of an autonomous robotic forklift system, highlighting its potential impact on enhancing warehouse efficiency and optimizing material handling operations. The insights gained from this project contribute to the advancement of robotics technology in the field of logistics and automation.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 374
+      }
+    ],
+    "metadata": {
+      "author": "Elsayed-Ayman-Habib",
+      "platform": "github",
+      "publishedAt": "2023-07-13",
+      "canonicalName": "GitHub Repository: Elsayed-Ayman-Habib/Autonomous_Robotic_Forklift"
+    }
+  },
+  {
+    "typedId": "source:seed-5506",
+    "kind": "source",
+    "title": "SonamYeshe/ENPM673-Perception-for-Autonomous-Robots",
+    "body": "Stars: 8, Language: Matlab. Description: This class teaches Image Processing and Computer Vision techniques for Mobile Robots. The class covers three topics: Image Processing (Image Enhancement, Filtering, Advanced Edge and Texture), 3D Vision (3D Geometry from Multiple view geometry, Motion Processing and Stereo) and an Introduction to Image Segmentation and Object Recognition. Students will be introduced to a number of existing software toolboxes from Vision and Robotics, and will implement a number of smaller projects in Matlab.",
+    "retrievalText": "SonamYeshe/ENPM673-Perception-for-Autonomous-Robots SonamYeshe github Stars: 8, Language: Matlab. Description: This class teaches Image Processing and Computer Vision techniques for Mobile Robots. The class covers three topics: Image Processing (Image Enhancement, Filtering, Advanced Edge and Texture), 3D Vision (3D Geometry from Multiple view geometry, Motion Processing and Stereo) and an Introduction to Image Segmentation and Object Recognition. Students will be introduced to a number of existing software toolboxes from Vision and Robotics, and will implement a number of smaller projects in Matlab.",
+    "url": "https://github.com/SonamYeshe/ENPM673-Perception-for-Autonomous-Robots",
+    "groupId": "https://github.com/SonamYeshe/ENPM673-Perception-for-Autonomous-Robots",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "ae504122ff7c8039e0dbe489fa0d48326c352dc10e069cb80d1e2bf674aa4045",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 8, Language: Matlab. Description: This class teaches Image Processing and Computer Vision techniques for Mobile Robots. The class covers three topics:  Image Processing (Image Enhancement, Filtering, Advanced Edge and Texture), 3D Vision (3D Geometry from Multiple view geometry, Motion Processing and Stereo) and an Introduction to Image Segmentation and Object Recognition. Students will be introduced to a number of existing software toolboxes from Vision and Robotics, and will implement a number of smaller  projects in Matlab.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 539
+      }
+    ],
+    "metadata": {
+      "author": "SonamYeshe",
+      "platform": "github",
+      "publishedAt": "2018-07-19",
+      "canonicalName": "GitHub Repository: SonamYeshe/ENPM673-Perception-for-Autonomous-Robots"
+    }
+  },
+  {
+    "typedId": "source:seed-5525",
+    "kind": "source",
+    "title": "robinthoma/Autonomous-uv-disinfection-robot",
+    "body": "Stars: 5, Language: C++. Description: As we face a worldwide healthcare crisis caused by COVID-19, there's a large need for disinfection. This tutorial can be followed by anyone who is new to ROS all the instructions are mentioned so that you too can build an autonomous UV bot.UV-C in many parts of the globe for fighting the COVID-19. Currently, such units are either stationary or moved by humans. We improved upon that concept and built an autonomous, mobile unit that may move around lobbies and hallways get into rooms to kill the bulk of the bacteria and viruses.",
+    "retrievalText": "robinthoma/Autonomous-uv-disinfection-robot robinthoma github Stars: 5, Language: C++. Description: As we face a worldwide healthcare crisis caused by COVID-19, there's a large need for disinfection. This tutorial can be followed by anyone who is new to ROS all the instructions are mentioned so that you too can build an autonomous UV bot.UV-C in many parts of the globe for fighting the COVID-19. Currently, such units are either stationary or moved by humans. We improved upon that concept and built an autonomous, mobile unit that may move around lobbies and hallways get into rooms to kill the bulk of the bacteria and viruses.",
+    "url": "https://github.com/robinthoma/Autonomous-uv-disinfection-robot",
+    "groupId": "https://github.com/robinthoma/Autonomous-uv-disinfection-robot",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "9a7216cfe2e0b971a6b74e9fd8881cf92f95412115546363e01d787f086f11a8",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 5, Language: C++. Description: As we face a worldwide healthcare crisis caused by COVID-19, there's a large need for disinfection. This tutorial can be followed by anyone who is new to ROS all the instructions are mentioned so that you too can build an autonomous UV bot.UV-C  in many parts of the globe for fighting the COVID-19. Currently, such units are either stationary or moved by humans. We improved upon that concept and built an autonomous, mobile unit that may move around lobbies and hallways get into rooms to kill the bulk of the bacteria and viruses.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 571
+      }
+    ],
+    "metadata": {
+      "author": "robinthoma",
+      "platform": "github",
+      "publishedAt": "2020-08-28",
+      "canonicalName": "GitHub Repository: robinthoma/Autonomous-uv-disinfection-robot"
+    }
+  },
+  {
+    "typedId": "source:seed-5550",
+    "kind": "source",
+    "title": "fazildgr8/realsense_explorer_bot",
+    "body": "Stars: 119, Language: CMake. Description: Autonomous ground exploration mobile robot which has 3-DOF manipulator with Intel Realsense D435i mounted on a Tracked skid-steer drive mobile robot. The robot is capable of mapping spaces, exploration through RRT, SLAM and 3D pose estimation of objects around it. This is an custom robot with self built URDF model.The Robot uses ROS's navigation stacks .",
+    "retrievalText": "fazildgr8/realsense_explorer_bot fazildgr8 github Stars: 119, Language: CMake. Description: Autonomous ground exploration mobile robot which has 3-DOF manipulator with Intel Realsense D435i mounted on a Tracked skid-steer drive mobile robot. The robot is capable of mapping spaces, exploration through RRT, SLAM and 3D pose estimation of objects around it. This is an custom robot with self built URDF model.The Robot uses ROS's navigation stacks .",
+    "url": "https://github.com/fazildgr8/realsense_explorer_bot",
+    "groupId": "https://github.com/fazildgr8/realsense_explorer_bot",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "6e5476f184c46e283d89d14bc43e407db851e7f00047135af94cfc0a7e4307b8",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 119, Language: CMake. Description: Autonomous ground exploration  mobile robot which has 3-DOF manipulator with Intel Realsense D435i mounted on a Tracked skid-steer drive mobile  robot. The robot is capable of mapping spaces, exploration through RRT, SLAM and 3D pose estimation of objects around it. This is an custom robot with self built URDF model.The Robot uses ROS's navigation stacks .  ",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 402
+      }
+    ],
+    "metadata": {
+      "author": "fazildgr8",
+      "platform": "github",
+      "publishedAt": "2021-11-05",
+      "canonicalName": "GitHub Repository: fazildgr8/realsense_explorer_bot"
+    }
+  },
+  {
+    "typedId": "source:seed-5725",
+    "kind": "source",
+    "title": "danielrm84/Social-Learning-Project-Robotics",
+    "body": "Stars: 5, Language: C++. Description: This repository contains the simulator I created and used for my research on social learning during my Master studies at the Simon Bolivar University in Venezuela. It consists of individual agents or robots navigating the arena and finding the target feeding patch. The movement behavior of each robot is governed by artificial neural networks (AI). The full simulator is programmed in C++ and can be visualized on Netlogo (optional).",
+    "retrievalText": "danielrm84/Social-Learning-Project-Robotics danielrm84 github Stars: 5, Language: C++. Description: This repository contains the simulator I created and used for my research on social learning during my Master studies at the Simon Bolivar University in Venezuela. It consists of individual agents or robots navigating the arena and finding the target feeding patch. The movement behavior of each robot is governed by artificial neural networks (AI). The full simulator is programmed in C++ and can be visualized on Netlogo (optional).",
+    "url": "https://github.com/danielrm84/Social-Learning-Project-Robotics",
+    "groupId": "https://github.com/danielrm84/Social-Learning-Project-Robotics",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "e12a785a3efd390393a6cca62232701d63f4416a24a61afd463d0c73028c7cb9",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 5, Language: C++. Description: This repository contains the simulator I created and used for my research on social learning during my Master studies at the Simon Bolivar University in Venezuela. It consists of individual agents or robots navigating the arena and finding the target feeding patch. The movement behavior of each robot is governed by artificial neural networks (AI). The full simulator is programmed in C++ and can be visualized on Netlogo (optional).",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 472
+      }
+    ],
+    "metadata": {
+      "author": "danielrm84",
+      "platform": "github",
+      "publishedAt": "2020-01-15",
+      "canonicalName": "GitHub Repository: danielrm84/Social-Learning-Project-Robotics"
+    }
+  },
+  {
+    "typedId": "source:seed-6004",
+    "kind": "source",
+    "title": "szebedy/autonomous-drone",
+    "body": "Stars: 191, Language: C++. Description: This repository intends to enable autonomous drone delivery with the Intel Aero RTF drone and PX4 autopilot. The code can be executed both on the real drone or simulated on a PC using Gazebo. Its core is a robot operating system (ROS) node, which communicates with the PX4 autopilot through mavros. It uses SVO 2.0 for visual odometry, WhyCon for visual marker localization and Ewok for trajectoy planning with collision avoidance.",
+    "retrievalText": "szebedy/autonomous-drone szebedy github Stars: 191, Language: C++. Description: This repository intends to enable autonomous drone delivery with the Intel Aero RTF drone and PX4 autopilot. The code can be executed both on the real drone or simulated on a PC using Gazebo. Its core is a robot operating system (ROS) node, which communicates with the PX4 autopilot through mavros. It uses SVO 2.0 for visual odometry, WhyCon for visual marker localization and Ewok for trajectoy planning with collision avoidance.",
+    "url": "https://github.com/szebedy/autonomous-drone",
+    "groupId": "https://github.com/szebedy/autonomous-drone",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "dd90a0d4eaee8afae68192519964343546b1ef9bd0108a59fba8a7adbb06d663",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 191, Language: C++. Description: This repository intends to enable autonomous drone delivery with the Intel Aero RTF drone and PX4 autopilot. The code can be executed both on the real drone or simulated on a PC using Gazebo. Its core is a robot operating system (ROS) node, which communicates with the PX4 autopilot through mavros. It uses SVO 2.0 for visual odometry, WhyCon for visual marker localization and Ewok for trajectoy planning with collision avoidance.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 471
+      }
+    ],
+    "metadata": {
+      "author": "szebedy",
+      "platform": "github",
+      "publishedAt": "2018-07-16",
+      "canonicalName": "GitHub Repository: szebedy/autonomous-drone"
     }
   },
   {
@@ -2826,39 +3096,6 @@
     }
   },
   {
-    "typedId": "source:seed-6422",
-    "kind": "source",
-    "title": "Don’t follow me! #robot  #robotics  #thailand",
-    "body": "",
-    "retrievalText": "Don’t follow me! #robot  #robotics  #thailand Paris Valentine Channel youtube",
-    "url": "https://www.youtube.com/watch?v=scTYhKFKyKM",
-    "groupId": "https://www.youtube.com/watch?v=scTYhKFKyKM",
-    "origin": "youtube",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "c45cb27f083f5b740cb815d42cb6db8e72759d0b7cf8e55c5b42b706f3491990",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "Don’t follow me! #robot  #robotics  #thailand",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 45
-      }
-    ],
-    "metadata": {
-      "author": "Paris Valentine Channel",
-      "platform": "youtube",
-      "publishedAt": "2023-11-01",
-      "canonicalName": "YouTube video: Don’t follow me! #robot  #robotics  #thailand"
-    }
-  },
-  {
     "typedId": "source:seed-6423",
     "kind": "source",
     "title": "ไทยพัฒนาหุ่นยนต์เพื่อการสงครามสำเร็จ🇹🇭💪 #thailand #military #army #thailandmilitary #Robo#bangkok",
@@ -2892,39 +3129,6 @@
     }
   },
   {
-    "typedId": "source:seed-6424",
-    "kind": "source",
-    "title": "Intense Robot Boxing Fight in China; Unitree Robot Boxing #unitree #boxingrobot",
-    "body": "",
-    "retrievalText": "Intense Robot Boxing Fight in China; Unitree Robot Boxing #unitree #boxingrobot Chris Wabs youtube",
-    "url": "https://www.youtube.com/watch?v=UjSWyhskFmQ",
-    "groupId": "https://www.youtube.com/watch?v=UjSWyhskFmQ",
-    "origin": "youtube",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "2691d0ccff1790c55d8888552a82403d0be351006dc0780037fba517de4c5866",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "Intense Robot Boxing Fight in China; Unitree Robot Boxing #unitree #boxingrobot",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 79
-      }
-    ],
-    "metadata": {
-      "author": "Chris Wabs",
-      "platform": "youtube",
-      "publishedAt": "2025-07-27",
-      "canonicalName": "YouTube video: Intense Robot Boxing Fight in China; Unitree Robot"
-    }
-  },
-  {
     "typedId": "source:seed-6425",
     "kind": "source",
     "title": "AI Girl Series จะ Gen จนกว่าจะเจอ | EP.1 [1/4] (ENG SUB)",
@@ -2955,204 +3159,6 @@
       "platform": "youtube",
       "publishedAt": "2026-07-01",
       "canonicalName": "YouTube video: AI Girl Series จะ Gen จนกว่าจะเจอ | EP.1 [1/4] (EN"
-    }
-  },
-  {
-    "typedId": "source:seed-6426",
-    "kind": "source",
-    "title": "Robot Waiters Serving Dinner in Thailand",
-    "body": "At Thailand's most original Japanese restaurant, the service is fast, friendly and extremely efficient - that's because two high-tech ...",
-    "retrievalText": "Robot Waiters Serving Dinner in Thailand Associated Press youtube At Thailand's most original Japanese restaurant, the service is fast, friendly and extremely efficient - that's because two high-tech ...",
-    "url": "https://www.youtube.com/watch?v=RTjlMBFx9I0",
-    "groupId": "https://www.youtube.com/watch?v=RTjlMBFx9I0",
-    "origin": "youtube",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "4190bb9faa6bf273eb9156e21b056a7bcdc49edec7683480928d44597fa23e7f",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "At Thailand's most original Japanese restaurant, the service is fast, friendly and extremely efficient - that's because two high-tech ...",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 137
-      }
-    ],
-    "metadata": {
-      "author": "Associated Press",
-      "platform": "youtube",
-      "publishedAt": "2010-06-14",
-      "canonicalName": "YouTube video: Robot Waiters Serving Dinner in Thailand"
-    }
-  },
-  {
-    "typedId": "source:seed-6427",
-    "kind": "source",
-    "title": "Robots in THAILAND 🇹🇭 😂🤷‍♂️ #robot #thailand #travel",
-    "body": "",
-    "retrievalText": "Robots in THAILAND 🇹🇭 😂🤷‍♂️ #robot #thailand #travel Xperience Travel youtube",
-    "url": "https://www.youtube.com/watch?v=5rwdSIxyCm8",
-    "groupId": "https://www.youtube.com/watch?v=5rwdSIxyCm8",
-    "origin": "youtube",
-    "language": "en",
-    "isTitleOnly": true,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "02f331c21e0870d4838ca14b0bbbb676c54a9f8fa0c2630f316ac81d0f876cda",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "title",
-        "originalText": "Robots in THAILAND 🇹🇭 😂🤷‍♂️ #robot #thailand #travel",
-        "label": "Title Only",
-        "coverage": "title-only",
-        "startOffset": 0,
-        "endOffset": 56
-      }
-    ],
-    "metadata": {
-      "author": "Xperience Travel",
-      "platform": "youtube",
-      "publishedAt": "2025-05-07",
-      "canonicalName": "YouTube video: Robots in THAILAND 🇹🇭 😂🤷‍♂️ #robot #thailand #trav"
-    }
-  },
-  {
-    "typedId": "source:seed-6428",
-    "kind": "source",
-    "title": "Ayutthaya Robot Museum part1  #thailand  #amazingthailand   #ayuttaya #bangkok #robot",
-    "body": "Thai Insights Team been to Ban Hun Lek is a museum where artists manufacture and display their scrap metal creations of ...",
-    "retrievalText": "Ayutthaya Robot Museum part1  #thailand  #amazingthailand   #ayuttaya #bangkok #robot Thailands Sites youtube Thai Insights Team been to Ban Hun Lek is a museum where artists manufacture and display their scrap metal creations of ...",
-    "url": "https://www.youtube.com/watch?v=ujIyPGsyqJg",
-    "groupId": "https://www.youtube.com/watch?v=ujIyPGsyqJg",
-    "origin": "youtube",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "d9746b4bce3cfd6381258a2c824ba5846b51d46f352decd8d825565929bbca0d",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Thai Insights Team been to Ban Hun Lek is a museum where artists manufacture and display their scrap metal creations of ...",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 123
-      }
-    ],
-    "metadata": {
-      "author": "Thailands Sites",
-      "platform": "youtube",
-      "publishedAt": "2022-05-29",
-      "canonicalName": "YouTube video: Ayutthaya Robot Museum part1  #thailand  #amazingt"
-    }
-  },
-  {
-    "typedId": "source:seed-6429",
-    "kind": "source",
-    "title": "Thailand&#39;s First AI Police Robot Patrols Streets - RoboCop Becomes Reality!",
-    "body": "Subscribe to our YouTube channel for free here: https://www.youtube.com/@TheNeuralAI Thailand's Royal Thai Police has ...",
-    "retrievalText": "Thailand&#39;s First AI Police Robot Patrols Streets - RoboCop Becomes Reality! The Neural Talks by Ranjith Melarkode youtube Subscribe to our YouTube channel for free here: https://www.youtube.com/@TheNeuralAI Thailand's Royal Thai Police has ...",
-    "url": "https://www.youtube.com/watch?v=I_G9NBqjcOk",
-    "groupId": "https://www.youtube.com/watch?v=I_G9NBqjcOk",
-    "origin": "youtube",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "f112b6b484b5878234f6082506430d1c9e46705f5d8f47392b39375f25b1718e",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Subscribe to our YouTube channel for free here: https://www.youtube.com/@TheNeuralAI Thailand's Royal Thai Police has ...",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 121
-      }
-    ],
-    "metadata": {
-      "author": "The Neural Talks by Ranjith Melarkode",
-      "platform": "youtube",
-      "publishedAt": "2025-04-23",
-      "canonicalName": "YouTube video: Thailand&#39;s First AI Police Robot Patrols Stree"
-    }
-  },
-  {
-    "typedId": "source:seed-6430",
-    "kind": "source",
-    "title": "mainan unik kreatif robot pemanjat tangga #toys #creative #ideas #robot #mainan #idebarangbekas",
-    "body": "creative robot pemanjat tangga super unik dari stik cara membuatnya cek video short kita sebelumnya atau klik video terkait ...",
-    "retrievalText": "mainan unik kreatif robot pemanjat tangga #toys #creative #ideas #robot #mainan #idebarangbekas Gudang Kreatif youtube creative robot pemanjat tangga super unik dari stik cara membuatnya cek video short kita sebelumnya atau klik video terkait ...",
-    "url": "https://www.youtube.com/watch?v=oh7no38FMyE",
-    "groupId": "https://www.youtube.com/watch?v=oh7no38FMyE",
-    "origin": "youtube",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "f844c58472cf5bd0f42ad63bcd82b2b80e28acffc882b1c7baa9bc7241c40eaa",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "creative robot pemanjat tangga super unik dari stik cara membuatnya cek video short kita sebelumnya atau klik video terkait ...",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 127
-      }
-    ],
-    "metadata": {
-      "author": "Gudang Kreatif",
-      "platform": "youtube",
-      "publishedAt": "2025-02-25",
-      "canonicalName": "YouTube video: mainan unik kreatif robot pemanjat tangga #toys #c"
-    }
-  },
-  {
-    "typedId": "source:seed-6431",
-    "kind": "source",
-    "title": "FLL Unearthed 545 Full points! Thailand Competition Robot Reveal | AP Robotics",
-    "body": "Only for Inspiration, not for sale* Any good idea? Comment down below! CONTACT US: Email: aprobotics19@gmail.com ...",
-    "retrievalText": "FLL Unearthed 545 Full points! Thailand Competition Robot Reveal | AP Robotics [ AP Robotics ] youtube Only for Inspiration, not for sale* Any good idea? Comment down below! CONTACT US: Email: aprobotics19@gmail.com ...",
-    "url": "https://www.youtube.com/watch?v=u4RW7apnP3g",
-    "groupId": "https://www.youtube.com/watch?v=u4RW7apnP3g",
-    "origin": "youtube",
-    "language": "en",
-    "isTitleOnly": false,
-    "isPartial": false,
-    "parentTypedId": null,
-    "contentHash": "4ba9548df9e9c4743484b7a75ea5bb8952726e59782eb801ad282f68d5b0f5ad",
-    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
-    "vectorRow": null,
-    "evidence": [
-      {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Only for Inspiration, not for sale* Any good idea? Comment down below! CONTACT US: Email: aprobotics19@gmail.com ...",
-        "label": "Source Excerpt",
-        "coverage": "full",
-        "startOffset": 0,
-        "endOffset": 116
-      }
-    ],
-    "metadata": {
-      "author": "[ AP Robotics ]",
-      "platform": "youtube",
-      "publishedAt": "2026-02-09",
-      "canonicalName": "YouTube video: FLL Unearthed 545 Full points! Thailand Competitio"
     }
   },
   {
@@ -4146,69 +4152,102 @@
     }
   },
   {
-    "typedId": "source:seed-7",
+    "typedId": "source:seed-71",
     "kind": "source",
-    "title": "Dinsaw Mini Home AI",
-    "body": "Home AI Assistance ... can move in residences and connect care directly with hospitals.",
-    "retrievalText": "Dinsaw Mini Home AI National Innovation Agency government_agency_website Home AI Assistance ... can move in residences and connect care directly with hospitals.",
-    "url": "https://www.nia.or.th/DinsawMiniHomeAI",
-    "groupId": "https://www.nia.or.th/DinsawMiniHomeAI",
-    "origin": "web",
+    "title": "Advancements in the Aerosol Robotic Network (AERONET) Version 3 database – automated near-real-time quality control algorithm with improved cloud screening for Sun photometer aerosol optical depth (AOD) measurements",
+    "body": "",
+    "retrievalText": "Advancements in the Aerosol Robotic Network (AERONET) Version 3 database – automated near-real-time quality control algorithm with improved cloud screening for Sun photometer aerosol optical depth (AOD) measurements D. M. Giles openalex",
+    "url": "https://doi.org/10.5194/amt-12-169-2019",
+    "groupId": "https://doi.org/10.5194/amt-12-169-2019",
+    "origin": "openalex",
     "language": "en",
-    "isTitleOnly": false,
+    "isTitleOnly": true,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "5ce4b76c7541011e72b9e4585e53601934d5ed3d2c98262979cc52fb6719b60f",
+    "contentHash": "df05cd2eabf6182879b7c24e36ea123c6b6b95653d9a14001eae36fc289f326d",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Home AI Assistance ... can move in residences and connect care directly with hospitals.",
-        "label": "Source Excerpt",
-        "coverage": "full",
+        "fieldName": "title",
+        "originalText": "Advancements in the Aerosol Robotic Network (AERONET) Version 3 database – automated near-real-time quality control algorithm with improved cloud screening for Sun photometer aerosol optical depth (AOD) measurements",
+        "label": "Title Only",
+        "coverage": "title-only",
         "startOffset": 0,
-        "endOffset": 87
+        "endOffset": 215
       }
     ],
     "metadata": {
-      "author": "National Innovation Agency",
-      "platform": "government_agency_website",
-      "publishedAt": "2025-04-13",
-      "canonicalName": "NIA Dinsaw Mini Home AI"
+      "author": "D. M. Giles",
+      "platform": "openalex",
+      "publishedAt": "2019-01-01",
+      "canonicalName": "OpenAlex work: Advancements in the Aerosol Robotic Network (AERON"
     }
   },
   {
-    "typedId": "source:seed-9",
+    "typedId": "source:seed-742",
     "kind": "source",
-    "title": "Chula Engineers Deliver Pinto Robots to COVID-19 Hotspots Across Thailand",
-    "body": "Delivered 200 Pinto robots and over 1,000 Mirror systems to over 140 hospitals.",
-    "retrievalText": "Chula Engineers Deliver Pinto Robots to COVID-19 Hotspots Across Thailand Chulalongkorn University university_news Delivered 200 Pinto robots and over 1,000 Mirror systems to over 140 hospitals.",
-    "url": "https://www.chula.ac.th/en/news/42184/",
-    "groupId": "https://www.chula.ac.th/en/news/42184/",
-    "origin": "web",
+    "title": "Leveraging human-robot interaction in hospitality services: Incorporating the role of perceived value, empathy, and information sharing into visitors’ intentions to use social robots",
+    "body": "",
+    "retrievalText": "Leveraging human-robot interaction in hospitality services: Incorporating the role of perceived value, empathy, and information sharing into visitors’ intentions to use social robots Ronan de Kervenoael openalex",
+    "url": "https://doi.org/10.1016/j.tourman.2019.104042",
+    "groupId": "https://doi.org/10.1016/j.tourman.2019.104042",
+    "origin": "openalex",
     "language": "en",
-    "isTitleOnly": false,
+    "isTitleOnly": true,
     "isPartial": false,
     "parentTypedId": null,
-    "contentHash": "0ce1956079d729d50a7cfa39897bc337e4ab9bdf7ee61dd9db57ae2c4f204737",
+    "contentHash": "80386d32d013f3d454930ab29227a40e7c23ef78226185d611a398b87d74e064",
     "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
     "vectorRow": null,
     "evidence": [
       {
-        "fieldName": "evidence_excerpt",
-        "originalText": "Delivered 200 Pinto robots and over 1,000 Mirror systems to over 140 hospitals.",
-        "label": "Source Excerpt",
-        "coverage": "full",
+        "fieldName": "title",
+        "originalText": "Leveraging human-robot interaction in hospitality services: Incorporating the role of perceived value, empathy, and information sharing into visitors’ intentions to use social robots",
+        "label": "Title Only",
+        "coverage": "title-only",
         "startOffset": 0,
-        "endOffset": 79
+        "endOffset": 182
       }
     ],
     "metadata": {
-      "author": "Chulalongkorn University",
-      "platform": "university_news",
-      "publishedAt": "2021-01-19",
-      "canonicalName": "Chula Pinto robots COVID-19 deployment"
+      "author": "Ronan de Kervenoael",
+      "platform": "openalex",
+      "publishedAt": "2019-01-01",
+      "canonicalName": "OpenAlex work: Leveraging human-robot interaction in hospitality "
+    }
+  },
+  {
+    "typedId": "source:seed-919",
+    "kind": "source",
+    "title": "The Effects of Perceived Identity Threat and Realistic Threat on the Negative Attitudes and Usage Intentions Toward Hotel Service Robots: The Moderating Effect of the Robot’s Anthropomorphism",
+    "body": "",
+    "retrievalText": "The Effects of Perceived Identity Threat and Realistic Threat on the Negative Attitudes and Usage Intentions Toward Hotel Service Robots: The Moderating Effect of the Robot’s Anthropomorphism Hsien-Long Huang openalex",
+    "url": "https://doi.org/10.1007/s12369-021-00752-2",
+    "groupId": "https://doi.org/10.1007/s12369-021-00752-2",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "96704e3c3b0579e73b2befb8720e2dab2afe53f65e9bb0bd501b3935fd210206",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "The Effects of Perceived Identity Threat and Realistic Threat on the Negative Attitudes and Usage Intentions Toward Hotel Service Robots: The Moderating Effect of the Robot’s Anthropomorphism",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 191
+      }
+    ],
+    "metadata": {
+      "author": "Hsien-Long Huang",
+      "platform": "openalex",
+      "publishedAt": "2021-01-01",
+      "canonicalName": "OpenAlex work: The Effects of Perceived Identity Threat and Reali"
     }
   }
 ]

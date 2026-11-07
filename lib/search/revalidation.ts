@@ -12,8 +12,8 @@ export async function revalidateSearchDocument(
   prisma: any
 ): Promise<RevalidationResult> {
   if (!prisma) {
-    // If no prisma client is provided, assume unverified or offline
-    return { isValid: true, reason: null, currentDoc: doc };
+    // Fail closed: without a verified database client, candidate cannot be proven valid
+    return { isValid: false, reason: "DELETED", currentDoc: null };
   }
 
   const [kind, id] = doc.typedId.split(":");

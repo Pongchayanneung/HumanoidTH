@@ -17,8 +17,26 @@ export const KNOWN_PLACEHOLDERS = [
   "Curated seed; verify against public CT Asia and media sources.",
   "Curated seed; do not treat as exhaustive.",
   "Imported platform seed; link to Thai deployment sources when verified.",
-  "Imported platform seed; needs Thai source evidence."
+  "Imported platform seed; needs Thai source evidence.",
+  "Academic paper about"
 ];
+
+/**
+ * Checks whether substantive text is a known template or boilerplate placeholder.
+ */
+export function isKnownPlaceholder(text: string | null | undefined): boolean {
+  if (!text) return false;
+  const trimmed = text.trim();
+  for (const placeholder of KNOWN_PLACEHOLDERS) {
+    if (trimmed === placeholder || trimmed.startsWith(placeholder)) {
+      return true;
+    }
+  }
+  if (/^Academic paper about .* indexed on OpenAlex\.?$/i.test(trimmed)) {
+    return true;
+  }
+  return false;
+}
 
 export const PERMITTED_ORIGINS = [
   "openalex",

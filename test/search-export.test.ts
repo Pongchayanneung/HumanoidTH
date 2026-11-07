@@ -50,6 +50,11 @@ test("F3 Text Utils: cleanSearchText strips placeholders and caps at 2,000 Unico
   assert.equal(placeholderResult.isPlaceholderOmitted, true);
   assert.equal(placeholderResult.cleanedText, "");
 
+  // OpenAlex template omission
+  const openAlexResult = cleanSearchText("Academic paper about thailand robot indexed on OpenAlex.");
+  assert.equal(openAlexResult.isPlaceholderOmitted, true);
+  assert.equal(openAlexResult.cleanedText, "");
+
   // Empty string
   const emptyResult = cleanSearchText("");
   assert.equal(emptyResult.cleanedText, "");
@@ -117,6 +122,7 @@ test("F3 Corpus Exporter: exports eligible documents and correctly excludes non-
 
   // Empty category reporting
   assert.ok(manifest.counts.emptyKinds.includes("inventory"), "Inventory is reported as empty kind");
+  assert.ok(manifest.counts.emptyKinds.includes("entity"), "Entity is reported as empty kind in this release");
 
   // Kinds coverage
   assert.ok(manifest.counts.byKind.source > 0);
@@ -124,7 +130,7 @@ test("F3 Corpus Exporter: exports eligible documents and correctly excludes non-
   assert.ok(manifest.counts.byKind.contribution > 0);
   assert.ok(manifest.counts.byKind.perspective > 0);
   assert.ok(manifest.counts.byKind.relationship > 0);
-  assert.ok(manifest.counts.byKind.entity > 0);
+  assert.equal(manifest.counts.byKind.entity, 0, "Unverified entities excluded from release");
 
   // Languages coverage
   assert.ok(manifest.counts.byLanguage.th > 0);
@@ -236,6 +242,11 @@ test("F3 Revalidation: suppresses deleted, hidden, or modified records", async (
       }
     }
   };
+
+  // 0. Missing Prisma client fails closed
+  const resNoPrisma = await revalidateSearchDocument(dummyDoc, null);
+  assert.equal(resNoPrisma.isValid, false);
+  assert.equal(resNoPrisma.reason, "DELETED");
 
   // 1. Valid record
   const resValid = await revalidateSearchDocument(dummyDoc, mockPrisma);

@@ -2,9 +2,9 @@
   "manifestVersion": "1.0",
   "datasetId": "thailand-humanoid-atlas-seed",
   "releaseId": "search-v1-keyword",
-  "generatedAt": "2026-11-07T05:12:28.104Z",
+  "generatedAt": "2026-11-07T07:43:21.739Z",
   "counts": {
-    "totalEligible": 8122,
+    "totalEligible": 6746,
     "byKind": {
       "source": 6714,
       "robot": 15,
@@ -12,17 +12,18 @@
       "perspective": 4,
       "inventory": 0,
       "relationship": 10,
-      "entity": 1376
+      "entity": 0
     },
     "byLanguage": {
       "th": 18,
-      "en": 7961,
+      "en": 6583,
       "mixed": 103,
-      "unknown": 40
+      "unknown": 42
     },
     "excluded": 3,
     "emptyKinds": [
-      "inventory"
+      "inventory",
+      "entity"
     ]
   },
   "policy": {
@@ -47,7 +48,8 @@
       "Curated seed; verify against public CT Asia and media sources.",
       "Curated seed; do not treat as exhaustive.",
       "Imported platform seed; link to Thai deployment sources when verified.",
-      "Imported platform seed; needs Thai source evidence."
+      "Imported platform seed; needs Thai source evidence.",
+      "Academic paper about"
     ],
     "publicFieldsByKind": {
       "source": [
@@ -139,5 +141,15 @@
     "documents": "documents.json",
     "probeSample128": "probe-128.json"
   },
-  "recordsSha256": "08610eee9ce06b452766fe3a5cada8cf0beab89d5b01c20a3ed9da7031718a1d"
+  "recordsSha256": "84a65671821c3935645f29cf27ebc8ab250c95dadd06a83ea846f972b3de8417",
+  "fileChecksums": {
+    "documents.json": {
+      "sha256": "84a65671821c3935645f29cf27ebc8ab250c95dadd06a83ea846f972b3de8417",
+      "bytes": 9033556
+    },
+    "probe-128.json": {
+      "sha256": "01bb061ed42c6891710b68bb3169a5975b791dd4688096d0b8d844f5e360216d",
+      "bytes": 235578
+    }
+  }
 }

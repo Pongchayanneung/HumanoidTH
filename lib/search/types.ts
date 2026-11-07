@@ -62,6 +62,7 @@ export interface SearchExportManifest {
     probeSample128: string;
     vectors?: string;
   };
+  fileChecksums?: Record<string, { sha256: string; bytes: number }>;
   recordsSha256: string;
 }
 

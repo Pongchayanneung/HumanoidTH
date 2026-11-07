@@ -1,6 +1,8 @@
-import { createSearchPost } from "../../../lib/search/api";
+import { createDatabaseSearchService } from "../../../lib/search/database-service";
 
-export const POST = createSearchPost(async () => null);
+export function POST(request: Request): Promise<Response> {
+  return createDatabaseSearchService(async () => (await import("../../../lib/prisma")).prisma)(request);
+}
 export function GET(): Response {
   return new Response(null, { status: 405, headers: { Allow: "POST" } });
 }

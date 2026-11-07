@@ -154,8 +154,13 @@ export async function revalidateSearchDocument(
           return { isValid: false, reason: "PARENT_INELIGIBLE", currentDoc: null };
         }
 
+        const currentParentTypedId = `source:${item.source.id}`;
+        if (doc.parentTypedId && currentParentTypedId !== doc.parentTypedId) {
+          return { isValid: false, reason: "DEPENDENCY_CHANGED", currentDoc: null };
+        }
+
         const depHash = computeDependencyHash(
-          `source:${item.source.id}`,
+          currentParentTypedId,
           item.source.relevanceStatus
         );
         if (depHash !== doc.dependencyHash) {
@@ -242,6 +247,18 @@ export async function revalidateSearchDocument(
         }
         if (item.source && item.source.relevanceStatus !== "ACCEPTED") {
           return { isValid: false, reason: "PARENT_INELIGIBLE", currentDoc: null };
+        }
+
+        const currentParentTypedId = item.source ? `source:${item.source.id}` : null;
+        if (doc.parentTypedId && currentParentTypedId !== doc.parentTypedId) {
+          return { isValid: false, reason: "DEPENDENCY_CHANGED", currentDoc: null };
+        }
+
+        const depHash = item.source
+          ? computeDependencyHash(currentParentTypedId!, item.source.relevanceStatus)
+          : null;
+        if (doc.dependencyHash && depHash !== doc.dependencyHash) {
+          return { isValid: false, reason: "DEPENDENCY_CHANGED", currentDoc: null };
         }
 
         const currentHash = computeContentHash({

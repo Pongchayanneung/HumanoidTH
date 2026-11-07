@@ -49,16 +49,20 @@ The search index strictly excludes:
 2. **Unicode Code Point Capping:** Body indexing text is capped at **2,000 Unicode code points** using `Array.from(text).slice(0, 2000)`. This prevents character corruption for Thai combining marks and tone diacritics. Truncated records carry `isPartial: true`.
 3. **Evidence Offset Ranges:** Every search document provides a structured `evidence` array containing exact UTF-16 offset ranges (`startOffset`, `endOffset`) into the original stored field.
 4. **Deterministic Hashes:** Every document computes a public-field `contentHash` and dependency `dependencyHash` using SHA-256. Parent links in perspectives and relationships resolve directly to source document typed IDs (`source:seed-N`).
-5. **Database vs Seed Execution:** The database export path is implemented with paginated Prisma reads and unit-tested with mocks. For the hackathon build, the published static index is generated from the authoritative seed dataset.
+5. **Database vs Seed Execution:** The database export path is implemented with paginated Prisma reads and unit-tested with mocks; it has not yet run against a live production Postgres database. For the hackathon build, the published static index is generated from the authoritative seed dataset, where all 6,714 sources are exported (as seed import assigns `ACCEPTED`), while database exports filter by explicit `relevanceStatus === "ACCEPTED"`.
 
 ---
 
 ## 3. Current-Record Revalidation
 
 The `revalidateSearchDocument` and `revalidateSearchDocuments` helpers prevent serving stale, changed, or newly hidden records:
+
+> [!NOTE]
+> Document revalidation (`revalidateSearchDocument`) queries Postgres by primary key cuid, and therefore applies to database-exported corpora (`exportSearchCorpusFromDb`). Offline seed-exported documents (`exportSearchCorpusFromSeed`) use indexed `seed-N` IDs and are intended for offline embedding and benchmark evaluation until stable primary key mapping is wired into F1.
+
 1. **Deletion Check & Missing Client:** If the database client is missing or the record no longer exists in PostgreSQL, revalidation fails closed with `{ isValid: false, reason: "DELETED" }`.
 2. **Status Drift:** If a source or contribution is retracted or marked unapproved, revalidation yields `{ isValid: false, reason: "STATUS_INELIGIBLE" }`.
-3. **Parent Invalidation:** If a parent source is unlinked or rejected, dependent perspective annotations and relationships yield `{ isValid: false, reason: "PARENT_INELIGIBLE" }`.
+3. **Parent Invalidation & Dependency Hash:** If a parent source is unlinked, modified, or rejected, dependent perspective annotations and relationships yield `{ isValid: false, reason: "PARENT_INELIGIBLE" }` or `{ isValid: false, reason: "DEPENDENCY_CHANGED" }`.
 4. **Content Change:** If public fields change in the database after index compilation, hashes mismatch and the candidate is suppressed until the next index build (`CONTENT_CHANGED`).
 
 ---

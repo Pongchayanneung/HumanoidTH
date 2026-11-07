@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -12,6 +13,7 @@ import {
   validateVectorRelease,
   calculateCompletionForecast,
   readActiveReleasePointer,
+  countCompletedCheckpointDocuments,
   BYTES_PER_FLOAT32
 } from "../lib/search/vector-io";
 import {
@@ -494,4 +496,205 @@ test("F4 Hour 3 Completion Forecast: computes 50% contingency and gate verdict a
       elapsedSeconds: 100
     });
   }, /valid measured progress is required/);
+});
+
+function makeDocs(n: number): SearchDocument[] {
+  const kinds = ["source", "robot", "contribution", "perspective"];
+  return Array.from({ length: n }, (_, i) =>
+    createDummyDocument(String(i + 1), kinds[i % kinds.length], `text ${i + 1}`)
+  );
+}
+
+function validateReleaseDir(releaseDir: string, profile: ModelProfile) {
+  const manifest = JSON.parse(readFileSync(join(releaseDir, "manifest.json"), "utf8"));
+  const documents = JSON.parse(readFileSync(join(releaseDir, "documents.json"), "utf8"));
+  const vectorsPath = join(releaseDir, "vectors.f32");
+  return validateVectorRelease({
+    buffer: existsSync(vectorsPath) ? readFileSync(vectorsPath) : Buffer.alloc(0),
+    documents,
+    expectedDimensions: profile.dimensions,
+    manifest,
+    manifestDir: releaseDir
+  });
+}
+
+test("F4 Release dir: probe-128.json listed in fileChecksums is copied and the release dir validates on its own", async () => {
+  const tempDir = mkdtempSync(join(tmpdir(), "f4-probe-test-"));
+  try {
+    const outDir = join(tempDir, "out");
+    mkdirSync(outDir, { recursive: true });
+    writeFileSync(join(outDir, "probe-128.json"), JSON.stringify({ probe: [1, 2, 3] }), "utf8");
+    const documentsPath = join(tempDir, "documents.json");
+    writeFileSync(documentsPath, JSON.stringify(makeDocs(3)), "utf8");
+
+    const result = await new VectorReleaseBuilder({
+      documentsPath,
+      outputDir: outDir,
+      checkpointDir: join(tempDir, "cp"),
+      stagingDir: join(tempDir, "st"),
+      profile: MOCK_MODEL_PROFILE
+    }).build();
+
+    const releaseDir = join(outDir, "releases", result.manifest.releaseId);
+    assert.ok(result.manifest.fileChecksums["probe-128.json"], "manifest lists probe-128.json");
+    assert.ok(existsSync(join(releaseDir, "probe-128.json")), "probe-128.json must be in the release dir");
+    const validation = validateReleaseDir(releaseDir, MOCK_MODEL_PROFILE);
+    assert.equal(validation.isValid, true, validation.errors.join("; "));
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("F4 Release transition: keyword-only build after a semantic release drops the vectors entry and validates", async () => {
+  const tempDir = mkdtempSync(join(tmpdir(), "f4-transition-test-"));
+  try {
+    const outDir = join(tempDir, "out");
+    const documentsPath = join(tempDir, "documents.json");
+    writeFileSync(documentsPath, JSON.stringify(makeDocs(3)), "utf8");
+    const common = {
+      documentsPath,
+      outputDir: outDir,
+      checkpointDir: join(tempDir, "cp"),
+      stagingDir: join(tempDir, "st"),
+      profile: MOCK_MODEL_PROFILE
+    };
+
+    const semantic = await new VectorReleaseBuilder(common).build();
+    assert.ok(semantic.manifest.fileChecksums["vectors.f32"]);
+    assert.ok(existsSync(join(outDir, "vectors.f32")));
+
+    const keyword = await new VectorReleaseBuilder({ ...common, maxVectorsToGenerate: 0 }).build();
+    assert.equal(keyword.coverage.status, "absent");
+    assert.equal(keyword.manifest.fileChecksums["vectors.f32"], undefined);
+    assert.equal(keyword.manifest.files.vectors, undefined);
+
+    const pointer = readActiveReleasePointer(outDir);
+    assert.ok(pointer);
+    assert.equal(pointer.files.vectors, undefined);
+    assert.equal(pointer.vectorSha256, undefined);
+
+    // No stale vectors file left beside a manifest that lists none.
+    assert.equal(existsSync(join(outDir, "vectors.f32")), false);
+    assert.equal(existsSync(join(outDir, "releases", keyword.manifest.releaseId, "vectors.f32")), false);
+
+    const releaseValidation = validateReleaseDir(join(outDir, "releases", keyword.manifest.releaseId), MOCK_MODEL_PROFILE);
+    assert.equal(releaseValidation.isValid, true, releaseValidation.errors.join("; "));
+    const activeValidation = validateReleaseDir(outDir, MOCK_MODEL_PROFILE);
+    assert.equal(activeValidation.isValid, true, activeValidation.errors.join("; "));
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("F4 Resume: a resumed run continues batch numbering and does not overwrite earlier checkpoints", async () => {
+  const tempDir = mkdtempSync(join(tmpdir(), "f4-resume-test-"));
+  try {
+    const checkpointDir = join(tempDir, "cp");
+    const documentsPath = join(tempDir, "documents.json");
+    writeFileSync(documentsPath, JSON.stringify(makeDocs(4)), "utf8");
+    const profile: ModelProfile = { ...MOCK_MODEL_PROFILE, profileHash: "mock-resume-test" };
+    const common = {
+      documentsPath,
+      outputDir: join(tempDir, "out"),
+      checkpointDir,
+      stagingDir: join(tempDir, "st"),
+      profile,
+      batchSize: 2
+    };
+
+    await new VectorReleaseBuilder({ ...common, maxVectorsToGenerate: 2 }).build();
+    const cp0Path = join(checkpointDir, "checkpoint-mock-resume-test-batch-0.json");
+    const before = JSON.parse(readFileSync(cp0Path, "utf8"));
+    assert.deepEqual(before.entries.map((e: any) => e.typedId), ["source:1", "robot:2"]);
+
+    await new VectorReleaseBuilder(common).build();
+    const after0 = JSON.parse(readFileSync(cp0Path, "utf8"));
+    assert.deepEqual(after0.entries.map((e: any) => e.typedId), ["source:1", "robot:2"], "batch 0 must be untouched");
+    const cp1Path = join(checkpointDir, "checkpoint-mock-resume-test-batch-1.json");
+    assert.ok(existsSync(cp1Path), "resumed run must write batch 1");
+    const after1 = JSON.parse(readFileSync(cp1Path, "utf8"));
+    assert.deepEqual(after1.entries.map((e: any) => e.typedId), ["contribution:3", "perspective:4"]);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("F4 Forecast input: countCompletedCheckpointDocuments reads real checkpoint fields (typedId, contentHash)", async () => {
+  const tempDir = mkdtempSync(join(tmpdir(), "f4-count-test-"));
+  try {
+    const checkpointDir = join(tempDir, "cp");
+    const docs = makeDocs(4);
+    const documentsPath = join(tempDir, "documents.json");
+    writeFileSync(documentsPath, JSON.stringify(docs), "utf8");
+    const profile: ModelProfile = { ...MOCK_MODEL_PROFILE, profileHash: "mock-count-test" };
+
+    await new VectorReleaseBuilder({
+      documentsPath,
+      outputDir: join(tempDir, "out"),
+      checkpointDir,
+      stagingDir: join(tempDir, "st"),
+      profile,
+      batchSize: 2,
+      maxVectorsToGenerate: 3
+    }).build();
+
+    const all = countCompletedCheckpointDocuments({ checkpointDir, profileHash: "mock-count-test", documents: docs });
+    assert.deepEqual(all, { completed: 3, checkpointFiles: 2 });
+
+    const changed = docs.map((d, i) => (i === 0 ? { ...d, contentHash: "different" } : d));
+    assert.equal(
+      countCompletedCheckpointDocuments({ checkpointDir, profileHash: "mock-count-test", documents: changed }).completed,
+      2
+    );
+    assert.equal(
+      countCompletedCheckpointDocuments({ checkpointDir, profileHash: "other-profile", documents: docs }).completed,
+      0
+    );
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("F4 Forecast CLI: refuses to forecast without --elapsed-sec instead of inferring a rate from file timestamps", async () => {
+  const tempDir = mkdtempSync(join(tmpdir(), "f4-cli-test-"));
+  try {
+    const docs = makeDocs(4);
+    mkdirSync(join(tempDir, "data", "search"), { recursive: true });
+    writeFileSync(join(tempDir, "data", "search", "documents.json"), JSON.stringify(docs), "utf8");
+    await new VectorReleaseBuilder({
+      documentsPath: join(tempDir, "data", "search", "documents.json"),
+      outputDir: join(tempDir, "scratch-out"),
+      checkpointDir: join(tempDir, ".cache", "search-vector-checkpoints"),
+      stagingDir: join(tempDir, "st"),
+      profile: MOCK_MODEL_PROFILE,
+      batchSize: 2,
+      maxVectorsToGenerate: 2
+    }).build();
+
+    const tsx = join(process.cwd(), "node_modules", ".bin", "tsx");
+    const script = join(process.cwd(), "scripts", "build-vector-release.ts");
+    const run = (extra: string[]) =>
+      spawnSync(tsx, [script, "--forecast", "--mock", ...extra], { cwd: tempDir, encoding: "utf8" });
+
+    const noElapsed = run([]);
+    assert.notEqual(noElapsed.status, 0);
+    assert.match(noElapsed.stderr, /Not enough data/);
+    assert.match(noElapsed.stdout, /Derived completed count from 1 matching checkpoint file\(s\): 2 of 4/);
+
+    const withElapsed = run(["--elapsed-sec", "100"]);
+    assert.equal(withElapsed.status, 0, withElapsed.stderr);
+    assert.match(withElapsed.stdout, /Progress: 2\/4 docs/);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("F4 Release Validation: rejects fractional vectorRow values", () => {
+  const dims = 4;
+  const buf = encodeVectorsToBuffer([l2Normalize(new Float32Array([1, 2, 3, 4])), l2Normalize(new Float32Array([4, 3, 2, 1]))], dims);
+  const docs = [createDummyDocument("a"), createDummyDocument("b")];
+  docs[0].vectorRow = 0;
+  docs[1].vectorRow = 0.5;
+  const result = validateVectorRelease({ buffer: buf, documents: docs, expectedDimensions: dims, expectedVectorCount: 2 });
+  assert.equal(result.isValid, false);
 });

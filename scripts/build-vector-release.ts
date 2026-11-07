@@ -1,5 +1,5 @@
-import { resolve, join } from "node:path";
-import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
+import { resolve } from "node:path";
+import { readFileSync, existsSync } from "node:fs";
 import {
   VectorReleaseBuilder,
   TeiEmbeddingGenerator,
@@ -7,7 +7,8 @@ import {
 } from "../lib/search/vector-builder";
 import {
   validateVectorRelease,
-  calculateCompletionForecast
+  calculateCompletionForecast,
+  countCompletedCheckpointDocuments
 } from "../lib/search/vector-io";
 import { DEFAULT_MODEL_PROFILE, MOCK_MODEL_PROFILE } from "../lib/search/vector-types";
 import type { SearchDocument } from "../lib/search/types";
@@ -37,7 +38,7 @@ async function main() {
   const manifestPath = resolve(dataDir, "manifest.json");
 
   if (isForecastOnly) {
-    console.log("Running Hour 3 completion forecast calculation...");
+    console.log("Running completion forecast (completed count from checkpoints; elapsed from --elapsed-sec)...");
     if (!existsSync(documentsPath)) {
       console.error(`Documents file not found at ${documentsPath}`);
       process.exit(1);
@@ -46,64 +47,34 @@ async function main() {
     const totalDocuments = docs.length;
 
     let completedDocuments = cliCompleted;
-    let elapsedSeconds = cliElapsed;
+    const elapsedSeconds = cliElapsed;
 
-    // If not supplied via CLI flags, inspect actual checkpoint directory
-    if (completedDocuments === undefined || elapsedSeconds === undefined) {
-      if (existsSync(checkpointDir)) {
-        const cpFiles = readdirSync(checkpointDir).filter((f) => f.endsWith(".json"));
-        if (cpFiles.length > 0) {
-          const targetProfileHash = DEFAULT_MODEL_PROFILE.profileHash;
-          const currentDocHashMap = new Map<string, string>();
-          for (const d of docs) {
-            const h = d.textHash || d.hash;
-            if (d.id && h) currentDocHashMap.set(d.id, h);
-          }
-
-          let count = 0;
-          let minMtime = Infinity;
-          let maxMtime = -Infinity;
-          for (const file of cpFiles) {
-            try {
-              const p = join(checkpointDir, file);
-              const stat = statSync(p);
-              const content = JSON.parse(readFileSync(p, "utf8"));
-              // Check profile hash: only checkpoints matching target model profile are valid
-              if (content.modelProfileHash !== targetProfileHash) {
-                continue;
-              }
-              if (Array.isArray(content.entries)) {
-                for (const entry of content.entries) {
-                  // Verify document hash matches current document set
-                  if (entry.id && currentDocHashMap.get(entry.id) === entry.hash) {
-                    count++;
-                  }
-                }
-                if (stat.mtimeMs < minMtime) minMtime = stat.mtimeMs;
-                if (stat.mtimeMs > maxMtime) maxMtime = stat.mtimeMs;
-              }
-            } catch {
-              // ignore unreadable checkpoint
-            }
-          }
-          if (count > 0 && Number.isFinite(minMtime) && Number.isFinite(maxMtime)) {
-            completedDocuments = completedDocuments ?? count;
-            const diffSec = Math.max(1, (maxMtime - minMtime) / 1000);
-            elapsedSeconds = elapsedSeconds ?? diffSec;
-            console.log(
-              `Derived measured progress from ${cpFiles.length} disk checkpoints: ${completedDocuments} docs across ${elapsedSeconds.toFixed(1)}s`
-            );
-          }
-        }
-      }
+    // Completed count: derived from checkpoints whose model profile hash matches and whose
+    // typedId + contentHash equal the current documents. Elapsed time is NEVER inferred
+    // from checkpoint file timestamps (a span between files excludes the first batch and
+    // would overstate throughput), so it must be supplied with --elapsed-sec.
+    if (completedDocuments === undefined) {
+      const targetProfile = isMock ? MOCK_MODEL_PROFILE : DEFAULT_MODEL_PROFILE;
+      const found = countCompletedCheckpointDocuments({
+        checkpointDir,
+        profileHash: targetProfile.profileHash,
+        documents: docs
+      });
+      completedDocuments = found.completed;
+      console.log(
+        `Derived completed count from ${found.checkpointFiles} matching checkpoint file(s): ${found.completed} of ${totalDocuments} docs.`
+      );
     }
 
-    // Fail clearly if valid measured progress is unavailable
-    if (completedDocuments === undefined || elapsedSeconds === undefined || completedDocuments <= 0 || elapsedSeconds <= 0) {
+    const isPositive = (n: number | undefined): n is number =>
+      n !== undefined && Number.isFinite(n) && n > 0;
+
+    if (!isPositive(completedDocuments) || !isPositive(elapsedSeconds)) {
       console.error(
-        "Error: Cannot compute completion forecast without valid measured progress.\n" +
-        "Provide valid checkpoints in .cache/search-vector-checkpoints matching the current document set and target model profile, " +
-        "or supply explicit measured progress flags: --completed <N> --elapsed-sec <S>"
+        "Error: Not enough data for a completion forecast.\n" +
+        `Completed documents: ${completedDocuments ?? "unknown"}; elapsed seconds: ${elapsedSeconds ?? "not supplied"}.\n` +
+        "Pass --elapsed-sec <S> (time spent on the embedding run so far, measured by you), and make sure matching " +
+        "checkpoints exist in .cache/search-vector-checkpoints or pass --completed <N>."
       );
       process.exit(1);
     }
@@ -122,6 +93,11 @@ async function main() {
     console.log(`50% contingency buffer: ${(forecast.contingencySeconds / 60).toFixed(1)} mins`);
     console.log(`Total forecast time needed: ${(forecast.totalForecastRemainingSeconds / 60).toFixed(1)} mins`);
     console.log(`Meets Hour 4½ Gate: ${forecast.meetsDeadline ? "YES" : "NO"}`);
+    if (!forecast.meetsDeadline) {
+      console.log(
+        "Forecast is LATE. Nothing was changed. To fall back, run the build yourself with --limit <N> to package a partial semantic release."
+      );
+    }
     return;
   }
 

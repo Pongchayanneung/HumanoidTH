@@ -228,6 +228,23 @@ export class VectorReleaseBuilder {
   }
 
   /**
+   * Returns the next unused batch index for this profile (highest existing + 1, or 0).
+   */
+  nextBatchIndex(profileHash: string): number {
+    if (!existsSync(this.options.checkpointDir)) return 0;
+    const prefix = `checkpoint-${profileHash}-batch-`;
+    const suffix = ".json";
+    let highest = -1;
+    for (const file of readdirSync(this.options.checkpointDir)) {
+      if (!file.startsWith(prefix) || !file.endsWith(suffix)) continue;
+      const middle = file.slice(prefix.length, file.length - suffix.length);
+      if (!/^\d+$/.test(middle)) continue;
+      highest = Math.max(highest, parseInt(middle, 10));
+    }
+    return highest + 1;
+  }
+
+  /**
    * Saves a completed batch checkpoint to disk.
    */
   saveBatchCheckpoint(
@@ -315,8 +332,11 @@ export class VectorReleaseBuilder {
       documents[r].vectorRow = null;
     }
 
-    // Generate missing vectors in batches and checkpoint each batch immediately
+    // Generate missing vectors in batches and checkpoint each batch immediately.
+    // Numbering continues after the highest existing checkpoint so a resumed run
+    // never overwrites earlier checkpoint files.
     if (missingDocs.length > 0) {
+      const firstBatchIndex = this.nextBatchIndex(profile.profileHash);
       for (let i = 0; i < missingDocs.length; i += batchSize) {
         const batchSlice = missingDocs.slice(i, i + batchSize);
         const batchTexts = batchSlice.map((m) => m.doc.retrievalText || m.doc.title);
@@ -345,7 +365,7 @@ export class VectorReleaseBuilder {
           });
         }
 
-        const batchIndex = Math.floor(i / batchSize);
+        const batchIndex = firstBatchIndex + Math.floor(i / batchSize);
         this.saveBatchCheckpoint(batchIndex, checkpointEntries);
       }
     }
@@ -392,6 +412,12 @@ export class VectorReleaseBuilder {
       ...(baseManifest.fileChecksums || {}),
       "documents.json": { sha256: docsSha256, bytes: docsBytes }
     };
+    // Entries inherited from the previous manifest describe files that are only
+    // re-staged below when they exist for this build. Drop them otherwise so a
+    // keyword-only build after a semantic release does not list a vectors file
+    // it never staged.
+    delete fileChecksums["vectors.f32"];
+    delete fileChecksums["probe-128.json"];
 
     let vectorsSha256: string | undefined;
     if (targetDocs.length > 0) {
@@ -401,7 +427,8 @@ export class VectorReleaseBuilder {
 
     // If probe-128.json exists in outputDir, copy and hash it
     const existingProbePath = resolve(outputDir, "probe-128.json");
-    if (existsSync(existingProbePath)) {
+    const hasProbe = existsSync(existingProbePath);
+    if (hasProbe) {
       const probeJson = readFileSync(existingProbePath, "utf8");
       const probeSha256 = createHash("sha256").update(Buffer.from(probeJson, "utf8")).digest("hex");
       fileChecksums["probe-128.json"] = {
@@ -476,6 +503,33 @@ export class VectorReleaseBuilder {
     if (targetDocs.length > 0) {
       copyFileSync(stagedVectorsPath, versionedVectorsPath);
       promotedFiles.push(versionedVectorsPath);
+    } else {
+      // Keyword-only: a vectors file left by an earlier build of the same releaseId is stale.
+      rmSync(versionedVectorsPath, { force: true });
+    }
+
+    if (hasProbe) {
+      const versionedProbePath = resolve(versionedReleaseDir, "probe-128.json");
+      copyFileSync(resolve(releaseStageDir, "probe-128.json"), versionedProbePath);
+      promotedFiles.push(versionedProbePath);
+    }
+
+    // Validate the release directory itself against its own manifest checksums
+    // BEFORE the active pointer is written, so a broken release is never activated.
+    const releaseValidation = validateVectorRelease({
+      buffer: targetDocs.length > 0 ? readFileSync(versionedVectorsPath) : Buffer.alloc(0),
+      documents: JSON.parse(readFileSync(versionedDocsPath, "utf8")) as SearchDocument[],
+      expectedDimensions: profile.dimensions,
+      expectedVectorCount: targetDocs.length,
+      profile,
+      manifest: JSON.parse(readFileSync(versionedManifestPath, "utf8")) as VectorReleaseManifest,
+      manifestDir: versionedReleaseDir
+    });
+    if (!releaseValidation.isValid) {
+      rmSync(releaseStageDir, { recursive: true, force: true });
+      throw new Error(
+        `Vector release directory validation failed (active pointer not written): ${releaseValidation.errors.join("; ")}`
+      );
     }
 
     // Switch active-release pointer atomically, pointing to immutable release directory
@@ -523,6 +577,9 @@ export class VectorReleaseBuilder {
     writeAtomic(stagedDocsPath, finalDocsPath);
     if (targetDocs.length > 0) {
       writeAtomic(stagedVectorsPath, finalVectorsPath);
+    } else {
+      // A keyword-only manifest lists no vectors; do not leave a stale file beside it.
+      rmSync(finalVectorsPath, { force: true });
     }
     writeAtomic(stagedManifestPath, finalManifestPath);
 

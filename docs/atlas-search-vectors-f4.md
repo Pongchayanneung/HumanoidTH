@@ -8,7 +8,7 @@
 - `lib/search/vector-types.ts`: Type definitions for model profiles, semantic coverage, batch checkpoints, vector release manifest, active pointer, and completion forecasts
 - `lib/search/vector-io.ts`: Binary little-endian Float32 vector encoding/reading, L2 normalization, cosine similarity, release validation without row sampling, active release pointer, and Hour 3 forecasting
 - `lib/search/vector-builder.ts`: Resumable vector release builder with per-batch checkpointing, atomic versioned staging, manifest preservation, and promotion
-- `scripts/build-vector-release.ts`: CLI script for vector release packaging (`pnpm run search:vectors`) with checkpoint-derived forecast and `--mock` mode
+- `scripts/build-vector-release.ts`: CLI script for vector release packaging (`pnpm run search:vectors`) with a forecast (completed count read from checkpoints, elapsed time from `--elapsed-sec`) and `--mock` mode
 - `test/vector-release.test.ts`: Complete unit test suite verifying binary encoding, full-buffer row validation, per-batch checkpoints, profile guards, coverage, and forecast calculation
 
 ---
@@ -56,11 +56,12 @@ Model configurations are explicitly pinned and bound to their generator implemen
 To protect against process crashes, timeouts, or GPU disconnections during long indexing runs:
 1. **Per-Batch Checkpointing:** Checkpoints are stored in `.cache/search-vector-checkpoints/` incrementally. Each batch of embeddings is written to disk immediately after generation before subsequent batches begin.
 2. **Profile & Content Hash Binding:** Each checkpoint entry records `typedId`, `contentHash`, `vectorRow`, and the float array under a profile-specific checkpoint key.
-3. **Resumption Policy:**
+3. **Batch numbering:** a resumed run continues numbering from the highest existing checkpoint for the profile, so earlier checkpoint files are never overwritten.
+4. **Resumption Policy:**
    - On rebuild, existing checkpoints are examined.
    - If `modelProfileHash` matches current profile AND `contentHash` matches the current document, the cached vector is reused immediately without re-embedding.
    - If model profile changes or document text changes, the stale checkpoint is discarded and recomputed.
-4. **Server Boundary:** Checkpoints are stored under `.cache/` (gitignored) and are never committed to git or exposed to browser bundles.
+5. **Server Boundary:** Checkpoints are stored under `.cache/` (gitignored) and are never committed to git or exposed to browser bundles.
 
 ---
 
@@ -76,7 +77,8 @@ Before any vector release is activated:
    - `ordered_typed_key_mapping`: Ensures `vectorRow` indices are contiguous, unique, and strictly match document count.
    - `manifest_file_checksums`: Verifies that every staged file on disk matches the byte length and SHA-256 recorded in the manifest.
 3. **Atomic Promotion & Active Pointer:**
-   - Files are copied into a versioned release folder (`data/search/releases/<releaseId>/`).
+   - Files (`documents.json`, `manifest.json`, `vectors.f32` when present, `probe-128.json` when present) are copied into a versioned release folder (`data/search/releases/<releaseId>/`).
+   - The release folder is validated against its own manifest checksums before `active-release.json` is written. If that fails the build throws and the pointer is not written.
    - Active files (`documents.json`, `vectors.f32`, `manifest.json`) are promoted to `data/search/`.
    - An `active-release.json` pointer is written as the single atomic switch boundary. If any check fails during staging, staging aborts and active files remain untouched.
 4. **Manifest Preservation:** The vector builder reads existing base F3 manifest data, preserving `counts`, `emptyKinds`, and `policy` configurations.
@@ -101,9 +103,9 @@ Atlas Search supports three explicit coverage tiers:
 ## 6. Hour 3 Completion Forecast (50% Contingency Gate)
 
 Per acceptance check #4:
-At elapsed hour 3, remaining work is measured from actual completed checkpoints on disk (or explicit CLI arguments `--completed <N> --elapsed-sec <S>`) and a 50% contingency buffer is added:
+The `--forecast` mode reads the completed document count from checkpoints on disk (only checkpoints whose `modelProfileHash` matches and whose `typedId` and `contentHash` match the current documents count), or from `--completed <N>`. Elapsed time is never inferred from checkpoint file timestamps, because the span between files excludes the first batch and would overstate throughput. You must supply it with `--elapsed-sec <S>`; without it the command exits with a "not enough data" error. A 50% contingency buffer is then added:
 $$\text{Total Forecast Remaining} = \text{Estimated Remaining} \times 1.5$$
 $$\text{Forecast Finish} = \text{Elapsed Time} + \text{Total Forecast Remaining}$$
 
-- If $\text{Forecast Finish} \le 4.5\text{ hours}$ (Hour 4½), the team proceeds with full semantic indexing.
-- If $\text{Forecast Finish} > 4.5\text{ hours}$, the build immediately triggers the fallback policy: packaging the completed vectors as a **partial semantic release** and freezing lexical search to guarantee release on time.
+- If $\text{Forecast Finish} \le 4.5\text{ hours}$ (Hour 4½), the forecast prints `ON TRACK` and the team proceeds with full semantic indexing.
+- If $\text{Forecast Finish} > 4.5\text{ hours}$, the forecast prints `LATE` and a hint. It changes nothing and does not start a build. The operator then packages the completed vectors as a partial semantic release by running the builder with `--limit <N>`.

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { SearchDocument } from "./types";
 import type {
@@ -219,7 +219,7 @@ export function validateVectorRelease(params: {
 
   for (const doc of vectorDocs) {
     const row = doc.vectorRow!;
-    if (seenRows.has(row) || row < 0 || row >= actualVectorCount) {
+    if (!Number.isInteger(row) || seenRows.has(row) || row < 0 || row >= actualVectorCount) {
       sequentialRows = false;
       break;
     }
@@ -289,6 +289,40 @@ export function readActiveReleasePointer(searchDir: string): ActiveVectorRelease
   } catch {
     return null;
   }
+}
+
+/**
+ * Counts distinct documents that already have a reusable vector checkpoint:
+ * checkpoint matches the model profile hash and an entry's typedId and
+ * contentHash equal the current document's. Unreadable files are skipped.
+ */
+export function countCompletedCheckpointDocuments(params: {
+  checkpointDir: string;
+  profileHash: string;
+  documents: Pick<SearchDocument, "typedId" | "contentHash">[];
+}): { completed: number; checkpointFiles: number } {
+  const { checkpointDir, profileHash, documents } = params;
+  if (!existsSync(checkpointDir)) return { completed: 0, checkpointFiles: 0 };
+
+  const currentHashes = new Map<string, string>();
+  for (const d of documents) currentHashes.set(d.typedId, d.contentHash);
+
+  const done = new Set<string>();
+  let checkpointFiles = 0;
+  for (const file of readdirSync(checkpointDir)) {
+    if (!file.endsWith(".json")) continue;
+    try {
+      const content = JSON.parse(readFileSync(join(checkpointDir, file), "utf8"));
+      if (content.modelProfileHash !== profileHash || !Array.isArray(content.entries)) continue;
+      checkpointFiles++;
+      for (const entry of content.entries) {
+        if (currentHashes.get(entry.typedId) === entry.contentHash) done.add(entry.typedId);
+      }
+    } catch {
+      // ignore unreadable checkpoint
+    }
+  }
+  return { completed: done.size, checkpointFiles };
 }
 
 /**

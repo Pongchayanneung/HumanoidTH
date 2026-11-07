@@ -37,3 +37,8 @@ export async function getOperatorPrincipal(customCookies?: any): Promise<Session
     return { ok: false, code: "UNAVAILABLE" };
   }
 }
+
+/** Runs `count` only for a verified operator session; anyone else gets null and the query never runs. */
+export async function pendingReviewsFor(session: SessionResult, count: () => Promise<number>): Promise<number | null> {
+  return session.ok ? count() : null;
+}

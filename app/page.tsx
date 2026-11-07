@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import RobotViewer from "./components/RobotViewer";
 import CopyCommands from "./components/CopyCommands";
 import { getTranslation } from "@/lib/translations";
-import { getOperatorPrincipal } from "@/lib/operator";
+import { getOperatorPrincipal, pendingReviewsFor, type SessionResult } from "@/lib/operator";
 import {
   Bot,
   Box,
@@ -55,12 +55,12 @@ export const dynamic = "force-dynamic";
 
 export default async function OverviewPage() {
   let lang: "en" | "th" = "en";
-  let isOperator = false;
+  let session: SessionResult = { ok: false, code: "UNAUTHENTICATED" };
   try {
     const cookieStore = await cookies();
     lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
     const operatorResult = await getOperatorPrincipal();
-    isOperator = operatorResult.ok;
+    session = operatorResult;
   } catch {
     // Outside request context
   }
@@ -100,9 +100,9 @@ export default async function OverviewPage() {
         }
       }),
       prisma.ownedInventory.count({ where: { visibility: "public" } }),
-      isOperator
-        ? prisma.submittedData.count({ where: { status: { in: ["QUEUED", "NEEDS_REVIEW"] } } })
-        : Promise.resolve(null),
+      pendingReviewsFor(session, () =>
+        prisma.submittedData.count({ where: { status: { in: ["QUEUED", "NEEDS_REVIEW"] } } })
+      ),
       prisma.sourceRecord.groupBy({ by: ["platform"], _count: { _all: true } }),
       prisma.sourceRecord.aggregate({ _min: { publishedAt: true }, _max: { publishedAt: true } }),
       prisma.pipelineRun.findFirst({ orderBy: { startedAt: "desc" } })
@@ -791,7 +791,7 @@ export default async function OverviewPage() {
           <Link className="button" href="/admin">
             <ClipboardList size={15} color="#b17c56" />
             <span>📋</span> {t.reviewQueue}
-            {isOperator && pendingReviewsCount !== null && (
+            {session.ok && pendingReviewsCount !== null && (
               <span style={{ color: "var(--success)", fontWeight: "800", marginLeft: "4px" }}>
                 ({pendingReviewsCount})
               </span>

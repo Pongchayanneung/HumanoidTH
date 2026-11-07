@@ -14,7 +14,7 @@ import {
   PUBLIC_DATASET_SCOPE_LABEL
 } from "../lib/public-projection";
 import { GET as exportRoute } from "../app/api/export/route";
-import { getOperatorPrincipal } from "../lib/operator";
+import { getOperatorPrincipal, pendingReviewsFor } from "../lib/operator";
 import ContributionsPage from "../app/contributions/page";
 import OverviewPage from "../app/page";
 import { prisma } from "../lib/prisma";
@@ -196,43 +196,29 @@ test("getOperatorPrincipal: forged unsigned cookies (admin_session, user_role, u
   assert.equal(result.code, "UNAUTHENTICATED");
 });
 
-test("Overview page: forged unsigned admin cookie does not query or expose pending review count", async () => {
-  let pendingCountQueried = false;
-  const origSubmitted = prisma.submittedData.count;
-  const origSourceCount = prisma.sourceRecord.count;
-  const origRobotCount = prisma.robotModel.count;
-  const origContribCount = prisma.contribution.count;
-  const origInvCount = prisma.ownedInventory.count;
-  const origGroupBy = prisma.sourceRecord.groupBy;
-  const origAggregate = prisma.sourceRecord.aggregate;
-  const origPipeline = prisma.pipelineRun.findFirst;
-
-  (prisma.submittedData as any).count = async () => {
-    pendingCountQueried = true;
+test("Pending review count: only a verified operator session runs the query", async () => {
+  let queried = 0;
+  const count = async () => {
+    queried += 1;
     return 42;
   };
-  (prisma.sourceRecord as any).count = async () => 0;
-  (prisma.robotModel as any).count = async () => 0;
-  (prisma.contribution as any).count = async () => 0;
-  (prisma.ownedInventory as any).count = async () => 0;
-  (prisma.sourceRecord as any).groupBy = async () => [];
-  (prisma.sourceRecord as any).aggregate = async () => ({ _min: { publishedAt: null }, _max: { publishedAt: null } });
-  (prisma.pipelineRun as any).findFirst = async () => null;
+  assert.equal(await pendingReviewsFor({ ok: false, code: "UNAUTHENTICATED" }, count), null);
+  assert.equal(await pendingReviewsFor({ ok: false, code: "UNAVAILABLE" }, count), null);
+  assert.equal(queried, 0, "count must not run for a forged or missing session");
+  assert.equal(await pendingReviewsFor({ ok: true, principal: { kind: "operator", email: "op@test.local" } }, count), 42);
+  assert.equal(queried, 1);
+});
 
-  try {
-    // When OverviewPage runs without a verified operator session, pending count must not be queried
-    await OverviewPage();
-    assert.equal(pendingCountQueried, false, "Pending submittedData count must not be queried without verified operator session");
-  } finally {
-    prisma.submittedData.count = origSubmitted;
-    prisma.sourceRecord.count = origSourceCount;
-    prisma.robotModel.count = origRobotCount;
-    prisma.contribution.count = origContribCount;
-    prisma.ownedInventory.count = origInvCount;
-    prisma.sourceRecord.groupBy = origGroupBy;
-    prisma.sourceRecord.aggregate = origAggregate;
-    prisma.pipelineRun.findFirst = origPipeline;
-  }
+test("Forged unsigned admin cookie yields an unauthenticated principal, so the pending count is null", async () => {
+  const forged = { get: (n: string) => (n === "admin_session" ? { value: "true" } : undefined) };
+  const principal = await getOperatorPrincipal(forged);
+  let queried = false;
+  const out = await pendingReviewsFor(principal, async () => {
+    queried = true;
+    return 42;
+  });
+  assert.equal(out, null);
+  assert.equal(queried, false);
 });
 
 test("Contributions page: caller-supplied ?status=REJECTED cannot override APPROVED public predicate", async () => {

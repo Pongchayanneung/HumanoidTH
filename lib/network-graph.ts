@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { isEligiblePublicRobot, publicContributionWhere } from "@/lib/public-projection";
 
 export type NetworkSourceMode = "file" | "database" | "hybrid" | "auto";
 export type ResolvedNetworkSource = "database" | "file" | "hybrid" | "fallback_file";
@@ -291,6 +292,7 @@ export async function loadGraphRecordsFromFile(): Promise<AtlasRecord[]> {
   const publicRecords = raw.filter((r) => {
     if (r.category === "submission_record" || r.category === "source_pull_job") return false;
     if (r.category === "owned_inventory" && r.visibility !== "public") return false;
+    if (r.category === "robot_model" && r.canonical_name && !isEligiblePublicRobot(String(r.canonical_name))) return false;
     return true;
   });
   return publicRecords.map((record, index) => normalizeFileRecord(record, index));
@@ -309,7 +311,9 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
   const records: AtlasRecord[] = [];
   // Public data projection (M3 / T03): Exclude private records and unapproved submissions
   const [robots, inventory, contributions, sources, perspectives, triplets] = await Promise.all([
-    prisma.robotModel.findMany({ take: 700, orderBy: { updatedAt: "desc" } }),
+    prisma.robotModel
+      .findMany({ take: 700, orderBy: { updatedAt: "desc" } })
+      .then((rows) => rows.filter((row) => isEligiblePublicRobot(row.canonicalName))),
     prisma.ownedInventory.findMany({
       where: { visibility: "public" },
       take: 500,
@@ -317,7 +321,7 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
       orderBy: { updatedAt: "desc" }
     }),
     prisma.contribution.findMany({
-      where: { visibility: "public", verificationStatus: "APPROVED" },
+      where: publicContributionWhere,
       take: 700,
       include: { relatedRobotModel: true },
       orderBy: { updatedAt: "desc" }

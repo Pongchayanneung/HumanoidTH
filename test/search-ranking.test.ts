@@ -187,7 +187,7 @@ test("hybrid ranking is reciprocal rank fusion of keyword and semantic ranks wit
   assert.deepEqual(fuseRankings([hit("a"), hit("b")], ["z", "b"]), ["b", "a", "z"]);
   assert.deepEqual(fuseRankings([hit("a"), hit("b")], []), ["a", "b"]);
   const capped = { ...FROZEN_SEMANTIC_POLICY, limits: { ...FROZEN_SEMANTIC_POLICY.limits, candidatesPerBranch: 1 } };
-  // Only the top candidate of each branch is fused (a and b tie at 1/61); b is kept after the cap as a keyword remainder.
+  // Only the top group of each branch is admitted (a and b tie at 1/61).
   assert.deepEqual(fuseRankings([hit("a"), hit("b")], ["b", "a"], capped), ["a", "b"]);
   assert.deepEqual(fuseRankings([hit("a"), hit("b")], ["b"], capped), ["a", "b"]);
 });
@@ -296,9 +296,10 @@ test("keywordMatch only qualifies a record through text it can show", () => {
 const hitOf = (id: string) => ({ id, exactTitle: false, evidenceIndex: 0, ranges: [], score: 1 });
 const withLimits = (candidatesPerBranch: number, rrfConstantK = FROZEN_SEMANTIC_POLICY.rrfConstantK) => ({ ...FROZEN_SEMANTIC_POLICY, rrfConstantK, limits: { ...FROZEN_SEMANTIC_POLICY.limits, candidatesPerBranch } });
 
-test("a record beyond both branch caps is returned once", () => {
+test("a group beyond both branch caps is excluded", () => {
   const fused = fuseRankings([hitOf("a"), hitOf("x")], ["b", "x"], withLimits(1));
-  assert.deepEqual(fused, ["a", "b", "x"]);
+  assert.deepEqual(fused, ["a", "b"]);
+  assert.deepEqual(fuseRankings([hitOf("a"), hitOf("a2"), hitOf("x")], [], withLimits(1), (id) => id.replace(/\d+$/, "")), ["a", "a2"]);
 });
 
 test("duplicate copies of one identity do not change the group order or fused outcome of any group", async () => {

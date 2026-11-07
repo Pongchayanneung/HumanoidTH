@@ -22,6 +22,7 @@ import {
   cosineSimilarity
 } from "../lib/search/vector-io";
 import type { SearchDocument } from "../lib/search/types";
+import { createSearchPost } from "../lib/search/api";
 
 function createDummyDoc(id: string, title: string, body: string, groupId?: string): SearchDocument {
   return {
@@ -399,4 +400,23 @@ test("F8 Latency: summary reports mean offline retrieval timing without embeddin
   const { summary, reports } = new RetrievalEvaluator([doc], new Map(), FROZEN_SEMANTIC_POLICY, "lexical_only").evaluatePilot(dataset);
   assert.equal(summary.meanLatencyMs.hybrid, reports[0].latencyMs.hybrid);
   assert.ok(summary.caveats.some((c) => c.includes("embedding time is excluded")));
+});
+
+
+test("F8 evaluation uses serving lexical eligibility and group-first capped ordering", async () => {
+  const unrelated = createDummyDoc("unrelated", "the", "nothing useful");
+  const query = { queryId: "parity", lang: "en" as const, queryText: "the robot", targetKeywords: [], expectedRelevantIds: [] };
+  const intent = { intentId: "parity", category: "supported" as const, split: "dev" as const, description: "", queries: [query] };
+  const policy = { ...FROZEN_SEMANTIC_POLICY, limits: { ...FROZEN_SEMANTIC_POLICY.limits, candidatesPerBranch: 2 } };
+  const docs = [unrelated, createDummyDoc("a", "robot", ""), createDummyDoc("a2", "robot copy", ""), createDummyDoc("b", "robot b", ""), createDummyDoc("c", "robot c", "")];
+  docs[2].url = docs[1].url;
+  docs[2].groupId = docs[1].groupId;
+  const report = new RetrievalEvaluator(docs, new Map(), policy, "lexical_only").evaluateQuery(query, intent);
+  const post = createSearchPost(async () => ({ documents: docs, release: { id: "x", generatedAt: "now" }, coverage: { indexed: 0, eligible: docs.length } }), { policy });
+  const response = await post(new Request("http://localhost/api/search", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ query: query.queryText }) }));
+  const result = await response.json();
+  assert.deepEqual(report.top3Results.hybrid.map((group) => group.groupId), result.groups.map((group: { groupKey: string }) => group.groupKey));
+  assert.deepEqual(report.top3Results.hybrid.map((group) => group.primaryDocument.typedId), ["doc:a", "doc:b"]);
+  assert.equal(normalizeQueryTokens(query.queryText).includes("the"), false);
+  assert.equal(computeKeywordScore(normalizeQueryTokens(query.queryText), unrelated), 0);
 });

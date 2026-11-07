@@ -159,8 +159,8 @@ export function semanticRank(input: {
  * Ranks are taken over groups (`groupOf`, identity by default): in each branch a group is
  * ranked by its best-ranked member, so extra copies of one identity cannot take branch ranks or
  * cap slots, or change the fused score or order of any other group. An exact full title/name
- * match keeps priority over the fused order. Groups beyond both caps follow, so records that
- * group with an admitted result are not dropped. The result lists each record id once, with
+ * match keeps priority over the fused order. All matching members of admitted groups are kept.
+ * The result lists each record id once, with
  * the members of a group adjacent and groups in fused order.
  */
 export function fuseRankings(
@@ -188,6 +188,5 @@ export function fuseRankings(
   addBranch(semanticGroups);
   const exact = new Set(keyword.filter((hit) => hit.exactTitle).map((hit) => groupOf(hit.id)));
   const fused = Array.from(rrf.keys()).sort((a, b) => Number(exact.has(b)) - Number(exact.has(a)) || rrf.get(b)! - rrf.get(a)!);
-  const beyondCaps = Array.from(new Set([...keywordGroups, ...semanticGroups])).filter((group) => !rrf.has(group));
-  return [...fused, ...beyondCaps].flatMap((group) => members.get(group)!);
+  return fused.flatMap((group) => members.get(group)!);
 }

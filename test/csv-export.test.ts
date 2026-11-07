@@ -1,3 +1,5 @@
+process.env.DATABASE_URL = process.env.DATABASE_URL || "postgresql://mock:mock@localhost:5432/mock";
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { NextRequest } from "next/server";
@@ -155,19 +157,30 @@ test("S3 Query Builder: bounds take, applies search filter q, and enforces publi
   assert.equal(robotQuery.where.OR.length, 2);
   assert.ok((robotQuery.where as any).thailandStatus);
 
-  // 2. Max limit capped at MAX_EXPORT_ROWS
+  // 2. Max limit capped at MAX_EXPORT_ROWS, and NaN/invalid limit falls back to MAX_EXPORT_ROWS safely
   const sourcesQuery = buildExportPrismaQuery("sources", null, 99999);
   assert.equal(sourcesQuery.take, MAX_EXPORT_ROWS);
   assert.equal((sourcesQuery.where as any).relevanceStatus, "ACCEPTED");
+
+  const nanLimitQuery = buildExportPrismaQuery("sources", null, NaN as any);
+  assert.equal(nanLimitQuery.take, MAX_EXPORT_ROWS);
+  assert.ok(!Number.isNaN(nanLimitQuery.take));
+
+  const negativeLimitQuery = buildExportPrismaQuery("sources", null, -10);
+  assert.equal(negativeLimitQuery.take, MAX_EXPORT_ROWS);
 
   // 3. Inventory strictly pins visibility: "public"
   const invQuery = buildExportPrismaQuery("inventory", "hospital");
   assert.equal((invQuery.where as any).visibility, "public");
 
-  // 4. Contributions strictly pins visibility: "public" and verificationStatus: "APPROVED"
+  // 4. Contributions strictly pins visibility: "public", verificationStatus: "APPROVED", and excludes placeholders
   const contribQuery = buildExportPrismaQuery("contributions");
   assert.equal((contribQuery.where as any).visibility, "public");
   assert.equal((contribQuery.where as any).verificationStatus, "APPROVED");
+  assert.ok((contribQuery.where as any).OR); // OR allows sourceUrl: null or NOT excluded URLs
+
+  // Robot query enforces publicRobotWhere exclusions
+  assert.ok((robotQuery.where as any).NOT);
 
   // 5. Submissions strictly pins status: "APPROVED"
   const subQuery = buildExportPrismaQuery("submissions");

@@ -6,6 +6,11 @@
  * References: Baseline Audit T11, D12.
  */
 
+import {
+  publicRobotWhere,
+  publicContributionWhere
+} from "@/lib/public-projection";
+
 export const ALLOWED_TABLES = [
   "sources",
   "robots",
@@ -203,7 +208,8 @@ export function generateCsv(headers: string[], rows: Record<string, unknown>[]):
  * Builds Prisma query parameters with bounded take and public policy predicates.
  */
 export function buildExportPrismaQuery(table: AllowedTable, q?: string | null, limit: number = MAX_EXPORT_ROWS) {
-  const boundedLimit = Math.min(Math.max(1, limit), MAX_EXPORT_ROWS);
+  const safeLimit = typeof limit === "number" && !Number.isNaN(limit) && limit > 0 ? Math.floor(limit) : MAX_EXPORT_ROWS;
+  const boundedLimit = Math.min(Math.max(1, safeLimit), MAX_EXPORT_ROWS);
   const searchTerm = q?.trim() || "";
 
   switch (table) {
@@ -224,6 +230,7 @@ export function buildExportPrismaQuery(table: AllowedTable, q?: string | null, l
         },
         where: {
           thailandStatus: { in: ["observed_in_thailand", "developed_in_thailand", "deployed_in_thailand"] },
+          ...publicRobotWhere,
           ...(searchTerm
             ? {
                 OR: [
@@ -252,8 +259,7 @@ export function buildExportPrismaQuery(table: AllowedTable, q?: string | null, l
           verificationStatus: true
         },
         where: {
-          visibility: "public",
-          verificationStatus: "APPROVED" as const,
+          ...publicContributionWhere,
           ...(searchTerm
             ? {
                 OR: [

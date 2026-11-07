@@ -67,7 +67,8 @@ export async function GET(req: NextRequest) {
   const table: AllowedTable = normalized;
   const q = searchParams.get("q");
   const limitParam = searchParams.get("limit");
-  const limit = limitParam ? parseInt(limitParam, 10) : MAX_EXPORT_ROWS;
+  const parsedLimit = limitParam ? parseInt(limitParam, 10) : MAX_EXPORT_ROWS;
+  const limit = Number.isNaN(parsedLimit) || parsedLimit <= 0 ? MAX_EXPORT_ROWS : parsedLimit;
 
   let data: any[] = [];
   const query = buildExportPrismaQuery(table, q, limit);

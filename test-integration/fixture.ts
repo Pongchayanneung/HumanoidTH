@@ -10,6 +10,9 @@ export const operatorEmail = "acceptance@example.invalid";
 // Synthetic, disposable test credentials; never use an operator's real values.
 export const operatorPassword = "  disposable acceptance passphrase 2026  ";
 
+const loopbackHosts = ["localhost", "127.0.0.1"];
+const scratchPort = "5544";
+
 type SqlResult<T> = { rows: T[]; rowCount: number | null };
 export type SqlClient = {
   connect(): Promise<void>;
@@ -17,7 +20,22 @@ export type SqlClient = {
   end(): Promise<void>;
 };
 const require = createRequire(import.meta.url);
-const { Client } = require("pg") as { Client: new (options: { connectionString: string }) => SqlClient };
+const { Client } = require("pg") as {
+  Client: new (options: { connectionString: string }) => SqlClient & {
+    connectionParameters: { host: string; port: number };
+  };
+};
+
+export function disposablePostgresUrl(value: string): URL {
+  let url: URL;
+  try { url = new URL(value); }
+  catch { throw new Error("Tests require a valid native PostgreSQL URL"); }
+  assert.ok(["postgres:", "postgresql:"].includes(url.protocol), "Tests require native PostgreSQL");
+  assert.ok(loopbackHosts.includes(url.hostname) && url.port === scratchPort, "Only the approved localhost:5544 disposable PostgreSQL is allowed");
+  // pg gives connection-string query values precedence over the URL authority.
+  assert.ok(!/[?#]/.test(url.href), "Disposable PostgreSQL URLs cannot have query parameters or fragments");
+  return url;
+}
 
 export function scratchBaseUrl(): string {
   assert.equal(process.env.ISSUE4_AUTH_ACCEPTANCE, "1", "Explicit ISSUE4_AUTH_ACCEPTANCE=1 is required for disposable database tests");
@@ -25,22 +43,20 @@ export function scratchBaseUrl(): string {
   const local = existsSync(localFile) ? parse(readFileSync(localFile)) : {};
   const value = process.env.ISSUE4_TEST_DATABASE_URL || local.DATABASE_URL;
   assert.ok(value, "Provide the dedicated test URL in ISSUE4_TEST_DATABASE_URL or ignored .env.auth.local");
-  const url = new URL(value);
-  assert.ok(["postgres:", "postgresql:"].includes(url.protocol), "Tests require native PostgreSQL");
-  assert.ok(["localhost", "127.0.0.1"].includes(url.hostname) && url.port === "5544", "Only the approved localhost:5544 disposable PostgreSQL is allowed");
-  return url.toString();
+  return disposablePostgresUrl(value).toString();
 }
 
 export function databaseUrl(name: string): string {
   assert.match(name, /^hri_issue4_acceptance_[a-z0-9_]+$/);
   const url = new URL(scratchBaseUrl());
   url.pathname = `/${name}`;
-  url.search = "";
   return url.toString();
 }
 
 export async function openSql(url: string): Promise<SqlClient> {
-  const sql = new Client({ connectionString: url });
+  const sql = new Client({ connectionString: disposablePostgresUrl(url).toString() });
+  const { host, port } = sql.connectionParameters;
+  assert.ok(loopbackHosts.includes(host) && port === Number(scratchPort), "PostgreSQL must resolve to the approved local fixture port");
   await sql.connect();
   return sql;
 }

@@ -4,11 +4,16 @@ import { PrismaClient } from "../generated/prisma";
 import { createPostgresAuthStore } from "../lib/operator-auth/postgres-store";
 import { readOperatorConfig } from "../lib/operator-auth/config";
 import { createOperatorAuthService, tokenDigest } from "../lib/operator-auth/service";
+import { disposablePostgresUrl } from "../test-integration/fixture";
 
 // Explicit opt-in and database name guard: this suite only modifies disposable auth tables.
 const enabled = process.env.OPERATOR_AUTH_TEST_DB === "1";
-const url = process.env.DATABASE_URL;
-if (enabled && (!url || !["localhost", "127.0.0.1"].includes(new URL(url).hostname) || new URL(url).pathname !== "/hri_issue4_test")) throw new Error("Disposable auth test database required");
+const suppliedUrl = process.env.DATABASE_URL;
+const guardedUrl = enabled && suppliedUrl ? disposablePostgresUrl(suppliedUrl) : null;
+if (enabled) {
+  assert.ok(guardedUrl?.pathname === "/hri_issue4_test", "Disposable auth test database required");
+}
+const url = guardedUrl?.toString();
 const prisma = enabled ? new PrismaClient({ datasourceUrl: url, log: [] }) : null;
 const config = readOperatorConfig({ OPERATOR_EMAIL: "operator@example.invalid", OPERATOR_PASSWORD_HASH: `scrypt$32768$8$3$${"01".repeat(16)}$${"02".repeat(64)}`, OPERATOR_AUTH_EPOCH: "epoch-one", OPERATOR_APP_ORIGIN: "http://localhost:3104", DATABASE_URL: url || "postgresql://synthetic:synthetic@localhost:5544/hri_issue4_test", NODE_ENV: "test" })!;
 beforeEach(async () => { if (prisma) { await prisma.operatorSession.deleteMany(); await prisma.operatorAuthState.deleteMany(); } });

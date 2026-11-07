@@ -179,6 +179,8 @@ test("cosine retrieval is a pure function of supplied vectors and is unavailable
   assert.equal(semanticRank({ queryVector: null, candidates, profile: DEFAULT_MODEL_PROFILE }).status, "unavailable");
   const available = semanticRank({ queryVector, candidates: [{ id: "low", vector: mix(0.5) }], profile: DEFAULT_MODEL_PROFILE });
   assert.deepEqual(available, { status: "available", ranked: [], compatibleCount: 1 });
+  const tiedRank = semanticRank({ queryVector, candidates: [{ id: "zebra", vector: mix(0.9) }, { id: "alpha", vector: mix(0.9) }], profile: DEFAULT_MODEL_PROFILE });
+  assert.deepEqual(tiedRank.status === "available" && tiedRank.ranked, ["alpha", "zebra"]);
 });
 
 test("hybrid ranking is reciprocal rank fusion of keyword and semantic ranks with k=60", () => {

@@ -150,7 +150,7 @@ export function semanticRank(input: {
     if (similarity >= policy.semanticCutoffThreshold) scored.push({ id, similarity });
   }
   if (compatibleCount === 0) return unavailable;
-  scored.sort((a, b) => b.similarity - a.similarity);
+  scored.sort((a, b) => b.similarity - a.similarity || a.id.localeCompare(b.id));
   return { status: "available", ranked: scored.map((item) => item.id), compatibleCount };
 }
 

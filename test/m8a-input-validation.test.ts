@@ -7,6 +7,7 @@ import { NextRequest } from "next/server";
 import {
   MAX_FILTER_LENGTH,
   readBoundedTextParam,
+  truncateParam,
   validateContributionFilters
 } from "../lib/contribution-filters";
 import { parseNetworkGraphQuery, parseNetworkId, parseNetworkSource } from "../lib/network-query";
@@ -99,12 +100,13 @@ test("network graph query: NaN, negative, fractional, empty, repeated and unknow
   }
 });
 
-test("network ids and source mode: malformed escapes do not throw, oversize ids and unknown sources are rejected", () => {
-  assert.equal(parseNetworkId("node%3Aone"), "node:one");
+test("network ids and source mode: literal escapes pass through, control chars, oversize ids and unknown sources are rejected", () => {
+  assert.equal(parseNetworkId("node:one"), "node:one");
+  assert.equal(parseNetworkId("node%3Aone"), "node%3Aone");
   assert.equal(parseNetworkId("%E0%A4%A"), "%E0%A4%A");
   assert.equal(parseNetworkId(""), null);
   assert.equal(parseNetworkId("a".repeat(257)), null);
-  assert.equal(parseNetworkId("a%00b"), null);
+  assert.equal(parseNetworkId("a\u0000b"), null);
   const bad = parseNetworkSource(new URLSearchParams("source=evil"));
   assert.equal(bad.ok, false);
 });
@@ -149,12 +151,49 @@ test("node and edge routes validate ids and source, and malformed escapes are a 
   assert.equal((await nodeGet(idRequest("node/x", "source=bogus"), nodeParams("x"))).status, 400);
   assert.equal((await edgeGet(idRequest("edge/x", "source=bogus"), edgeParams("x"))).status, 400);
   assert.equal((await nodeGet(idRequest("node/x"), nodeParams("a".repeat(257)))).status, 400);
+  assert.equal((await nodeGet(idRequest("node/x"), nodeParams("a\u0000b"))).status, 400);
   assert.equal((await edgeGet(idRequest("edge/x"), edgeParams(""))).status, 400);
 
   const malformedNode = await nodeGet(idRequest("node/x", "source=file"), nodeParams("%E0%A4%A"));
   assert.equal(malformedNode.status, 404);
   const malformedEdge = await edgeGet(idRequest("edge/x", "source=file"), edgeParams("%"));
   assert.equal(malformedEdge.status, 404);
+});
+
+test("node and edge routes pass literal percent-escaped ids (%3A) through unchanged and look them up as-is", async () => {
+  const graph = await (await graphGet(graphRequest("source=file&limitNodes=1000&limitEdges=2500"))).json();
+  const colonNode = graph.nodes.find((n: { id: string }) => n.id.includes(":"));
+  assert.ok(colonNode, "expected a seed node with ':' in its id");
+
+  const literalPercentNodeId = colonNode.id.replace(":", "%3A");
+  assert.equal(parseNetworkId(literalPercentNodeId), literalPercentNodeId);
+
+  const directNodeRes = await nodeGet(idRequest(`node/${encodeURIComponent(colonNode.id)}`, "source=file"), {
+    params: Promise.resolve({ node_id: colonNode.id })
+  });
+  assert.equal(directNodeRes.status, 200);
+
+  const literalNodeRes = await nodeGet(idRequest(`node/${encodeURIComponent(literalPercentNodeId)}`, "source=file"), {
+    params: Promise.resolve({ node_id: literalPercentNodeId })
+  });
+  assert.equal(literalNodeRes.status, 404);
+
+  const colonEdge = graph.edges.find((e: { id: string }) => e.id.includes(":"));
+  assert.ok(colonEdge, "expected a seed edge with ':' in its id");
+  const literalPercentEdgeId = colonEdge.id.replace(":", "%3A");
+  assert.equal(parseNetworkId(literalPercentEdgeId), literalPercentEdgeId);
+  assert.equal(
+    (await edgeGet(idRequest(`edge/${encodeURIComponent(colonEdge.id)}`, "source=file"), {
+      params: Promise.resolve({ edge_id: colonEdge.id })
+    })).status,
+    200
+  );
+  assert.equal(
+    (await edgeGet(idRequest(`edge/${encodeURIComponent(literalPercentEdgeId)}`, "source=file"), {
+      params: Promise.resolve({ edge_id: literalPercentEdgeId })
+    })).status,
+    404
+  );
 });
 
 test("language cookie cannot reach prototype members of the translation dictionary", () => {
@@ -172,13 +211,20 @@ test("contribution filters: oversized or control-character text is flagged and n
   for (const field of ["q", "org", "robot"] as const) {
     assert.ok(validateContributionFilters({ [field]: long }).filterError, `${field} too long`);
     assert.ok(validateContributionFilters({ [field]: "a\u0000b" }).filterError, `${field} NUL`);
+    const trailingNewline = validateContributionFilters({ [field]: "robot\n" });
+    assert.ok(trailingNewline.filterError, `${field} trailing newline`);
+    assert.equal(trailingNewline[field], undefined);
+    assert.ok(validateContributionFilters({ [field]: "\trobot" }).filterError, `${field} leading tab`);
     assert.ok(validateContributionFilters({ [field]: ["ok", long] }).filterError === null, `${field} repeated keeps only the first value`);
     assert.ok(validateContributionFilters({ [field]: "x".repeat(MAX_FILTER_LENGTH) }, "th").filterError === null, `${field} at the limit`);
   }
   assert.match(validateContributionFilters({ q: long }, "th").filterError ?? "", /ตัวอักษร/);
   assert.deepEqual(readBoundedTextParam(["  robot  ", "ignored"]), { value: "robot", invalid: false });
   assert.deepEqual(readBoundedTextParam(undefined), { invalid: false });
+  assert.equal(readBoundedTextParam("robot\n").invalid, true);
+  assert.equal(readBoundedTextParam("\trobot").invalid, true);
   assert.equal(readBoundedTextParam("\ud800").invalid, true);
+  assert.equal(readBoundedTextParam(" \ud800 ").invalid, true);
 });
 
 test("auto source with no database and no seed file is a 503 on graph, node and edge, never 200 or 404", async () => {
@@ -215,8 +261,17 @@ test("contribution filters never echo rejected free text and truncation keeps su
   assert.equal(rejected.org, undefined);
   assert.equal(rejected.robot, "ok");
 
-  const emoji = validateContributionFilters({ type: "a" + "😀".repeat(30) });
-  assert.ok(emoji.filterError?.includes("😀"));
+  // 39 ASCII chars + surrogate-pair emoji as the 40th code point (UTF-16 units 39..40) + trailing char to force truncation.
+  const boundaryInput = `${"a".repeat(39)}😀z`;
+  const truncated = truncateParam(boundaryInput);
+  assert.ok(truncated.endsWith("..."));
+  const truncatedBody = truncated.slice(0, -3);
+  assert.equal(Array.from(truncatedBody).length, 40);
+  assert.equal(truncatedBody, `${"a".repeat(39)}😀`);
+  assert.doesNotMatch(truncated, /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/);
+
+  const emoji = validateContributionFilters({ type: boundaryInput });
+  assert.ok(emoji.filterError?.includes(`${"a".repeat(39)}😀...`));
   assert.doesNotMatch(emoji.filterError ?? "", /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/);
   assert.doesNotMatch(validateContributionFilters({ type: "bad\u0000type" }).filterError ?? "", /\u0000/);
 });

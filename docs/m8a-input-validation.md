@@ -7,14 +7,15 @@ surface a fixed denial; it reads no input and this issue does not reimplement it
 Shared helpers: `lib/network-query.ts` (new), `lib/contribution-filters.ts`
 (`normalizeScalarParam`, `truncateParam`, new `readBoundedTextParam`), `lib/translations.ts`
 (`parseLanguage`). Repeated query parameters: filters use the first value (existing
-`normalizeScalarParam` rule); the network API rejects repeats because it has no safe first value.
+`normalizeScalarParam` rule); the network API rejects repeats of recognised parameters because it
+has no safe first value (unknown parameters are ignored).
 
 ## Surfaces
 
 | Surface | Inputs | Validation | Test | Status |
 | --- | --- | --- | --- | --- |
-| `GET /api/network/graph` | `source`, `limitNodes`/`maxNodes`, `limitEdges`/`maxEdges`, `minConfidence`, `includeLowConfidence`, `cluster`, `nodeType`, `relation` | `source` in file, database, hybrid, auto. Limits must match `^\d{1,6}$`, then clamp to 25..1000 nodes and 50..2500 edges (defaults 300 and 800). `minConfidence` a decimal in 0..1. `includeLowConfidence` exactly `true` or `false`. Text filters 1..100 chars, no control characters. Any repeat, NaN, negative, fractional, empty, exponent or unknown value returns 400 naming the parameter. Sending both aliases (`limitNodes` with `maxNodes`, `limitEdges` with `maxEdges`) is also 400. `includePrivate` is fixed to false. Failure, including `auto` with no database and no seed file, returns a generic 503, never `error.message`. | `test/m8a-input-validation.test.ts` (parser table, route 400, valid 200, broken file 503 with no path text). Existing: `test/graph-public-projection.test.ts` | validated |
-| `GET /api/network/node/[node_id]` | path id, `source` | Id decoded safely (malformed escape kept literal, no `URIError`), 1..256 chars, no control characters. `source` as above. Graph failure returns generic 503. Unknown id stays 404. | `test/m8a-input-validation.test.ts` | validated |
+| `GET /api/network/graph` | `source`, `limitNodes`/`maxNodes`, `limitEdges`/`maxEdges`, `minConfidence`, `includeLowConfidence`, `cluster`, `nodeType`, `relation` | `source` in file, database, hybrid, auto. Limits must match `^\d{1,6}$`, then clamp to 25..1000 nodes and 50..2500 edges (defaults 300 and 800). `minConfidence` a decimal in 0..1 with at most six fractional digits. `includeLowConfidence` exactly `true` or `false`. Text filters 1..100 chars, no control characters. For recognised parameters, any repeat, NaN, negative, fractional, empty, exponent or unknown value returns 400 naming the parameter; unknown parameters (even repeated) are ignored. Sending both aliases (`limitNodes` with `maxNodes`, `limitEdges` with `maxEdges`) is also 400. `includePrivate` is fixed to false. Failure, including `auto` with no database and no seed file, returns a generic 503, never `error.message`. | `test/m8a-input-validation.test.ts` (parser table, route 400, valid 200, broken file 503 with no path text). Existing: `test/graph-public-projection.test.ts` | validated |
+| `GET /api/network/node/[node_id]` | path id, `source` | Id validated as received from Next 15 (already decoded once; no second `decodeURIComponent`, keeping literal percent escapes intact without `URIError`), 1..256 chars, no control characters. `source` as above. Graph failure returns generic 503. Unknown id stays 404. | `test/m8a-input-validation.test.ts` | validated |
 | `GET /api/network/edge/[edge_id]` | path id, `source` | Same as node. | `test/m8a-input-validation.test.ts` | validated |
 | `POST /api/search` | JSON body `query`, `types`, `limit` | Existing: content type JSON, 8192 byte body cap, strict UTF-8, unknown keys rejected, query at most 300 code points, `types` from `SEARCH_RECORD_KINDS`, `limit` positive integer capped at 20, error body is a fixed message, index failure is a fixed 503. `GET` is 405. | `test/search-contract.test.ts` (validation, byte limit, limit clamp) | validated (no change needed) |
 | `/contributions` page | `type`, `org`, `robot`, `status`, `q` | Existing: `type` and `status` allowlists, status never widens visibility, public projection always applied, `take: 200`, query errors logged server side and shown as a fixed notice. Added: `q`, `org`, `robot` limited to 200 code points and no control characters or lone surrogates (a `NUL` would fail in PostgreSQL); invalid returns the existing `filterError`, runs no contribution query and is not echoed back into the form. `truncateParam` now cuts on code point boundaries and drops control characters. | `test/contribution-filters.test.ts`, `test/m8a-input-validation.test.ts` | validated |
@@ -61,5 +62,7 @@ Shared helpers: `lib/network-query.ts` (new), `lib/contribution-filters.ts`
   `Request`; pages that read cookies and Prisma (`/contributions`, `/database`, `/inventory`)
   were type checked but not rendered.
 - No database-backed run: `DATABASE_URL` in the checks points at an unreachable address.
-- Whether Next 15 passes dynamic route params already percent-decoded was not checked;
-  `parseNetworkId` is correct either way.
+- Next 15 already percent-decodes dynamic route params before the handler runs, so
+  `parseNetworkId` validates the id as received without a second `decodeURIComponent`
+  (preserving literal escapes such as `%3A` from `%253A`); live router decoding via `next start`
+  was not run here.

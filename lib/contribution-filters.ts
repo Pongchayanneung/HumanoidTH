@@ -64,10 +64,13 @@ export function normalizeScalarParam(param: string | string[] | undefined): stri
  * `invalid` is true for values longer than MAX_FILTER_LENGTH or containing control characters.
  */
 export function readBoundedTextParam(param: string | string[] | undefined): { value?: string; invalid: boolean } {
-  const value = normalizeScalarParam(param);
-  if (value === undefined) return { invalid: false };
-  const invalid = Array.from(value).length > MAX_FILTER_LENGTH || /[\p{Cc}\p{Cs}]/u.test(value);
-  return invalid ? { invalid } : { value, invalid };
+  const raw = Array.isArray(param) ? param[0] : param;
+  if (raw === undefined) return { invalid: false };
+  if (/[\p{Cc}\p{Cs}]/u.test(raw)) return { invalid: true };
+  const value = raw.trim();
+  if (!value) return { invalid: false };
+  if (Array.from(value).length > MAX_FILTER_LENGTH) return { invalid: true };
+  return { value, invalid: false };
 }
 
 /**

@@ -92,12 +92,10 @@ export function parseNetworkGraphQuery(params: URLSearchParams): Parsed<NetworkG
   };
 }
 
-// Path ids may arrive percent-encoded or already decoded. A malformed escape is kept literally
-// (it simply matches nothing) instead of throwing a URIError. Empty or oversized ids are client errors.
-export function parseNetworkId(encoded: string): string | null {
-  if (encoded.length > NETWORK_ID_MAX * 3) return null;
-  let id = encoded;
-  try { id = decodeURIComponent(encoded); } catch { /* keep the literal value */ }
+// Next 15 already percent-decodes dynamic route params before the handler runs, so decoding again
+// would corrupt ids containing a literal percent escape (e.g. `%253A` -> `%3A`). Empty, oversized
+// or control-character ids are client errors.
+export function parseNetworkId(id: string): string | null {
   if (!id.trim() || id.length > NETWORK_ID_MAX || /[\p{Cc}\p{Cs}]/u.test(id)) return null;
   return id;
 }

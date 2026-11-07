@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Search,
   BarChart3,
   Bot,
   CircleUserRound,
@@ -29,6 +30,7 @@ export default function SidebarNav({ currentLang = "en" }: SidebarNavProps) {
   const t = getTranslation(currentLang);
 
   const navItems = [
+    { href: "/search", label: currentLang === "th" ? "ค้นหา" : "Search", icon: Search },
     { href: "/", label: t.overview, icon: Home },
     { href: "/dashboard", label: t.dashboard, icon: LayoutDashboard },
     { href: "/data-pulls", label: t.dataPulls, icon: Inbox },

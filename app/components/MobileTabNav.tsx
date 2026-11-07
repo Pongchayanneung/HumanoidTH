@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   LayoutDashboard,
-  Network,
+  Search,
   Bot,
   UsersRound
 } from "lucide-react";
@@ -21,7 +21,7 @@ export default function MobileTabNav({ currentLang = "en" }: MobileTabNavProps) 
   const tabs = [
     { href: "/", label: t.overview, icon: Home },
     { href: "/dashboard", label: t.dashboard, icon: LayoutDashboard },
-    { href: "/network", label: t.network, icon: Network },
+    { href: "/search", label: currentLang === "th" ? "ค้นหา" : "Search", icon: Search },
     { href: "/robots", label: t.robots, icon: Bot },
     { href: "/contributions", label: t.contributors, icon: UsersRound }
   ];

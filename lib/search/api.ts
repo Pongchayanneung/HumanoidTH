@@ -122,7 +122,7 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
       // Group identity still reads the whole index, so a perspective keeps its parent source's key.
       const selected = index.documents.filter((doc) => (!input.types || input.types.includes(doc.kind)) && (!input.subtype || contentTypeFor(doc) === input.subtype) && (options.isEligible?.(doc) ?? true));
       const toResult = (doc: SearchDocument, evidence: SearchResultEvidence[]): SearchBrowseResult =>
-        ({ reference: { kind: doc.kind, id: doc.typedId }, contentType: contentTypeFor(doc), title: doc.title, url: doc.url, evidence });
+        ({ reference: { kind: doc.kind, id: doc.typedId }, contentType: contentTypeFor(doc), language: doc.language, title: doc.title, url: doc.url, evidence });
       const evidenceOf = new Map(selected.map((doc) => [doc.typedId, doc.evidence.map(({ fieldName, originalText, label, coverage, startOffset, endOffset }): SearchResultEvidence => ({ fieldName, originalText, label, coverage, startOffset, endOffset, evidenceKind: evidenceKindFor(doc, fieldName) }))]));
       const common = { release: { id: index.release.id, generatedAt: index.release.generatedAt }, coverage: { indexed: 0, eligible: selected.length } };
 

@@ -15,7 +15,7 @@ test("request validation handles trimming, code points, filters and bounds", () 
   assert.deepEqual(validateSearchRequest({ query: "  " }), { query: "", types: undefined, limit: 10 });
   assert.equal(validateSearchRequest({ query: "😀".repeat(300) })?.query.length, 600);
   assert.equal(validateSearchRequest({ query: "😀".repeat(301) }), null);
-  for (const value of [{ query: "x", types: ["bad"] }, { query: "x", types: "source" }, { query: "x", limit: 0 }, { query: "x", limit: -1 }, { query: "x", limit: 1.5 }, { query: 1 }, { query: "x", extra: true }]) assert.equal(validateSearchRequest(value), null);
+  for (const value of [{ query: "x", types: ["bad"] }, { query: "x", types: "source" }, { query: "x", limit: 0 }, { query: "x", limit: -1 }, { query: "x", limit: 1.5 }, { query: 1 }, { query: "x", extra: true }, { query: "x", contentType: "paper" }]) assert.equal(validateSearchRequest(value), null);
   assert.equal(validateSearchRequest({ query: "x", limit: 21 })?.limit, 20);
   assert.equal(validateSearchRequest({ query: " x ", types: ["source"], limit: 20 })?.query, "x");
   assert.deepEqual(INITIAL_SEARCH_RANKING_POLICY, { mode: "keyword", semanticCutoff: null, modelProfileId: null });
@@ -41,6 +41,26 @@ test("API defaults and clamps the result limit", async () => {
     assert.equal(res.status, 200);
     assert.equal((await res.json()).groups.length, expected);
   }
+});
+
+test("source subtype is validated and filters before matching and the group limit", async () => {
+  for (const subtype of [null, "robot", "PAPER", [], 1]) assert.equal(validateSearchRequest({ query: "", subtype }), null);
+  for (const subtype of ["paper", "repository", "video", "news_web", "source"]) assert.equal(validateSearchRequest({ query: "", subtype })?.subtype, subtype);
+  const source = documents[0];
+  const records = Array.from({ length: 10 }, (_, i) => ({ ...source, typedId: `source:repo-${i}`, groupId: `repo-${i}`, url: `https://github.com/example/${i}` }));
+  records.push({ ...source, typedId: "source:paper", groupId: "paper", url: "https://doi.org/10.1/example" });
+  const handler = createSearchPost(async () => ({ documents: records, release: { id: "fixture", generatedAt: "2026-01-01" }, coverage: { indexed: 0, eligible: 11 } }));
+  for (const query of ["", "robot"]) {
+    const broad = await (await handler(request(JSON.stringify({ query, types: ["source"] })))).json();
+    assert.equal(broad.groups.length, 10);
+    assert.ok(broad.groups.every((group: { results: { contentType: string }[] }) => group.results[0].contentType === "repository"));
+    const filtered = await (await handler(request(JSON.stringify({ query, types: ["source"], subtype: "paper" })))).json();
+    assert.equal(filtered.groups.length, 1);
+    assert.equal(filtered.groups[0].results[0].reference.id, "source:paper");
+  }
+  const intersection = await (await handler(request(JSON.stringify({ query: "", types: ["robot"], subtype: "paper" })))).json();
+  assert.deepEqual(intersection.groups, []);
+  assert.equal((await handler(request(JSON.stringify({ query: "", subtype: "invalid" })))).status, 400);
 });
 
 test("constructed titles are labelled derived in matches and result evidence", async () => {
@@ -94,4 +114,18 @@ test("missing or failed index is unavailable without leaking errors, GET is reje
   }
   assert.equal(GET().status, 405);
   assert.equal(GET().headers.get("allow"), "POST");
+});
+
+test('private fields never reach responses', async () => {
+  const source = documents[0];
+  const records = Array.from({length: 25}, (_, i) => ({...source, typedId:`source:repo-${i}`, groupId:`repo-${i}`, url:`https://github.com/example/repo-${i}`, metadata:{platform:'github', token:'secret-token', vector:[999], score:0.123}}));
+  records.push({...source, typedId:'source:paper', groupId:'paper', url:'https://doi.org/10.1/example', metadata:{platform:'openalex', token:'secret-token', vector:[999], score:0.123}});
+  const handler=createSearchPost(async()=>({documents:records, release:{id:'fixture',generatedAt:'2026-01-01'}, coverage:{indexed:0,eligible:26}}));
+  for (const query of ['', 'robot']) {
+    const response=await handler(request(JSON.stringify({query, types:['source'],limit:20})));
+    const text=await response.text(); const data=JSON.parse(text);
+    assert.equal(data.groups.length,20);
+    assert.doesNotMatch(text,/secret-token|token|vector|score|999|0\.123/i);
+    assert.equal(data.groups[0].results[0].language,'mixed');
+  }
 });

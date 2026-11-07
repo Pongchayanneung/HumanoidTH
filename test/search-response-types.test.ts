@@ -5,7 +5,7 @@ import type { SearchRequest, SearchReference, SearchCoverage, SearchModelProfile
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 type Assert<T extends true> = T;
 type ContractChecks = [
-  Assert<Equal<SearchRequest, { query: string; types?: SearchReference["kind"][]; limit?: number }>>,
+  Assert<Equal<SearchRequest, { query: string; types?: SearchReference["kind"][]; subtype?: "paper" | "repository" | "video" | "news_web" | "source"; limit?: number }>>,
   Assert<Equal<SearchReference, { kind: "source" | "robot" | "contribution" | "perspective" | "inventory" | "relationship" | "entity"; id: string }>>,
   Assert<Equal<SearchCoverage, { indexed: number; eligible: number }>>,
   Assert<Equal<{ [K in keyof SearchResultEvidence]: SearchResultEvidence[K] }, { fieldName: string; originalText: string; label: string; coverage: "full" | "partial" | "title-only"; startOffset: number; endOffset: number; evidenceKind: "source" | "derived" }>>,
@@ -14,7 +14,7 @@ type ContractChecks = [
   Assert<Equal<SearchPublicationPolicy, { permittedOrigins: string[]; publicFieldsByKind: Record<SearchReference["kind"], string[]>; excludedFields: string[]; excludedReferences: SearchReference[]; exceptions: string[] }>>,
   Assert<Equal<SearchRelease, { id: string; generatedAt: string; coverage: SearchCoverage; model: SearchModelProfile | null; publication: SearchPublicationPolicy; ranking: SearchRankingPolicy }>>,
   Assert<Equal<SearchError, { error: { code: "invalid_request"; message: string } }>>,
-  Assert<Equal<keyof SearchBrowseResult, "reference" | "contentType" | "title" | "url" | "evidence" | "match">>,
+  Assert<Equal<keyof SearchBrowseResult, "reference" | "contentType" | "language" | "title" | "url" | "evidence" | "match">>,
   Assert<Equal<Pick<SearchBrowseResult, "reference" | "contentType" | "title" | "url" | "evidence">, { reference: SearchReference; contentType: SearchContentType; title: string; url: string | null; evidence: SearchResultEvidence[] }>>,
   Assert<Equal<SearchContentType, "paper" | "repository" | "video" | "news_web" | "source" | "robot" | "contribution" | "perspective" | "inventory" | "relationship" | "entity">>,
   Assert<Equal<keyof SearchResultGroup, "groupKey" | "results">>,

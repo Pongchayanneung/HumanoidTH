@@ -49,7 +49,7 @@ export default async function AnalyticsPage() {
       <p className="muted" style={{ marginBottom: "18px" }}>{t.analyticsDesc}</p>
       
       <div className="notice" style={{ background: "rgba(59, 130, 246, 0.08)", borderColor: "var(--accent)", marginBottom: "16px" }}>
-        <strong>Dataset Scope:</strong> {PUBLIC_DATASET_SCOPE_LABEL}. Analytics aggregate verified public records only. Pending submissions, private inventory, and unaccepted sources are strictly excluded.
+        <strong>Dataset Scope:</strong> Whole Eligible Public Corpus. Analytics aggregate all verified public records (accepted sources, verified robots, and approved contributions). Unreviewed submissions, private inventory, and excluded placeholders are strictly omitted.
       </div>
 
       <div className="notice" style={{ background: "rgba(100, 116, 139, 0.08)", borderColor: "#94a3b8", marginBottom: "16px" }}>

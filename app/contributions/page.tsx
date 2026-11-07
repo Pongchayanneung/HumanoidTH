@@ -251,7 +251,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           font-weight: 700;
           padding: 3px 7px;
           background: rgba(74, 124, 89, 0.12) !important;
-          color: var(--accent) !important;
+          color: var(--accent-strong) !important;
           border: 1px solid rgba(74, 124, 89, 0.3) !important;
           text-transform: capitalize;
           display: inline-block;

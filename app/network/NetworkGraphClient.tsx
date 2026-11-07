@@ -823,7 +823,7 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
         </aside>}
 
         <section className={styles.canvasPanel}>
-          <div ref={containerRef} className={styles.graphCanvas} aria-label="Interactive network graph" />
+          <div ref={containerRef} className={styles.graphCanvas} role="group" aria-label="Interactive network graph" />
           {loading && <div className={styles.loading}><CircularProgress aria-label="Loading network graph" color="inherit" /><span>{localT[lang].fetchingGraph}</span></div>}
           {error && <div className={styles.error}><strong>{localT[lang].graphFailedLoad}</strong><span>{error}</span></div>}
           {!loading && !error && visibleGraph && visibleGraph.nodes.length === 0 && (

@@ -155,3 +155,21 @@ test("ContributionsPage: directly exercises page execution with filtered queries
     prisma.robotModel.findMany = originalRobotFindMany;
   }
 });
+
+test("Thai localization: validation errors, notices, and UI labels are accurately localized", () => {
+  // Thai error on invalid contribution type
+  const thTypeErr = validateContributionFilters({ type: "bad_type" }, "th");
+  assert.ok(thTypeErr.filterError?.includes("ไม่พบประเภทผลงาน"));
+  assert.ok(thTypeErr.filterError?.includes("bad_type"));
+
+  // Thai error on invalid status
+  const thStatusErr = validateContributionFilters({ status: "UNKNOWN" }, "th");
+  assert.ok(thStatusErr.filterError?.includes("ไม่พบสถานะการตรวจสอบ"));
+  assert.ok(thStatusErr.filterError?.includes("UNKNOWN"));
+
+  // Thai notice on non-approved status
+  const thNotice = validateContributionFilters({ status: "QUEUED" }, "th");
+  assert.equal(thNotice.filterError, null);
+  assert.ok(thNotice.statusNotice?.includes("ระบบปิดการกรองตามสถานะสำหรับผู้ใช้ทั่วไป"));
+  assert.ok(thNotice.statusNotice?.includes("QUEUED"));
+});

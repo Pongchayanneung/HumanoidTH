@@ -56,7 +56,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   const t = getTranslation(lang);
 
   // Validate and normalize filter inputs (M8-B)
-  const validatedFilters = validateContributionFilters(params);
+  const validatedFilters = validateContributionFilters(params, lang);
   const { type, org, robot, q, filterError, statusNotice } = validatedFilters;
 
   // Build filter conditions enforcing M3/M5 public projection
@@ -136,24 +136,48 @@ export default async function ContributionsPage({ searchParams }: { searchParams
       invalidFilterTitle: "Invalid Filter Parameter",
       dbFailureTitle: "Database Query Failure",
       dbFailureDesc: "Unable to load contribution records. Please try again later.",
+      filterTypeLabel: "Type",
+      filterOrgLabel: "Organization",
+      filterRobotLabel: "Target Robot",
+      filterSearchLabel: "Text Search",
       allTypes: "All Types",
       allOrgs: "All Organizations",
       allRobots: "All Robots",
       searchPlaceholder: "e.g. SLAM, study",
       applyBtn: "Apply Filters",
-      emptyRecords: "No contribution records match the current filter criteria."
+      emptyRecords: "No contribution records match the current filter criteria.",
+      thTitle: "Title / Contributor",
+      thType: "Type",
+      thOrg: "Organization",
+      thTargetModel: "Target Model",
+      thLicense: "License",
+      thStatus: "Status",
+      thDescription: "Abstract / Description",
+      thLastUpdated: "Last Updated"
     },
     th: {
       statusNoticeTitle: "การแจ้งเตือนสถานะ",
       invalidFilterTitle: "พารามิเตอร์ตัวกรองไม่ถูกต้อง",
       dbFailureTitle: "เกิดข้อผิดพลาดในการดึงข้อมูล",
       dbFailureDesc: "ไม่สามารถดึงข้อมูลรายการได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง",
+      filterTypeLabel: "ประเภท",
+      filterOrgLabel: "องค์กร",
+      filterRobotLabel: "หุ่นยนต์เป้าหมาย",
+      filterSearchLabel: "ค้นหาข้อความ",
       allTypes: "ทุกประเภทผลงาน",
       allOrgs: "ทุกองค์กร",
       allRobots: "ทุกหุ่นยนต์",
       searchPlaceholder: "ค้นหาผลงาน, ผู้จัดทำ...",
       applyBtn: "ค้นหา",
-      emptyRecords: "ไม่พบข้อมูลผลงานหรือการมีส่วนร่วมที่ตรงกับเงื่อนไขการค้นหา"
+      emptyRecords: "ไม่พบข้อมูลผลงานหรือการมีส่วนร่วมที่ตรงกับเงื่อนไขการค้นหา",
+      thTitle: "ชื่อผลงาน / ผู้จัดทำ",
+      thType: "ประเภท",
+      thOrg: "องค์กร",
+      thTargetModel: "หุ่นยนต์เป้าหมาย",
+      thLicense: "สัญญาอนุญาต",
+      thStatus: "สถานะ",
+      thDescription: "บทคัดย่อ / คำอธิบาย",
+      thLastUpdated: "อัปเดตล่าสุด"
     }
   }[lang];
 
@@ -237,7 +261,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
       {/* Filter Toolbar */}
       <form method="GET" className="panel filter-form">
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          Type
+          {localT.filterTypeLabel}
           <select name="type" defaultValue={type || ""} style={{ minHeight: "44px" }}>
             <option value="">{localT.allTypes}</option>
             {CONTRIBUTION_TYPES.map((ct) => (
@@ -249,7 +273,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         </label>
 
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          Organization
+          {localT.filterOrgLabel}
           <select name="org" defaultValue={org || ""} style={{ minHeight: "44px" }}>
             <option value="">{localT.allOrgs}</option>
             {uniqueOrgs.map((o) => (
@@ -261,7 +285,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         </label>
 
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          Target Robot
+          {localT.filterRobotLabel}
           <select name="robot" defaultValue={robot || ""} style={{ minHeight: "44px" }}>
             <option value="">{localT.allRobots}</option>
             {robots.map((r) => (
@@ -273,7 +297,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         </label>
 
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          Text Search
+          {localT.filterSearchLabel}
           <input name="q" defaultValue={q || ""} placeholder={localT.searchPlaceholder} style={{ minHeight: "44px" }} />
         </label>
 
@@ -287,14 +311,14 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         <table>
           <thead>
             <tr>
-              <th>Title / Contributor</th>
-              <th>Type</th>
-              <th>Organization</th>
-              <th>Target Model</th>
-              <th>License</th>
-              <th>Status</th>
-              <th>Abstract / Description</th>
-              <th>Last Updated</th>
+              <th>{localT.thTitle}</th>
+              <th>{localT.thType}</th>
+              <th>{localT.thOrg}</th>
+              <th>{localT.thTargetModel}</th>
+              <th>{localT.thLicense}</th>
+              <th>{localT.thStatus}</th>
+              <th>{localT.thDescription}</th>
+              <th>{localT.thLastUpdated}</th>
             </tr>
           </thead>
           <tbody>

@@ -26,7 +26,7 @@ function contentTypeFor(doc: SearchDocument): SearchContentType {
 
 // Group by canonical external identity (URL) or explicit parent-source association; records
 // without either stay typed singletons. Titles and empty URLs never merge records.
-function groupKeyFor(doc: SearchDocument, byId: Map<string, SearchDocument>): string {
+export function groupKeyFor(doc: SearchDocument, byId: Map<string, SearchDocument>): string {
   if (doc.kind === "robot") return doc.typedId;
   const parent = doc.parentTypedId ? byId.get(doc.parentTypedId) : undefined;
   const identity = parent?.kind === "source" ? parent : doc;
@@ -139,7 +139,7 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
       const semanticSet = new Set(semanticIds);
 
       const matchedGroups = new Map<string, SearchMatchedResult[]>();
-      for (const id of fuseRankings(keyword, semanticIds, policy)) {
+      for (const id of fuseRankings(keyword, semanticIds, policy, (docId) => groupKeyFor(byId.get(docId)!, byId))) {
         const doc = byId.get(id)!;
         const hit = keywordHits.get(id);
         const shown = candidates.get(id)!;

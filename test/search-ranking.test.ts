@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createSearchPost, type SearchFixtureIndex } from "../lib/search/api";
 import { fuseRankings, keywordMatch, prepareQuery, rankKeyword, semanticRank, wordSegments } from "../lib/search/ranking";
+import { groupCandidates } from "../lib/search/evaluation";
 import { FROZEN_SEMANTIC_POLICY } from "../lib/search/semantic-policy";
 import { DEFAULT_MODEL_PROFILE, MOCK_MODEL_PROFILE } from "../lib/search/vector-types";
 import type { SearchDocument } from "../lib/search/types";
@@ -205,7 +206,10 @@ test("hybrid API responses expose methods and evidence but never scores, and deg
   assert.equal(byId["robot:sem"].ranges, undefined);
   assert.equal(byId["robot:sem"].evidence.originalText, "Biped locomotion notes.");
   assert.deepEqual(byId["robot:nv"].methods, ["keyword"]);
-  assert.doesNotMatch(JSON.stringify(hybrid), /score|similarity|rrf|cosine|vectorRow/i);
+  const keysOf = (value: unknown): string[] => Array.isArray(value) ? value.flatMap(keysOf) : value && typeof value === "object" ? Object.entries(value).flatMap(([key, child]) => [key, ...keysOf(child)]) : [];
+  const responseKeys = keysOf(JSON.parse(JSON.stringify(hybrid)));
+  assert.ok(responseKeys.includes("methods") && responseKeys.includes("evidence"), "the walk reaches the nested match objects");
+  assert.deepEqual(responseKeys.filter((key) => /score|similarity|rrf|vector|vectors|embedding/i.test(key)), []);
   let calls = 0;
   const mockProfile = await run({ vectors: { ...vectorsFor([0.9]), profile: MOCK_MODEL_PROFILE } }, async () => { calls++; return queryVector; });
   assert.deepEqual([mockProfile.mode, mockProfile.warnings, calls], ["keyword", ["degraded_semantic"], 0]);
@@ -287,4 +291,91 @@ test("keywordMatch only qualifies a record through text it can show", () => {
   const query = prepareQuery("hands");
   assert.equal(keywordMatch(query, { id: "x", title: "Arm", texts: ["Arm"] }), null);
   assert.equal(keywordMatch(prepareQuery("the"), { id: "x", title: "the", texts: ["the"] }), null);
+});
+
+const hitOf = (id: string) => ({ id, exactTitle: false, evidenceIndex: 0, ranges: [], score: 1 });
+const withLimits = (candidatesPerBranch: number, rrfConstantK = FROZEN_SEMANTIC_POLICY.rrfConstantK) => ({ ...FROZEN_SEMANTIC_POLICY, rrfConstantK, limits: { ...FROZEN_SEMANTIC_POLICY.limits, candidatesPerBranch } });
+
+test("a record beyond both branch caps is returned once", () => {
+  const fused = fuseRankings([hitOf("a"), hitOf("x")], ["b", "x"], withLimits(1));
+  assert.deepEqual(fused, ["a", "b", "x"]);
+});
+
+test("duplicate copies of one identity do not change the group order or fused outcome of any group", async () => {
+  const groupOf = (id: string) => id.replace(/\d+$/, "");
+  const groupsOf = (list: string[]) => Array.from(new Set(list.map(groupOf)));
+  const firstOf = (list: string[]) => groupsOf(list).map((group) => list.find((id) => groupOf(id) === group));
+  for (const policy of [withLimits(2), FROZEN_SEMANTIC_POLICY]) {
+    const plain = fuseRankings(["a", "b", "c"].map(hitOf), ["c", "b"], policy, groupOf);
+    const duplicated = fuseRankings(["a", "a2", "a3", "b", "c", "c2"].map(hitOf), ["c", "c2", "b"], policy, groupOf);
+    assert.deepEqual(groupsOf(duplicated), groupsOf(plain));
+    assert.deepEqual(firstOf(duplicated), firstOf(plain));
+    assert.equal(new Set(duplicated).size, duplicated.length, "each record once");
+  }
+  assert.deepEqual(groupsOf(fuseRankings(["a", "b", "c"].map(hitOf), ["c", "b"], withLimits(2), groupOf)), ["b", "a", "c"]);
+
+  // Same property through the API: the extra copies join their group and nothing else moves.
+  const url = (name: string) => `https://example.org/${name}`;
+  const robot = (id: string, name: string, vectorRow: number | null) => doc({ typedId: `source:${id}`, kind: "source", title: `Robot ${id}`, url: url(name), groupId: url(name), vectorRow });
+  const cosinesOf = (rows: number[]) => ({ profile: DEFAULT_MODEL_PROFILE, rows: new Map(rows.map((c, row) => [row, mix(c)])) });
+  const options = { embedQuery: async () => queryVector, policy: withLimits(2) };
+  const before = await search([robot("a", "a", null), robot("b", "b", 0), robot("c", "c", 1)], { query: "robot" }, { vectors: cosinesOf([0.9, 0.99]) }, options);
+  const after = await search(
+    [robot("a", "a", null), robot("a2", "a", null), robot("a3", "a", null), robot("b", "b", 0), robot("c", "c", 1), robot("c2", "c", 2)],
+    { query: "robot" }, { vectors: cosinesOf([0.9, 0.99, 0.985]) }, options);
+  assert.equal(before.mode, "hybrid");
+  assert.equal(after.mode, "hybrid");
+  assert.deepEqual(before.groups.map((group) => group.groupKey), [url("b"), url("a"), url("c")]);
+  assert.deepEqual(after.groups.map((group) => group.groupKey), before.groups.map((group) => group.groupKey));
+  assert.deepEqual(after.groups.map((group) => group.results[0].reference.id), before.groups.map((group) => group.results[0].reference.id));
+  assert.deepEqual(after.groups.map((group) => group.results[0].match!.methods), before.groups.map((group) => group.results[0].match!.methods));
+  assert.deepEqual(after.groups.map((group) => group.results.length), [1, 3, 2]);
+  assert.equal(new Set(ids(after)).size, ids(after).length, "no member is returned twice");
+});
+
+test("a candidate is normalized inside the cosine: magnitude is ignored and a zero vector is skipped", () => {
+  const scaled = (vector: Float32Array, factor: number) => vector.map((value) => value * factor);
+  const candidates = [
+    { id: "half", vector: scaled(mix(1), 0.5) },
+    { id: "big", vector: scaled(mix(0.9), 7) },
+    { id: "weak", vector: scaled(mix(0.5), 7) },
+    { id: "zero", vector: new Float32Array(DIM) },
+  ];
+  assert.deepEqual(semanticRank({ queryVector, candidates, profile: DEFAULT_MODEL_PROFILE }), { status: "available", ranked: ["half", "big"], compatibleCount: 3 });
+  assert.deepEqual(semanticRank({ queryVector: scaled(queryVector, 3), candidates: [candidates[0]], profile: DEFAULT_MODEL_PROFILE }), { status: "available", ranked: ["half"], compatibleCount: 1 });
+  assert.equal(semanticRank({ queryVector, candidates: [candidates[3]], profile: DEFAULT_MODEL_PROFILE }).status, "unavailable");
+});
+
+test("the RRF constant is 60 and a different constant would flip the order", () => {
+  assert.equal(FROZEN_SEMANTIC_POLICY.rrfConstantK, 60);
+  // y is rank 5 in both branches, x is rank 1 in one: 2/(k+5) beats 1/(k+1) for k = 60 but not for k = 1.
+  const keyword = ["x", "f1", "f2", "f3", "y"].map(hitOf);
+  const semantic = ["g1", "g2", "g3", "g4", "y"];
+  assert.equal(fuseRankings(keyword, semantic)[0], "y");
+  assert.equal(fuseRankings(keyword, semantic, withLimits(50, 1))[0], "x");
+});
+
+test("selected-type filtering happens before the candidate cap and fusion", async () => {
+  const wanted = (typedId: string, title: string, vectorRow: number, body = "") => doc({ typedId, kind: "source", title, vectorRow }, body);
+  const crowder = doc({ typedId: "robot:crowd", kind: "robot", title: "Robot", vectorRow: 0 });
+  const first = wanted("source:first", "Robot arm", 1);
+  const second = wanted("source:second", "Other", 2, "robot parts");
+  const extra = { vectors: vectorsFor([0.99, 0.3, 0.9]) };
+  const options = { embedQuery: async () => queryVector, policy: withLimits(2) };
+  const filtered = await search([crowder, first, second], { query: "robot", types: ["source"] }, extra, options);
+  // With the robot filtered first: keyword [first, second], semantic [second]; second is in both branches and wins.
+  // If the robot took a cap slot first, second would miss the keyword cap and follow first instead.
+  assert.equal(filtered.mode, "hybrid");
+  assert.deepEqual(ids(filtered), ["source:second", "source:first"]);
+  assert.deepEqual(filtered.groups[0].results[0].match!.methods, ["keyword", "semantic"]);
+});
+
+test("evaluation groups URL variants with the same canonical key as the API", () => {
+  const a = doc({ typedId: "source:e1", kind: "source", title: "Shared paper", url: "https://Example.org/paper/", groupId: "https://Example.org/paper/" });
+  const b = doc({ typedId: "source:e2", kind: "source", title: "Shared paper copy", url: "https://example.org/paper?utm_source=rss", groupId: "https://example.org/paper?utm_source=rss" });
+  const other = doc({ typedId: "source:e3", kind: "source", title: "Other paper", url: "https://example.org/other", groupId: "https://example.org/other" });
+  const groups = groupCandidates([{ document: a, score: 1 }, { document: b, score: 2 }, { document: other, score: 0.5 }], []);
+  assert.equal(groups.length, 2);
+  assert.deepEqual(groups[0].members.map((member) => member.typedId), ["source:e1", "source:e2"]);
+  assert.equal(groups[0].primaryDocument.typedId, "source:e2");
 });

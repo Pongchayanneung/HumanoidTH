@@ -140,7 +140,11 @@ export function semanticRank(input: {
   let compatibleCount = 0;
   for (const { id, vector } of input.candidates) {
     if (!vector || vector.length !== profile.dimensions) continue;
-    const similarity = cosineSimilarity(query, vector);
+    // Candidates are normalized here, so a stored vector of any magnitude compares by direction only.
+    // A zero-norm or non-finite candidate has no direction and is skipped.
+    let unit: Float32Array;
+    try { unit = l2Normalize(vector); } catch { continue; }
+    const similarity = cosineSimilarity(query, unit);
     if (!Number.isFinite(similarity)) continue;
     compatibleCount++;
     if (similarity >= policy.semanticCutoffThreshold) scored.push({ id, similarity });
@@ -152,17 +156,38 @@ export function semanticRank(input: {
 
 /**
  * Reciprocal rank fusion: sum of 1 / (k + rank) over the top candidates of each branch.
- * An exact full title/name match keeps priority over the fused order. Keyword matches beyond
- * the candidate cap follow, so records that group with an admitted result are not dropped.
+ * Ranks are taken over groups (`groupOf`, identity by default): in each branch a group is
+ * ranked by its best-ranked member, so extra copies of one identity cannot take branch ranks or
+ * cap slots, or change the fused score or order of any other group. An exact full title/name
+ * match keeps priority over the fused order. Groups beyond both caps follow, so records that
+ * group with an admitted result are not dropped. The result lists each record id once, with
+ * the members of a group adjacent and groups in fused order.
  */
-export function fuseRankings(keyword: KeywordHit[], semanticIds: string[], policy: SemanticRetrievalPolicy = FROZEN_SEMANTIC_POLICY): string[] {
+export function fuseRankings(
+  keyword: KeywordHit[],
+  semanticIds: string[],
+  policy: SemanticRetrievalPolicy = FROZEN_SEMANTIC_POLICY,
+  groupOf: (id: string) => string = (id) => id,
+): string[] {
   const { rrfConstantK: k, limits } = policy;
+  const keywordIds = keyword.map((hit) => hit.id);
+  // Members of each group in first-seen order (keyword branch, then semantic branch), each id once.
+  const members = new Map<string, string[]>();
+  for (const id of [...keywordIds, ...semanticIds]) {
+    const group = groupOf(id);
+    const list = members.get(group);
+    if (!list) members.set(group, [id]);
+    else if (!list.includes(id)) list.push(id);
+  }
+  const groupRanking = (ids: string[]) => Array.from(new Set(ids.map(groupOf)));
+  const keywordGroups = groupRanking(keywordIds);
+  const semanticGroups = groupRanking(semanticIds);
   const rrf = new Map<string, number>();
-  const addBranch = (ids: string[]) => ids.slice(0, limits.candidatesPerBranch).forEach((id, i) => rrf.set(id, (rrf.get(id) ?? 0) + 1 / (k + i + 1)));
-  addBranch(keyword.map((hit) => hit.id));
-  addBranch(semanticIds);
-  const exact = new Set(keyword.filter((hit) => hit.exactTitle).map((hit) => hit.id));
+  const addBranch = (groups: string[]) => groups.slice(0, limits.candidatesPerBranch).forEach((group, i) => rrf.set(group, (rrf.get(group) ?? 0) + 1 / (k + i + 1)));
+  addBranch(keywordGroups);
+  addBranch(semanticGroups);
+  const exact = new Set(keyword.filter((hit) => hit.exactTitle).map((hit) => groupOf(hit.id)));
   const fused = Array.from(rrf.keys()).sort((a, b) => Number(exact.has(b)) - Number(exact.has(a)) || rrf.get(b)! - rrf.get(a)!);
-  const capped = [...keyword.map((hit) => hit.id), ...semanticIds].filter((id) => !rrf.has(id));
-  return [...fused, ...capped];
+  const beyondCaps = Array.from(new Set([...keywordGroups, ...semanticGroups])).filter((group) => !rrf.has(group));
+  return [...fused, ...beyondCaps].flatMap((group) => members.get(group)!);
 }

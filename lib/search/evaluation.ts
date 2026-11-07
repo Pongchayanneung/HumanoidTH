@@ -1,6 +1,7 @@
 import type { SearchDocument, LanguageTag } from "./types";
 import { FROZEN_SEMANTIC_POLICY, type SemanticRetrievalPolicy } from "./semantic-policy";
 import { cosineSimilarity } from "./vector-io";
+import { groupKeyFor } from "./api";
 
 export type EvaluationMode = "mock_fixture" | "production_semantic" | "lexical_only";
 export type SemanticStatus = "evaluated" | "mock" | "unavailable";
@@ -175,16 +176,19 @@ export function computeKeywordScore(
 }
 
 /**
- * Groups scored candidates by exact groupId, retaining best score and all member evidence.
+ * Groups scored candidates by the canonical group key the search API uses (`groupKeyFor`),
+ * retaining best score and all member evidence. `byId` is the whole index (parent lookup);
+ * it defaults to the candidates' own documents.
  */
 export function groupCandidates(
   candidates: { document: SearchDocument; score: number }[],
-  expectedRelevantIds: string[]
+  expectedRelevantIds: string[],
+  byId: Map<string, SearchDocument> = new Map(candidates.map((cand) => [cand.document.typedId, cand.document]))
 ): GroupedResult[] {
   const groups = new Map<string, { bestScore: number; primary: SearchDocument; members: SearchDocument[] }>();
 
   for (const cand of candidates) {
-    const gid = cand.document.groupId || cand.document.typedId;
+    const gid = groupKeyFor(cand.document, byId);
     const existing = groups.get(gid);
     if (!existing) {
       groups.set(gid, {
@@ -316,9 +320,10 @@ export class RetrievalEvaluator {
       .sort((a, b) => b.score - a.score);
 
     // Group candidates across full retrieval depth
-    const allKwGroups = groupCandidates(kwCandidates, query.expectedRelevantIds);
-    const allSemGroups = groupCandidates(semCandidates, query.expectedRelevantIds);
-    const allHybGroups = groupCandidates(hybCandidates, query.expectedRelevantIds);
+    const byId = new Map(this.documents.map((doc) => [doc.typedId, doc]));
+    const allKwGroups = groupCandidates(kwCandidates, query.expectedRelevantIds, byId);
+    const allSemGroups = groupCandidates(semCandidates, query.expectedRelevantIds, byId);
+    const allHybGroups = groupCandidates(hybCandidates, query.expectedRelevantIds, byId);
 
     const endFullHybrid = performance.now();
     const fullHybridLatency = Number((endFullHybrid - startFullHybrid).toFixed(2));

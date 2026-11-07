@@ -52,14 +52,20 @@ I built this platform using a modern, scalable, and developer-friendly stack:
 
 - 💻 **Frontend & Routing:** [Next.js 15 (App Router)](https://nextjs.org/) for highly responsive Server Components and dynamic layouts.
 - 🗄️ **Database & Modeling:** [Prisma ORM](https://www.prisma.io/) with [PostgreSQL](https://www.postgresql.org/) for transparent, typed data structures.
-- ⚙️ **Data Ingestion Adapters:** Multi-source background adapters retrieving records from **OpenAlex** 🎓, **GitHub** 🐙, **GDELT** 🌍, and **YouTube** 📺.
-- 🧠 **AI Integration:** [Gemini API](https://ai.google.dev/) (`gemini-1.5-flash`) for automated relevance classification, stance extraction, and geographical contribution clustering.
+- ⚙️ **Data Ingestion Adapters:** Legacy CLI adapters for **OpenAlex** 🎓, **GitHub** 🐙, **GDELT** 🌍, and **YouTube** 📺 remain in the repository; web-triggered ingestion is disabled.
+- 🧠 **AI Integration:** Legacy Gemini integration remains in the codebase; operator sign-in does not enable model or cache mutations.
 
 ---
 
 ## 🚀 Setup & Installation
 
 Follow these simple steps to spin up the Thailand Humanoid Atlas on your local machine:
+
+### ✅ Supported setup
+- Node.js `>=20.11` (engines). Checked on Node 26.9.0 only.
+- PostgreSQL 14 or newer, direct `postgresql://` connection (Prisma Accelerate proxy URLs do not work with `@prisma/adapter-pg`). Checked on 16.15.
+- pnpm 9.15.9 was observed working in a pristine clone: install, `pnpm run test|typecheck|build`, `pnpm dev` and `pnpm db:generate|db:seed`. It needs a clone without the placeholder `pnpm-workspace.yaml` that pnpm 11 creates. pnpm 11.10.0 fails install and every `pnpm run` with `ERR_PNPM_IGNORED_BUILDS`; the underlying commands work when called directly (for example `./node_modules/.bin/prisma migrate deploy`). Checked on macOS only; Windows and Linux untested.
+- Use a disposable local database for development. `DATABASE_URL` is never committed; keep it in your own `.env` or export it inline.
 
 ### 📥 1. Clone the repository and install dependencies
 ```bash
@@ -68,8 +74,9 @@ git clone https://github.com/taechasith/HumanoidTH.git
 cd HumanoidTH
 
 # Install dependencies using pnpm
-pnpm install
+pnpm install --frozen-lockfile --ignore-scripts
 ```
+`pnpm install` runs `prisma generate`, which does not need `DATABASE_URL`. Every other Prisma command does.
 
 ### ⚙️ 2. Configure Environment Variables
 Create a local `.env` file by copying the template:
@@ -77,53 +84,47 @@ Create a local `.env` file by copying the template:
 cp .env.example .env
 ```
 
-Ensure your `.env` contains the required database link and API keys:
+Set the database link for your local PostgreSQL instance. Leave operator fields blank until following the [operator provisioning procedure](docs/operator-auth.md):
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/thailand_humanoid_atlas?schema=public"
-YOUTUBE_API_KEY="your-youtube-api-key"
-GITHUB_TOKEN="your-github-personal-access-token"
-GEMINI_API_KEY="your-gemini-api-key"
+DATABASE_URL="postgresql://user:password@host:5432/dbname?schema=public"
+OPERATOR_EMAIL=""
+OPERATOR_PASSWORD_HASH=""
+OPERATOR_AUTH_EPOCH=""
+OPERATOR_APP_ORIGIN="http://localhost:3000"
+YOUTUBE_API_KEY=""
+GITHUB_TOKEN=""
 ```
 > [!NOTE]
-> 📺 `YOUTUBE_API_KEY` is required only for video ingestion. 🔑 `GEMINI_API_KEY` is required for AI-powered contribution mapping and source analysis. 🐙 `GITHUB_TOKEN` is optional but highly recommended to avoid API rate limiting.
+> Optional API keys apply to separate legacy CLI tooling. They do not enable the disabled ingestion UI or API.
 
-### 🗄️ 3. Initialize & Seed the Database
+> [!IMPORTANT]
+> Blank operator settings intentionally disable sign-in. Set the operator identity, origin and epoch, generate the password hash through the CLI, then explicitly initialize the configuration using the [operator authentication procedure](docs/operator-auth.md).
+
+### 🗄️ 3. Apply Reviewed Database Migrations
 ```bash
 # Generate Prisma client files
 pnpm db:generate
 
-# Push the schema to your local PostgreSQL
-pnpm db:push
-
-# Run seed script to populate sample robots, perspectives, and contributions
-pnpm db:seed
+# Apply the reviewed migration history to the selected database
+pnpm exec prisma migrate deploy
 ```
+> [!WARNING]
+> Seeding is refused unless `ATLAS_ALLOW_SEED=1` is set and `DATABASE_URL` points at `localhost` or `127.0.0.1`. The flag is read only from the command line; a value in `.env` is ignored. This does not cover a file you load into the environment yourself, for example `node --env-file` or a `dotenv/config` preload. Running it resets the review status of seeded source records, re-grants the ADMIN role to the seed admin, and appends duplicate pull-job and submission rows. `pnpm dev` and restarts never seed, unless started with `WATCH_SEED=1 ATLAS_ALLOW_SEED=1` inline.
+
+`pnpm db:seed` is an optional legacy import for an isolated development database only. Do not use it for production setup or operator-auth acceptance. Review the target database before running any migration or import.
 
 ### 🟢 4. Run Development Server
 ```bash
-pnpm dev
+pnpm dev:next
 ```
+`pnpm dev` does not start the legacy seed watcher by default. It starts only when both `WATCH_SEED=1` and `ATLAS_ALLOW_SEED=1` are set. Use the Next-only command for authentication work.
 Open [http://localhost:3000](http://localhost:3000) inside your browser to see the atlas alive! 🟢✨
 
 ---
 
 ## 🔌 API Ingestion & Data Pulls
 
-The platform features built-in ingestion adapters. You can use the UI dashboard at `/data-pulls` or trigger the background ingest API endpoints directly using `curl`:
-
-#### 🌾 Ingest Academic papers from OpenAlex 🎓
-```bash
-curl -X POST http://localhost:3000/api/ingest/openalex \
-  -H "content-type: application/json" \
-  -d '{"query":"humanoid robot Thailand","limit":10}'
-```
-
-#### 💻 Ingest Repositories from GitHub 🐙
-```bash
-curl -X POST http://localhost:3000/api/ingest/github \
-  -H "content-type: application/json" \
-  -d '{"query":"robotics thailand","limit":10}'
-```
+The `/data-pulls` UI and `/api/ingest/*` routes are disabled, including for signed-in operators. The API returns HTTP 403 with `WORKFLOW_UNAVAILABLE` before parsing requests or calling providers. Separate legacy `scripts/ingest.ts` CLI adapters remain in the repository; they are outside the operator web workflow.
 
 ---
 
@@ -134,11 +135,13 @@ Explore the main app modules:
 - `🟡 /robots` — 🤖 Registry of robot models deployed, researched, or observed in Thailand.
 - `🟢 /perspectives` — 📣 Media coverage database, platform sentiment, and safety metrics.
 - `🟡 /contributions` — 📂 Directory of open-source repositories, makers, and papers.
-- `🟢 /map` — 🗺️ AI-powered ecosystem contribution map geolocating Thai robotics research and inventory.
+- `⚪ /map` — 🗺️ Ecosystem contribution map: unavailable in this release (no validated public map result is shown).
 - `🟢 /network` — 🔗 Dynamic Cytoscape network graph mapping connections between institutions, developers, and robots.
 - `🟡 /analytics` — 📈 Statistics, sentiment graphs, and attention metrics over time.
-- `🟢 /data-pulls` — 🔌 Control room to trigger data ingestion pipelines.
-- `🟡 /submit-data` — 📥 Community submission form for sharing robot models and projects.
+- `🟡 /data-pulls` — 🔌 Unavailable; web ingestion is disabled.
+- `🟡 /submit-data` — 📥 Unavailable; community submission is disabled.
+- `🟡 /admin` — 🔐 Session status only after operator sign-in; record inspection is pending #8.
+- `🟡 /profile` — 👤 Unavailable; legacy user histories do not confer operator access.
 
 ---
 
@@ -262,23 +265,15 @@ This makes future research rounds comparable and allows other researchers to rep
 
 ## ☁️ Vercel Deployment
 
-This project is fully optimized for **Vercel** out-of-the-box using the provided `vercel.json` configuration.
+Vercel deployment is not currently verified. Follow [the deployment notes](docs/vercel-deploy.md) as a checklist only; they do not establish hosted readiness.
 
-### 🔑 Vercel Environment Variables
-Set these variables in your Vercel project settings:
-```env
-DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=..."
-NEXT_PUBLIC_APP_URL="https://your-project.vercel.app"
-ADMIN_BASIC_USER="creativelab.co.th@gmail.com"
-ADMIN_BASIC_PASSWORD="use-a-strong-password"
-YOUTUBE_API_KEY="your-api-key"
-GITHUB_TOKEN="your-token"
-GEMINI_API_KEY="your-gemini-api-key"
-```
+### Current behavior and authentication status
 
-> [!IMPORTANT]
-> - 🔒 Production endpoints `/admin/*`, `/data-pulls`, and `/api/ingest/*` are protected with Basic Auth using `ADMIN_BASIC_USER` and `ADMIN_BASIC_PASSWORD`. Keep credentials safe!
-> - ⚙️ The Vercel build command is configured to run `pnpm vercel-build` which automatically handles schema generation. Do **not** run `db:push` inside the Vercel build phase.
+The single configured-operator sign-in is implemented and locally verified. Unit/real-PostgreSQL checks, independent integration checks, and a dedicated Chromium browser run passed. Hosted HTTPS login/logout and production deployment have not been verified. There are no default operator credentials. Legacy `User` records, roles and email cookies do not grant operator access.
+
+Sessions last four hours, with up to five admitted login attempts in each shared 15-minute window; successful attempts count toward that limit. Sessions are independently revocable, while an attempt window can temporarily deny a legitimate login. See [the operator-authentication notes](docs/operator-auth.md) for operation and verification details.
+
+Signing in grants session status only. It does not enable inspection, registration, submission, editing, review, publication, ingestion, export or model/cache writes. Public data projections (#5) and map behavior (#6) have separate pending acceptance. Do not describe those areas as ready based on operator sign-in.
 
 ---
 
@@ -288,16 +283,17 @@ The platform provides a suite of developer utilities for testing, data integrity
 
 | Script Command | Purpose | Details |
 | :--- | :--- | :--- |
-| `pnpm dev` | Run full dev suite | Boots the Next.js local server *and* starts the background dataset hot-reloader. |
+| `pnpm dev` | Run dev server | Boots the Next.js local server. The dataset hot-reloader is off by default. |
 | `pnpm dev:next` | Next.js server only | Launches only the local Next.js client (`localhost:3000`). |
-| `pnpm seed:watch` | Hot-reloading seed sync | Watches [thailand_humanoid_atlas_seed_records.json](file:///C:/Users/HP%20OMEN/HumanoidTH/thailand_humanoid_atlas_seed_records.json) for modifications and automatically synchronizes updates into PostgreSQL. |
+| `pnpm seed:watch` | Hot-reloading seed sync (opt in) | Watches [thailand_humanoid_atlas_seed_records.json](thailand_humanoid_atlas_seed_records.json) and reseeds PostgreSQL on every change. Needs `ATLAS_ALLOW_SEED=1` and a local database; `WATCH_SEED=1 ATLAS_ALLOW_SEED=1 pnpm dev` starts it alongside the server. |
 | `pnpm check:no-mock-data` | Audit data integrity | Checks page components under `/app` to ensure no mock constants, fallback placeholders, or static records are used, enforcing active DB routing. |
 | `pnpm seo:audit` | Audit metadata and tags | Scans Next.js dynamic routing structures to verify Title, Meta Descriptions, Canonicals, OpenGraph schemas, and headers. |
 | `pnpm seo:optimize` | Auto-apply SEO fixes | Programmatically rewrites page component metadata blocks with audit-approved SEO structures. |
 | `pnpm test` | Run test suite | Executes unit and integration test specs defined in the `test/` directory. |
 | `pnpm db:generate` | Generate Prisma Client | Re-compiles types and schemas into `generated/prisma` client files. |
-| `pnpm db:push` | Sync database schemas | Migrates model changes directly into the PostgreSQL database. |
-| `pnpm db:seed` | Seed database manually | Performs a one-time import of the seed record file into the database. |
+| `pnpm exec prisma migrate deploy` | Apply reviewed migrations | Applies migration history to the selected PostgreSQL database; use this for operator-auth setup. |
+| `pnpm db:push` | Legacy direct schema sync | Not part of the operator-auth setup or production procedure. |
+| `pnpm db:seed` | Legacy seed import | Isolated development data only; requires `ATLAS_ALLOW_SEED=1` and a local database, and resets review status (see step 3). |
 
 ---
 
@@ -334,14 +330,14 @@ Below is a breakdown of the key files and folders in the project to help navigat
 ## 🌐 Dynamic Components & Architecture
 
 ### 🌀 Fullscreen Landing Splash vs Route Loader
-- **First Time Landing Loader**: Configured in [FirstTimeLoader.tsx](file:///C:/Users/HP%20OMEN/HumanoidTH/app/components/FirstTimeLoader.tsx). Runs a fullscreen, modern dark-gradient splash screen once per user session (using `sessionStorage` tracking) with orbiting HUD rings, rotating logo details, and loading status progress messages.
-- **Router Transition Loader**: A lightweight spinner configured in [loading.tsx](file:///C:/Users/HP%20OMEN/HumanoidTH/app/loading.tsx) that handles page-to-page Next.js transitions without blocky overlays.
+- **First Time Landing Loader**: Configured in [FirstTimeLoader.tsx](app/components/FirstTimeLoader.tsx). Runs a fullscreen, modern dark-gradient splash screen once per user session (using `sessionStorage` tracking) with orbiting HUD rings, rotating logo details, and loading status progress messages.
+- **Router Transition Loader**: A lightweight spinner configured in [loading.tsx](app/loading.tsx) that handles page-to-page Next.js transitions without blocky overlays.
 
 ### 🤖 3D Robot Viewer
-- Powered by [Three.js](https://threejs.org/) inside [RobotViewer.tsx](file:///C:/Users/HP%20OMEN/HumanoidTH/app/components/RobotViewer.tsx). It dynamically loads the 3D model `public/teal_v.2.glb`, sets up lighting grids (ambient, fill, key, rim lights), supports click-and-drag rotation, and renders an interactive welcoming wave.
+- Powered by [Three.js](https://threejs.org/) inside [RobotViewer.tsx](app/components/RobotViewer.tsx). It dynamically loads the 3D model `public/teal_v.2.glb`, sets up lighting grids (ambient, fill, key, rim lights), supports click-and-drag rotation, and renders an interactive welcoming wave.
 
 ### 🇹🇭 Bilingual Localization Catalog
-- Supports dynamic English (`en`) and Thai (`th`) language switching. Language settings are stored in the browser cookie (`lang`) and resolved using Next.js layouts alongside the dictionary catalog in [translations.ts](file:///C:/Users/HP%20OMEN/HumanoidTH/lib/translations.ts).
+- Supports dynamic English (`en`) and Thai (`th`) language switching. Language settings are stored in the browser cookie (`lang`) and resolved using Next.js layouts alongside the dictionary catalog in [translations.ts](lib/translations.ts).
 
 ---
 

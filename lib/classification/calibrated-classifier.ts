@@ -170,21 +170,28 @@ export function evaluateThailandConnection(text: string): {
     }
   }
 
-  // Thai Unicode script
+  // Thai Unicode script indicates language (th), but does NOT alone prove Thailand location/institution
   if (/[\u0E00-\u0E7F]/.test(text)) {
     matchedTerms.push("thai_script");
   }
 
   // Filter out false trigger if "thai" only exists inside food or sport substrings
   const hasFoodOrSport = SUBSTRING_TRAPS.some((regex) => regex.test(text));
-  const hasRealGeoOrInst = matchedTerms.some((t) => t !== "thai" && t !== "ไทย");
+  const hasRealGeoOrInst = matchedTerms.some(
+    (t) => t !== "thai_script" && t !== "thai" && t !== "ไทย"
+  );
 
-  if (hasFoodOrSport && !hasRealGeoOrInst && matchedTerms.length <= 1) {
-    return { hasConnection: false, matchedTerms: [] };
+  const nonScriptTerms = matchedTerms.filter((t) => t !== "thai_script");
+
+  if (hasFoodOrSport && !hasRealGeoOrInst && nonScriptTerms.length <= 1) {
+    return { hasConnection: false, matchedTerms };
   }
 
+  // Must have independently supported geographic, institutional, or organization evidence in Thailand
+  const hasConnection = nonScriptTerms.length > 0;
+
   return {
-    hasConnection: matchedTerms.length > 0,
+    hasConnection,
     matchedTerms
   };
 }
@@ -386,9 +393,14 @@ export function classifyCalibratedRelevance(
     const confidence = hasContradictorySignals ? 0.65 : 0.94;
     const requiresReview = hasContradictorySignals || confidence < 0.80;
 
+    const relevanceStatus = requiresReview ? "UNCERTAIN" : "ACCEPTED";
+    const relevanceReason = hasContradictorySignals
+      ? "Embodied robotics combined with contradictory mobile/software signals; requires human verification before publication."
+      : "Embodied humanoid or service robotics research/deployment with verified Thailand connection.";
+
     return {
-      relevanceStatus: "ACCEPTED",
-      relevanceReason: "Embodied humanoid or service robotics research/deployment with verified Thailand connection.",
+      relevanceStatus,
+      relevanceReason,
       calibratedConfidence: confidence,
       factors: {
         evidenceSufficiency: sufficiency,

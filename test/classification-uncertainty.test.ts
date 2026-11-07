@@ -34,15 +34,24 @@ test("evaluateEvidenceSufficiency classifies placeholder, title-only, and thin t
   );
 });
 
-test("evaluates Thailand connection with institutional and geographic tokens", () => {
+test("evaluates Thailand connection with institutional and geographic tokens, separating language from location", () => {
   const chula = evaluateThailandConnection("Research at Chulalongkorn University in Bangkok");
   assert.equal(chula.hasConnection, true);
 
   const siriraj = evaluateThailandConnection("Medical staff at Siriraj Hospital deployed service robots");
   assert.equal(siriraj.hasConnection, true);
 
-  const thaiText = evaluateThailandConnection("ทีมวิจัยพัฒนาหุ่นยนต์เพื่อสังคม");
-  assert.equal(thaiText.hasConnection, true);
+  const thaiWithInst = evaluateThailandConnection("ทีมวิจัยจุฬาลงกรณ์พัฒนาหุ่นยนต์เพื่อสังคมในกรุงเทพ");
+  assert.equal(thaiWithInst.hasConnection, true);
+
+  // Pure Thai script without geographic or institutional token alone does NOT grant connection
+  const genericThai = evaluateThailandConnection("ทีมวิจัยพัฒนาหุ่นยนต์เพื่อสังคม");
+  assert.equal(genericThai.hasConnection, false);
+  assert.ok(genericThai.matchedTerms.includes("thai_script"));
+
+  // Translated foreign robot described in Thai script (France) must reject Thailand connection
+  const foreignInThai = evaluateThailandConnection("หุ่นยนต์ฮิวแมนนอยด์รุ่นใหม่ที่พัฒนาและทดสอบในกรุงปารีส ประเทศฝรั่งเศส");
+  assert.equal(foreignInThai.hasConnection, false);
 
   const usa = evaluateThailandConnection("Boston Dynamics Atlas robot in Massachusetts laboratory");
   assert.equal(usa.hasConnection, false);
@@ -186,6 +195,27 @@ test("rejects out-of-scope foreign robot and heavy industrial arm", () => {
   );
   assert.equal(industrial.relevanceStatus, "REJECTED");
   assert.equal(industrial.autoPublishEligible, false);
+});
+
+test("Audit D05 trap: contradictory software and robot signals are flagged UNCERTAIN", () => {
+  const result = classifyCalibratedRelevance(
+    "Developing an Android companion mobile app for controlling humanoid service robots in Bangkok",
+    "This tutorial guides developers through creating an Android smartphone APK with Bluetooth interface to remotely operate a Dinsaw humanoid service robot at a Bangkok clinic."
+  );
+  assert.equal(result.relevanceStatus, "UNCERTAIN");
+  assert.equal(result.requiresHumanReview, true);
+  assert.equal(result.autoPublishEligible, false);
+  assert.equal(result.calibratedConfidence, 0.65);
+});
+
+test("Audit D05 language separation: Thai-language description of foreign robot in France is REJECTED", () => {
+  const result = classifyCalibratedRelevance(
+    "เปิดตัวหุ่นยนต์ฮิวแมนนอยด์รุ่นใหม่ล่าสุดในกรุงปารีส ประเทศฝรั่งเศส",
+    "วิศวกรชาวฝรั่งเศสสาธิตหุ่นยนต์ฮิวแมนนอยด์สองขาที่สามารถเดินและทรงตัวได้อย่างยอดเยี่ยมในห้องทดลอง ณ กรุงปารีส ประเทศฝรั่งเศส"
+  );
+  assert.equal(result.relevanceStatus, "REJECTED");
+  assert.equal(result.requiresHumanReview, false);
+  assert.equal(result.autoPublishEligible, false);
 });
 
 test("runBenchmarkEvaluation runs on full benchmark and validates all acceptance criteria", () => {

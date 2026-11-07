@@ -262,7 +262,10 @@ export function computeSystemMetrics(
     const isPrivacy = c.category === "privacy_telemetry_neutral";
     if (isPrivacy) {
       privacyCount += 1;
-      if (item.stance === c.groundTruth.expectedStance) {
+      const stanceMatches = item.stance === c.groundTruth.expectedStance;
+      const sentimentMatches =
+        !c.groundTruth.expectedSentiment || item.sentiment === c.groundTruth.expectedSentiment;
+      if (stanceMatches && sentimentMatches) {
         privacyCorrect += 1;
       }
     }

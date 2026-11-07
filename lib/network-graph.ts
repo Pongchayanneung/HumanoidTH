@@ -1,10 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { createHash } from "node:crypto";
 import { isEligiblePublicRobot, publicContributionWhere } from "@/lib/public-projection";
 
 export type NetworkSourceMode = "file" | "database" | "hybrid" | "auto";
 export type ResolvedNetworkSource = "database" | "file" | "hybrid" | "fallback_file";
 export type DataOrigin = "database" | "import_file" | "merged";
+export type EvidenceKind = "reviewed_assertion" | "inferred_relation";
 
 export type AtlasRecord = {
   id: string;
@@ -31,6 +33,9 @@ export type AtlasRecord = {
   evidence_excerpt: string | null;
   notes: string | null;
   data_origin: DataOrigin;
+  verification_status?: string | null;
+  is_reviewed?: boolean;
+  evidence_kind?: EvidenceKind;
   source_record_ids?: string[];
   import_record_ids?: string[];
 };
@@ -55,6 +60,9 @@ export type NetworkNode = {
   degree: number;
   is_private: boolean;
   is_low_confidence: boolean;
+  is_reviewed?: boolean;
+  review_status?: string | null;
+  evidence_kind?: EvidenceKind;
   url: string | null;
   evidence_excerpt: string | null;
   record_id?: string | null;
@@ -77,7 +85,9 @@ export type NetworkEdge = {
   source_platform: string | null;
   published_at: string | null;
   is_low_confidence: boolean;
+  is_reviewed?: boolean;
   review_status?: string | null;
+  evidence_kind?: EvidenceKind;
   data_origin: DataOrigin;
   source_record_ids: string[];
   import_record_ids: string[];
@@ -128,6 +138,7 @@ export type NetworkGraphOptions = {
   minConfidence?: number | null;
   includeLowConfidence?: boolean;
   includePrivate?: boolean;
+  records?: AtlasRecord[];
 };
 
 let cachedGraph: { key: string; graph: NetworkGraph; cachedAt: number } | null = null;
@@ -187,13 +198,25 @@ function slugify(value: string) {
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/[^\p{L}\p{M}\p{N}]+/gu, "_")
     .replace(/^_+|_+$/g, "")
     .slice(0, 80) || "unknown";
 }
 
-function nodeId(type: string, label: string) {
-  return `${type}:${slugify(label)}`;
+export function stableTypedId(type: string, label: string): string {
+  const cleanLabel = (label || "").trim().normalize("NFC");
+  if (!cleanLabel) return `${type}:unknown`;
+  const hash = createHash("sha256").update(cleanLabel).digest("hex").slice(0, 8);
+  const slug = cleanLabel
+    .toLowerCase()
+    .replace(/[^\p{L}\p{M}\p{N}]+/gu, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 50);
+  return slug ? `${type}:${slug}_${hash}` : `${type}:id_${hash}`;
+}
+
+export function nodeId(type: string, label: string): string {
+  return stableTypedId(type, label);
 }
 
 function clampConfidence(value: unknown, fallback = 0.6) {
@@ -687,6 +710,9 @@ function mergeNode(nodes: Map<string, NetworkNode>, node: Omit<NetworkNode, "deg
   existing.confidence = Math.max(existing.confidence, node.confidence);
   existing.source_count = Math.max(existing.source_count, node.source_count);
   existing.is_low_confidence = existing.is_low_confidence && node.is_low_confidence;
+  existing.is_reviewed = Boolean(existing.is_reviewed || node.is_reviewed);
+  existing.review_status ||= node.review_status;
+  existing.evidence_kind ||= node.evidence_kind;
   existing.data_origin = mergeOrigins(existing.data_origin, node.data_origin);
   existing.description ||= node.description;
   existing.organization ||= node.organization;
@@ -700,8 +726,9 @@ function mergeNode(nodes: Map<string, NetworkNode>, node: Omit<NetworkNode, "deg
 }
 
 function edgeId(source: string, relation: string, target: string, url?: string | null) {
-  const sourceHint = url ? `_${slugify(url).slice(0, 28)}` : "";
-  return `edge:${slugify(source)}-${slugify(relation)}-${slugify(target)}${sourceHint}`;
+  const key = `${source}:${relation}:${target}:${url || ""}`;
+  const hash = createHash("sha256").update(key).digest("hex").slice(0, 10);
+  return `edge:${relation}_${hash}`;
 }
 
 function mergeEdge(edges: Map<string, NetworkEdge>, edge: NetworkEdge) {
@@ -713,6 +740,9 @@ function mergeEdge(edges: Map<string, NetworkEdge>, edge: NetworkEdge) {
   existing.weight += edge.weight || 1;
   existing.confidence = Math.max(existing.confidence, edge.confidence);
   existing.is_low_confidence = existing.is_low_confidence && edge.is_low_confidence;
+  existing.is_reviewed = Boolean(existing.is_reviewed || edge.is_reviewed);
+  existing.review_status ||= edge.review_status;
+  existing.evidence_kind ||= edge.evidence_kind;
   existing.data_origin = mergeOrigins(existing.data_origin, edge.data_origin);
   existing.evidence_excerpt ||= edge.evidence_excerpt;
   existing.url ||= edge.url;
@@ -738,6 +768,14 @@ function addRecordNode(nodes: Map<string, NetworkNode>, record: AtlasRecord) {
   const type = graphNodeType(record);
   const label = record.canonical_name || record.title || record.subject || record.id;
   const originIds = recordOriginIds(record);
+  const isReviewed = Boolean(
+    record.is_reviewed ||
+    record.verification_status === "APPROVED" ||
+    record.category === "robot_model" ||
+    record.category === "owned_inventory"
+  );
+  const reviewStatus = record.verification_status ?? (record.category === "robot_model" ? "APPROVED" : record.category === "owned_inventory" ? "APPROVED" : null);
+  const evidenceKind = record.evidence_kind ?? (isReviewed ? "reviewed_assertion" : "inferred_relation");
   return mergeNode(nodes, {
     id: nodeId(type, label),
     label,
@@ -758,6 +796,9 @@ function addRecordNode(nodes: Map<string, NetworkNode>, record: AtlasRecord) {
     source_count: record.url ? 1 : 0,
     is_private: record.category === "owned_inventory" && record.notes === "private",
     is_low_confidence: clampConfidence(record.confidence, 0.65) < 0.7,
+    is_reviewed: isReviewed,
+    review_status: reviewStatus,
+    evidence_kind: evidenceKind,
     url: record.url,
     evidence_excerpt: record.evidence_excerpt,
     record_id: record.id,
@@ -864,7 +905,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
   const cacheKey = JSON.stringify({ sourceMode, maxNodes, maxEdges, filters: options });
   if (cachedGraph?.key === cacheKey && Date.now() - cachedGraph.cachedAt < 60_000) return cachedGraph.graph;
 
-  const source = await loadGraphRecords(sourceMode);
+  const source: SourceLoadResult = options.records
+    ? { resolvedSource: "file", records: options.records, databaseAvailable: false, fileAvailable: true, warnings: [] }
+    : await loadGraphRecords(sourceMode);
   // Nothing to read from is a server fault, not an empty graph. Throwing keeps it out of the cache
   // and lets the API answer 503 instead of a 200 or a 404 that looks like a real empty result.
   if (!source.databaseAvailable && !source.fileAvailable) throw new Error("No network graph source is available.");
@@ -961,6 +1004,13 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
     }
 
     if (record.country) {
+      const isOriginCountry = record.category === "robot_model";
+      const relation = isOriginCountry ? "origin_country" : "located_in";
+      const description = isOriginCountry
+        ? `${record.canonical_name || record.title} originates from ${record.country}.`
+        : `${record.canonical_name || record.title} is associated with ${record.country}.`;
+      const isReviewed = isOriginCountry;
+
       const countryId = mergeNode(nodes, {
         id: nodeId("country", record.country),
         label: record.country,
@@ -973,6 +1023,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
         source_count: 1,
         is_private: false,
         is_low_confidence: false,
+        is_reviewed: isReviewed,
+        review_status: isReviewed ? "APPROVED" : null,
+        evidence_kind: isReviewed ? "reviewed_assertion" : "inferred_relation",
         url: null,
         evidence_excerpt: record.evidence_excerpt,
         record_id: null,
@@ -982,10 +1035,13 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
       addEdge(edges, {
         source: currentId,
         target: countryId,
-        relation: "located_in",
-        description: `${record.canonical_name || record.title} is associated with ${record.country}.`,
+        relation,
+        description,
         confidence: 0.76,
         weight: 1,
+        is_reviewed: isReviewed,
+        review_status: isReviewed ? "APPROVED" : null,
+        evidence_kind: isReviewed ? "reviewed_assertion" : "inferred_relation",
         evidence_excerpt: record.evidence_excerpt,
         url: record.url,
         source_platform: record.source_platform,
@@ -1008,6 +1064,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
         source_count: 1,
         is_private: false,
         is_low_confidence: false,
+        is_reviewed: Boolean(record.is_reviewed),
+        review_status: record.verification_status,
+        evidence_kind: Boolean(record.is_reviewed) ? "reviewed_assertion" : "inferred_relation",
         url: record.url,
         evidence_excerpt: record.evidence_excerpt,
         record_id: null,
@@ -1021,6 +1080,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
         description: `${record.title} was authored by ${author}.`,
         confidence: 0.78,
         weight: 1,
+        is_reviewed: Boolean(record.is_reviewed),
+        review_status: record.verification_status,
+        evidence_kind: Boolean(record.is_reviewed) ? "reviewed_assertion" : "inferred_relation",
         evidence_excerpt: record.evidence_excerpt,
         url: record.url,
         source_platform: record.source_platform,
@@ -1040,6 +1102,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
           description: `${record.title} is an instance of ${record.object}.`,
           confidence: 0.92,
           weight: 1,
+          is_reviewed: true,
+          review_status: "APPROVED",
+          evidence_kind: "reviewed_assertion",
           evidence_excerpt: record.evidence_excerpt,
           url: record.url,
           source_platform: record.source_platform,
@@ -1048,18 +1113,36 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
           ...ids
         });
       }
+      const ownerLabel = record.organization || "Internal team";
+      const rawStatus = (record.contribution_type || "owned").toLowerCase();
+      const isBorrowed = rawStatus === "borrowed" || rawStatus === "loaned";
+      const isLeased = rawStatus === "leased";
+      const isOwned = !isBorrowed && !isLeased;
+
+      const relation = isOwned ? "owned_by" : isBorrowed ? "borrowed_by" : isLeased ? "leased_by" : "held_by";
+      const relationDesc = isOwned
+        ? `${record.title} is owned by ${ownerLabel}.`
+        : isBorrowed
+        ? `${record.title} is borrowed by ${ownerLabel}.`
+        : isLeased
+        ? `${record.title} is leased by ${ownerLabel}.`
+        : `${record.title} is held by ${ownerLabel}.`;
+
       const teamId = mergeNode(nodes, {
-        id: nodeId("organization", "internal_team"),
-        label: "Internal team",
+        id: nodeId("organization", ownerLabel.toLowerCase()),
+        label: ownerLabel,
         type: "organization",
         cluster: "owned_inventory",
-        description: "Private project inventory owner marker.",
-        organization: "internal_team",
+        description: `${ownerLabel} inventory holder.`,
+        organization: record.organization,
         country: null,
-        confidence: 0.7,
+        confidence: 0.85,
         source_count: 0,
-        is_private: true,
+        is_private: record.category === "owned_inventory" && record.notes === "private",
         is_low_confidence: false,
+        is_reviewed: true,
+        review_status: "APPROVED",
+        evidence_kind: "reviewed_assertion",
         url: null,
         evidence_excerpt: null,
         record_id: null,
@@ -1069,10 +1152,13 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
       addEdge(edges, {
         source: currentId,
         target: teamId,
-        relation: "owned_by",
-        description: `${record.title} is owned by the internal team.`,
-        confidence: 0.75,
+        relation,
+        description: relationDesc,
+        confidence: 0.85,
         weight: 1,
+        is_reviewed: true,
+        review_status: "APPROVED",
+        evidence_kind: "reviewed_assertion",
         evidence_excerpt: null,
         url: null,
         source_platform: "owned_inventory",
@@ -1096,6 +1182,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
         source_count: 1,
         is_private: false,
         is_low_confidence: false,
+        is_reviewed: false,
+        review_status: "inferred",
+        evidence_kind: "inferred_relation",
         url: null,
         evidence_excerpt: record.evidence_excerpt,
         record_id: null,
@@ -1109,6 +1198,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
         description: `${record.title} has theme ${theme}.`,
         confidence: clampConfidence(record.confidence, 0.7),
         weight: 1,
+        is_reviewed: false,
+        review_status: "inferred",
+        evidence_kind: "inferred_relation",
         evidence_excerpt: record.evidence_excerpt,
         url: record.url,
         source_platform: record.source_platform,
@@ -1128,6 +1220,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
           description: `${record.title} mentions ${nodes.get(robotId)?.label ?? name}.`,
           confidence: 0.66,
           weight: 1,
+          is_reviewed: false,
+          review_status: "inferred",
+          evidence_kind: "inferred_relation",
           evidence_excerpt: record.evidence_excerpt ?? record.description,
           url: record.url,
           source_platform: record.source_platform,
@@ -1157,6 +1252,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
       source_count: record.url ? 1 : 0,
       is_private: false,
       is_low_confidence: clampConfidence(record.confidence, 0.7) < 0.7,
+      is_reviewed: false,
+      review_status: "inferred",
+      evidence_kind: "inferred_relation",
       url: record.url,
       evidence_excerpt: record.evidence_excerpt,
       record_id: null,
@@ -1175,6 +1273,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
       source_count: record.url ? 1 : 0,
       is_private: false,
       is_low_confidence: clampConfidence(record.confidence, 0.7) < 0.7,
+      is_reviewed: false,
+      review_status: "inferred",
+      evidence_kind: "inferred_relation",
       url: record.url,
       evidence_excerpt: record.evidence_excerpt,
       record_id: null,
@@ -1188,6 +1289,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
       description: record.description ?? `${subject} ${relation} ${object}.`,
       confidence: clampConfidence(record.confidence, 0.7),
       weight: 2,
+      is_reviewed: false,
+      review_status: "inferred",
+      evidence_kind: "inferred_relation",
       evidence_excerpt: record.evidence_excerpt,
       url: record.url,
       source_platform: record.source_platform,

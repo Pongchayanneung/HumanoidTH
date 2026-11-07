@@ -109,6 +109,57 @@ When a test lands, replace the matching UNRUN placeholder in the script with a r
 test file. A placeholder that stays UNRUN keeps its outcome unproven. A file that merely exists is not
 evidence; the check has to run.
 
+## Automated outcome checks (`tests-node/m7-outcomes.spec.ts`)
+
+The six outcomes named in issue #12 as having no automated check are covered by one Playwright spec that
+runs against `next dev` and the seeded CI Postgres, next to `smoke.spec.ts` and `network.spec.ts`. The numbers in the
+table below follow the issue's list (denial, privacy, discovery, controls, map, keyboard), not the matrix further down:
+
+```sh
+# Disposable Postgres 16 with migrations and the guarded seed applied, then:
+PLAYWRIGHT_EXTERNAL_SERVER=1 ./node_modules/.bin/playwright test tests-node/m7-outcomes.spec.ts --reporter=list
+# without PLAYWRIGHT_EXTERNAL_SERVER the config starts `next dev` itself (the first cold compile can be slow)
+```
+
+Needs `DATABASE_URL` (a `localhost` or `127.0.0.1` PostgreSQL, anything else throws before a row is written) and
+the operator variables from the `e2e` job in `.github/workflows/ci.yml`. The spec adds three fixture rows to the
+database (a private and a public inventory unit, and a stale map cache entry) and removes them again in `afterAll`.
+
+| # | Outcome | Check name in the spec | Automated | What stays manual |
+| --- | --- | --- | --- | --- |
+| 1 | Denial: unauthenticated or forged access to admin, export, profile and map actions is refused | `1a` nine unfinished server actions called directly with their real action ids (read from the server action manifest; form actions get multipart fields), anonymous and with forged `admin_session` / `user_role` / session cookies, expecting `WORKFLOW_UNAVAILABLE`, no session cookie and an unchanged database (per-table md5); `setLanguage` as the positive control. `1b` `/admin`, `/admin/cms`, `/admin/submitted-data` with a real pending record id, anonymous and forged, must land on sign-in with no record text in the page or in the raw HTML and RSC response of the protected URL (no redirect followed). `1e` `/database` for all seven tables, anonymous and forged, must show only "Access Restricted" and no record. `1c` `GET /api/export` and `POST /api/ingest/*` return 403, wrong methods return 405, database unchanged. `1d` `/profile`, `/submit-data`, `/data-pulls` show no form, input or table to a forged administrator | yes | `logoutUser` and `adminLoginAction` are not called directly (they belong to the sign-in flow, covered by `operator-auth.spec.ts`). The map server actions (`app/map/actions.ts`) are not wired to any page, so they have no action id to call; they stay covered by `test/map-honest.test.ts`. A real signed-in operator session is covered by `operator-auth.spec.ts` (its own config). |
+| 2 | Privacy: no private or pending data on public pages and APIs | `2a` contributions page, `status=NEEDS_REVIEW`, `q=` and `type=research_paper` probes, raw HTML and RSC payload. `2b` inventory page and `?mode=operator`, anonymous and forged: private unit absent, public unit present but its serial, location, custodian and notes masked. `2c` `/api/network/graph` in all four source modes (even with `includePrivate=true`): exactly the public unit is an inventory node (positive control), no private node, no pending or masked text; `/api/network/node/*` and `/api/network/edge/*` answer 404 for the private unit, its edges and the pending record under every source mode. `2d` raw HTML and RSC payload of all 13 public pages, `/api/search` responses, `data/search/documents.json`, `probe-128.json`, `public/llms.txt`, and `/data/search/documents.json` returns 404 | yes | Raw-payload scan of a **production build** for the fields the app masks after loading: on `next dev` the raw `/inventory` payload contained the un-sanitised rows, so those fields are checked in rendered text and JSON only. Search results themselves: `/api/search` answers 503 `unavailable` on main (index not wired), so there is no result surface to leak from yet. |
+| 3 | Discovery: public pages reachable and listed in the nav | `3 discovery` desktop nav lists exactly the 14 destinations in order, each is reached by clicking it (landing on the right URL, with a non-empty `h1`, `aria-current` set), `/admin` ends at sign-in, the sitemap lists the discovery pages and not `/admin`, `/profile`, `/data-pulls`. `3 discovery (phone)` the five tab links are listed and reachable | yes | The full discovery journey of the issue (find a checked contribution or robot, inspect its source, return to results) and list/count/detail agreement with the manifest. On a phone only five destinations are in the nav; `/map`, `/perspectives`, `/inventory`, `/analytics`, `/database` and `/submit-data` have no nav entry at 390px (by design in `test/m8c-nav.test.ts`, but a discovery gap to decide on). |
+| 4 | Controls: key controls work | `4a` language switch changes `html lang`, heading, nav labels and cookie, survives reload, switches back. `4b` contributions filters: valid text filter narrows to one row, a valid filter with no match shows the empty state without an alert, `type=research_paper` is empty (the pending record is withheld), invalid `type` and `status` show a named alert and no results, Thai empty state. `4c` network controls: label display off/all, arrows toggle, filter panel show/hide, data source file/database | yes | Search and filters on `/robots`, `/perspectives`, `/database` and the rest of the network filter panel; Thai wording review. |
+| 5 | Map cold read: first load shows the honest unavailable notice, no stale data | `5 map` fresh browser context in English and Thai: `data-map-state="unavailable"` notice with its heading, a stale `map_contribution_clusters` cache row is not shown (text or HTML), no map widget, no request to Google or Gemini hosts, the cache row and every table are byte-identical afterwards | yes | A real provider call cannot be observed from the browser: server-side outbound calls are covered by scrubbing the keys in the runner and by `test/map-honest.test.ts`. |
+| 6 | Nav keyboard: keyboard-only use of the main nav and language selector | `6 keyboard (desktop)` Tab visits the 14 nav links then EN and TH in order, each on screen with a focus outline; Enter follows `/network`; Enter on TH switches language and Space on EN restores it. `6 keyboard (phone)` Tab visits EN, TH and the five tab links, Shift+Tab then Enter follows a tab, the header language button works by keyboard | yes | Screen reader behaviour, focus order inside page content, and any keyboard path through the pages' own controls. |
+
+**Still manual or UNRUN (not part of this spec):** real Prisma CRUD (`prisma-crud`) and restart preservation
+(`restart-preservation`) have no check at all yet, and the production build and start path stays with the runner
+script. This spec runs on `next dev`, so it does not prove production behaviour. It is a dev-server spec like
+`network.spec.ts`: against `next start` (what the runner script serves) the network test cannot see
+`window.__networkCy` and the operator config rejects the `http://localhost:3000` origin, so run it with
+`next dev` and keep the runner's `e2e-playwright` step as it is.
+
+**Observed gaps that this spec deliberately does not assert (they would be red today, or are out of scope):**
+
+- The dashboard groups contributions by type without the public filter (`app/dashboard/page.tsx`, read from the
+  code, not run), so the withheld pending record is counted in an aggregate. Overview and dashboard counts of
+  robots and sources are also unfiltered, while the list pages filter; list/count agreement is not checked.
+- The phone nav lists five destinations only.
+- On `next dev` the raw `/inventory` payload contains the un-sanitised inventory rows of public units.
+
+Every "absent" assertion has a positive control (the approved record, the public unit, the denied-vs-allowed
+action pair), so an empty page cannot pass. Each check was also run against a deliberately broken copy to confirm
+it goes red: re-enabled status and form actions, removed admin redirect, ungated database browser, open export
+route, dropped contribution filter, unmasked and unfiltered inventory, unfiltered graph, stale or rewritten map
+cache, removed nav item, no-op language switch, ignored text filter, non-focusable nav link, no-op arrows toggle,
+no-op node search.
+
+The script still prints its six placeholders (`denial-direct`, `privacy-cross-view`, `discovery-journey`,
+`controls-valid-invalid`, `map-cold-read`, `nav-phone-keyboard`) as UNRUN until its `e2e-playwright` step runs
+this spec; the spec is the check that replaces them.
+
 ## Matrix: the six committed outcomes
 
 Source: the deliverables table in `docs/Hackathon-preparation/Hack-day-planning/technical-fix-implementation-hack-day-plan.md`

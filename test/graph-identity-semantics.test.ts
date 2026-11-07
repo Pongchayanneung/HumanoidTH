@@ -4,6 +4,8 @@ import {
   stableTypedId,
   buildNetworkGraph,
   loadGraphRecordsFromFile,
+  normalizeFileRecord,
+  filterGraph,
   type AtlasRecord,
   type NetworkGraph
 } from "../lib/network-graph";
@@ -263,6 +265,312 @@ test("graph semantics: reviewed assertions vs inferred relations are distinct, a
   assert.equal(inferredEdge.review_status, "inferred");
   assert.equal(inferredEdge.evidence_kind, "inferred_relation");
   assert.equal(inferredEdge.confidence, 0.95);
+
+  // Exercise filterGraph and onlyReviewed toggle (Finding 3 fix)
+  const defaultToggles = {
+    showLowConfidence: true,
+    onlyReviewed: false,
+    showOwned: true,
+    showMedia: true,
+    showAcademic: true
+  };
+
+  const unfiltered = filterGraph(graph, {}, defaultToggles);
+  assert.ok(
+    unfiltered.edges.some((e) => e.relation === "assists"),
+    "Inferred relation must be present when onlyReviewed is false"
+  );
+
+  const reviewedOnly = filterGraph(graph, {}, { ...defaultToggles, onlyReviewed: true });
+  assert.ok(
+    !reviewedOnly.edges.some((e) => e.relation === "assists"),
+    "onlyReviewed MUST exclude unreviewed machine inferences even if confidence is high (0.95)"
+  );
+  assert.ok(
+    reviewedOnly.nodes.some((n) => n.label === "Validated Elderly Care Trial"),
+    "Reviewed assertions must be retained when onlyReviewed is true"
+  );
+
+  // Also verify buildNetworkGraph server-side option with onlyReviewed: true
+  const serverFilteredGraph = await buildNetworkGraph({ records, sourceMode: "file", onlyReviewed: true });
+  assert.ok(
+    !serverFilteredGraph.edges.some((e) => e.relation === "assists"),
+    "buildNetworkGraph with onlyReviewed: true must exclude unreviewed edges"
+  );
+  assert.ok(
+    serverFilteredGraph.nodes.some((n) => n.label === "Validated Elderly Care Trial"),
+    "buildNetworkGraph with onlyReviewed: true must retain reviewed nodes"
+  );
+});
+
+test("node merging: inventory owner merges with existing organization node without case divergence (Finding 1)", async () => {
+  // Verify stableTypedId is case-insensitive for entity merging
+  const upperId = stableTypedId("organization", "CT Asia Robotics");
+  const lowerId = stableTypedId("organization", "ct asia robotics");
+  const mixedId = stableTypedId("organization", "KMUTT FIBO");
+  const lowerMixedId = stableTypedId("organization", "kmutt fibo");
+
+  assert.equal(upperId, lowerId, "stableTypedId must produce identical IDs regardless of casing for CT Asia Robotics");
+  assert.equal(mixedId, lowerMixedId, "stableTypedId must produce identical IDs regardless of casing for KMUTT FIBO");
+
+  const records: AtlasRecord[] = [
+    {
+      id: "robot_dinsaw",
+      category: "robot_model",
+      title: "Dinsaw Robot",
+      canonical_name: "Dinsaw Robot",
+      description: "Thai-developed service robot",
+      organization: "CT Asia Robotics",
+      country: "Thailand",
+      robot_type: "social_service_robot",
+      embodiment_level: null,
+      contribution_type: null,
+      stance: null,
+      sentiment: null,
+      perspective_theme: null,
+      relation: null,
+      subject: null,
+      object: null,
+      url: "https://example.com/dinsaw",
+      source_platform: "official_website",
+      published_at: null,
+      author: null,
+      confidence: 0.95,
+      evidence_excerpt: "Developed by CT Asia Robotics",
+      notes: null,
+      verification_status: "APPROVED",
+      is_reviewed: true,
+      evidence_kind: "reviewed_assertion",
+      data_origin: "database"
+    },
+    {
+      id: "inv_dinsaw_01",
+      category: "owned_inventory",
+      title: "Dinsaw Unit #1",
+      canonical_name: "Dinsaw Unit #1",
+      description: "Inventory unit",
+      organization: "CT Asia Robotics",
+      country: null,
+      robot_type: "social_service_robot",
+      embodiment_level: null,
+      contribution_type: "owned",
+      stance: null,
+      sentiment: null,
+      perspective_theme: null,
+      relation: "instance_of",
+      subject: "Dinsaw Unit #1",
+      object: "Dinsaw Robot",
+      url: null,
+      source_platform: "owned_inventory",
+      published_at: null,
+      author: null,
+      confidence: 0.9,
+      evidence_excerpt: null,
+      notes: null,
+      verification_status: "APPROVED",
+      is_reviewed: true,
+      evidence_kind: "reviewed_assertion",
+      data_origin: "database"
+    }
+  ];
+
+  const graph = await buildNetworkGraph({ records, sourceMode: "file" });
+
+  const orgNodes = graph.nodes.filter(
+    (n) => n.type === "organization" && n.label.toLowerCase() === "ct asia robotics"
+  );
+  assert.equal(
+    orgNodes.length,
+    1,
+    `Expected exactly 1 merged organization node for 'CT Asia Robotics', found ${orgNodes.length}`
+  );
+  assert.equal(orgNodes[0].label, "CT Asia Robotics");
+  assert.equal(orgNodes[0].id, upperId);
+
+  // Both the robot model and the inventory node should connect to this single organization node
+  const developedByEdge = graph.edges.find((e) => e.relation === "developed_by");
+  const ownedByEdge = graph.edges.find((e) => e.relation === "owned_by");
+  assert.ok(developedByEdge, "developed_by edge must exist");
+  assert.ok(ownedByEdge, "owned_by edge must exist");
+  assert.equal(developedByEdge.target, orgNodes[0].id);
+  assert.equal(ownedByEdge.target, orgNodes[0].id);
+});
+
+test("data sources: approved contributions and author edges default to reviewed assertions (Finding 2)", async () => {
+  // 1. Verify normalizeFileRecord preserves approval review status from file data
+  const rawFileItem = {
+    id: "contrib_elderly_care",
+    category: "contribution",
+    title: "Elderly Care Robot Observation Study",
+    canonical_name: "Elderly Care Robot Observation Study",
+    description: "Clinical evaluation trial at Chulalongkorn Hospital",
+    organization: "Chulalongkorn University",
+    author: "Dr. Somchai Prasert",
+    notes: "APPROVED",
+    confidence: 0.92,
+    source_platform: "contribution_record"
+  };
+
+  const normalized = normalizeFileRecord(rawFileItem, 0);
+  assert.equal(normalized.is_reviewed, true, "normalizeFileRecord must set is_reviewed=true for APPROVED records");
+  assert.equal(normalized.verification_status, "APPROVED", "normalizeFileRecord must set verification_status=APPROVED");
+  assert.equal(normalized.evidence_kind, "reviewed_assertion", "normalizeFileRecord must set evidence_kind=reviewed_assertion");
+
+  // 2. Build graph from this normalized contribution record and check node and author edge semantics
+  const graph = await buildNetworkGraph({ records: [normalized], sourceMode: "file" });
+
+  const contribNode = graph.nodes.find((n) => n.label === "Elderly Care Robot Observation Study");
+  assert.ok(contribNode, "Contribution node must exist");
+  assert.equal(contribNode.is_reviewed, true, "Contribution node must be reviewed");
+  assert.equal(contribNode.review_status, "APPROVED");
+  assert.equal(contribNode.evidence_kind, "reviewed_assertion");
+
+  const authorNode = graph.nodes.find((n) => n.label === "Dr. Somchai Prasert");
+  assert.ok(authorNode, "Author node must exist");
+  assert.equal(authorNode.is_reviewed, true, "Author node of approved contribution must be reviewed");
+  assert.equal(authorNode.review_status, "APPROVED");
+  assert.equal(authorNode.evidence_kind, "reviewed_assertion");
+
+  const authorEdge = graph.edges.find((e) => e.relation === "authored_by");
+  assert.ok(authorEdge, "authored_by edge must exist");
+  assert.equal(authorEdge.is_reviewed, true, "authored_by edge of approved contribution must be reviewed");
+  assert.equal(authorEdge.review_status, "APPROVED");
+  assert.equal(authorEdge.evidence_kind, "reviewed_assertion");
+
+  // 3. Verify onlyReviewed filter retains the author and authored_by relationship
+  const filtered = filterGraph(graph, {}, {
+    showLowConfidence: true,
+    onlyReviewed: true,
+    showOwned: true,
+    showMedia: true,
+    showAcademic: true
+  });
+
+  assert.ok(
+    filtered.edges.some((e) => e.relation === "authored_by"),
+    "authored_by edge of approved contribution must NOT be dropped by onlyReviewed"
+  );
+  assert.ok(
+    filtered.nodes.some((n) => n.label === "Dr. Somchai Prasert"),
+    "Author of approved contribution must NOT be dropped by onlyReviewed"
+  );
+});
+
+test("graph semantics: curated robot developer relationship is marked reviewed assertion (Finding 4)", async () => {
+  const records: AtlasRecord[] = [
+    {
+      id: "robot_dinsaw",
+      category: "robot_model",
+      title: "Dinsaw Robot",
+      canonical_name: "Dinsaw Robot",
+      description: "Service robot",
+      organization: "CT Asia Robotics",
+      country: "Thailand",
+      robot_type: "social_service_robot",
+      embodiment_level: null,
+      contribution_type: null,
+      stance: null,
+      sentiment: null,
+      perspective_theme: null,
+      relation: null,
+      subject: null,
+      object: null,
+      url: "https://example.com/dinsaw",
+      source_platform: "official_website",
+      published_at: null,
+      author: null,
+      confidence: 0.95,
+      evidence_excerpt: "Developed by CT Asia Robotics",
+      notes: null,
+      verification_status: "APPROVED",
+      is_reviewed: true,
+      evidence_kind: "reviewed_assertion",
+      data_origin: "database"
+    }
+  ];
+
+  const graph = await buildNetworkGraph({ records, sourceMode: "file" });
+  const devEdge = graph.edges.find((e) => e.relation === "developed_by");
+  assert.ok(devEdge, "developed_by edge must exist");
+  assert.equal(devEdge.is_reviewed, true, "developed_by edge of curated robot model must be reviewed");
+  assert.equal(devEdge.review_status, "APPROVED");
+  assert.equal(devEdge.evidence_kind, "reviewed_assertion");
+
+  const filtered = filterGraph(graph, {}, {
+    showLowConfidence: true,
+    onlyReviewed: true,
+    showOwned: true,
+    showMedia: true,
+    showAcademic: true
+  });
+  assert.ok(
+    filtered.edges.some((e) => e.relation === "developed_by"),
+    "developed_by edge of curated robot model must NOT be dropped by onlyReviewed"
+  );
+});
+
+test("hybrid deduplication: long entity records sharing 80-character prefix never collide (Finding 5)", async () => {
+  const prefix = "Laboratory for Autonomous Humanoid Robotics and Biometrics Research Institute Thailand ";
+  const recA: AtlasRecord = {
+    id: "rec_a",
+    category: "contribution",
+    title: prefix + "Division of Medical Rehabilitation Systems",
+    canonical_name: prefix + "Division of Medical Rehabilitation Systems",
+    description: "System A",
+    organization: null,
+    country: null,
+    robot_type: null,
+    embodiment_level: null,
+    contribution_type: null,
+    stance: null,
+    sentiment: null,
+    perspective_theme: null,
+    relation: null,
+    subject: null,
+    object: null,
+    url: null,
+    source_platform: null,
+    published_at: null,
+    author: null,
+    confidence: 0.8,
+    evidence_excerpt: null,
+    notes: null,
+    data_origin: "database"
+  };
+
+  const recB: AtlasRecord = {
+    id: "rec_b",
+    category: "contribution",
+    title: prefix + "Division of Industrial Manufacturing Applications",
+    canonical_name: prefix + "Division of Industrial Manufacturing Applications",
+    description: "System B",
+    organization: null,
+    country: null,
+    robot_type: null,
+    embodiment_level: null,
+    contribution_type: null,
+    stance: null,
+    sentiment: null,
+    perspective_theme: null,
+    relation: null,
+    subject: null,
+    object: null,
+    url: null,
+    source_platform: null,
+    published_at: null,
+    author: null,
+    confidence: 0.8,
+    evidence_excerpt: null,
+    notes: null,
+    data_origin: "import_file"
+  };
+
+  const graph = await buildNetworkGraph({ records: [recA, recB], sourceMode: "file" });
+  assert.equal(
+    graph.nodes.filter((n) => n.type === "contribution").length,
+    2,
+    "Distinct long entity records must not collide into a single node during hybrid merge"
+  );
 });
 
 test("graph file loader: loads public records while preserving M3 privacy and excluding Bumi", async () => {

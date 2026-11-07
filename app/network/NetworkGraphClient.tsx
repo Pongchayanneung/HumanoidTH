@@ -254,7 +254,7 @@ function toElements(graph: NetworkGraph): ElementDefinition[] {
   ];
 }
 
-function filterGraph(
+export function filterGraph(
   graph: NetworkGraph,
   filters: Record<string, string>,
   toggles: {

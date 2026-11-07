@@ -139,6 +139,7 @@ export type NetworkGraphOptions = {
   includeLowConfidence?: boolean;
   includePrivate?: boolean;
   records?: AtlasRecord[];
+  onlyReviewed?: boolean;
 };
 
 let cachedGraph: { key: string; graph: NetworkGraph; cachedAt: number } | null = null;
@@ -194,21 +195,22 @@ function sanitizeError(error: unknown) {
 }
 
 function slugify(value: string) {
-  return value
+  const cleanValue = (value || "").trim().normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+  const hash = createHash("sha256").update(cleanValue.toLowerCase()).digest("hex").slice(0, 8);
+  const slug = cleanValue
     .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^\p{L}\p{M}\p{N}]+/gu, "_")
     .replace(/^_+|_+$/g, "")
-    .slice(0, 80) || "unknown";
+    .slice(0, 80);
+  return slug ? `${slug}_${hash}` : `unknown_${hash}`;
 }
 
 export function stableTypedId(type: string, label: string): string {
   const cleanLabel = (label || "").trim().normalize("NFC");
   if (!cleanLabel) return `${type}:unknown`;
-  const hash = createHash("sha256").update(cleanLabel).digest("hex").slice(0, 8);
-  const slug = cleanLabel
-    .toLowerCase()
+  const normalized = cleanLabel.toLowerCase();
+  const hash = createHash("sha256").update(normalized).digest("hex").slice(0, 8);
+  const slug = normalized
     .replace(/[^\p{L}\p{M}\p{N}]+/gu, "_")
     .replace(/^_+|_+$/g, "")
     .slice(0, 50);
@@ -273,10 +275,18 @@ function classifyCluster(input: {
   return "unknown";
 }
 
-function normalizeFileRecord(record: Record<string, unknown>, index: number): AtlasRecord {
+export function normalizeFileRecord(record: Record<string, unknown>, index: number = 0): AtlasRecord {
+  const category = clean(record.category);
+  const rawStatus = clean(record.verification_status) ?? (clean(record.notes) === "APPROVED" ? "APPROVED" : null);
+  const isReviewed = record.is_reviewed !== undefined
+    ? Boolean(record.is_reviewed)
+    : Boolean(rawStatus === "APPROVED" || category === "robot_model" || category === "owned_inventory");
+  const verificationStatus = rawStatus ?? (isReviewed ? "APPROVED" : null);
+  const evidenceKind = (clean(record.evidence_kind) as EvidenceKind | null) ?? (isReviewed ? "reviewed_assertion" : "inferred_relation");
+
   return {
     id: clean(record.id) ?? `import:${index}`,
-    category: clean(record.category),
+    category,
     title: clean(record.title),
     canonical_name: clean(record.canonical_name),
     description: clean(record.description),
@@ -298,7 +308,10 @@ function normalizeFileRecord(record: Record<string, unknown>, index: number): At
     confidence: record.confidence === null || record.confidence === undefined ? null : clampConfidence(record.confidence),
     evidence_excerpt: clean(record.evidence_excerpt),
     notes: clean(record.notes),
-    data_origin: "import_file"
+    data_origin: "import_file",
+    verification_status: verificationStatus,
+    is_reviewed: isReviewed,
+    evidence_kind: evidenceKind
   };
 }
 
@@ -393,7 +406,10 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
       confidence: item.statusConfidence,
       evidence_excerpt: item.description,
       notes: null,
-      data_origin: "database"
+      data_origin: "database",
+      verification_status: "APPROVED",
+      is_reviewed: true,
+      evidence_kind: "reviewed_assertion"
     });
   }
 
@@ -423,11 +439,15 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
       confidence: 0.82,
       evidence_excerpt: null,
       notes: null,
-      data_origin: "database"
+      data_origin: "database",
+      verification_status: "APPROVED",
+      is_reviewed: true,
+      evidence_kind: "reviewed_assertion"
     });
   }
 
   for (const item of contributions) {
+    const isApproved = item.verificationStatus === "APPROVED";
     records.push({
       id: item.id,
       category: "contribution",
@@ -449,10 +469,13 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
       source_platform: "contribution_record",
       published_at: item.createdAt.toISOString(),
       author: item.contributorName,
-      confidence: item.verificationStatus === "APPROVED" ? 0.92 : 0.68,
+      confidence: isApproved ? 0.92 : 0.68,
       evidence_excerpt: item.description,
       notes: item.verificationStatus,
-      data_origin: "database"
+      data_origin: "database",
+      verification_status: item.verificationStatus,
+      is_reviewed: isApproved,
+      evidence_kind: isApproved ? "reviewed_assertion" : "inferred_relation"
     });
   }
 
@@ -771,10 +794,11 @@ function addRecordNode(nodes: Map<string, NetworkNode>, record: AtlasRecord) {
   const isReviewed = Boolean(
     record.is_reviewed ||
     record.verification_status === "APPROVED" ||
+    record.notes === "APPROVED" ||
     record.category === "robot_model" ||
     record.category === "owned_inventory"
   );
-  const reviewStatus = record.verification_status ?? (record.category === "robot_model" ? "APPROVED" : record.category === "owned_inventory" ? "APPROVED" : null);
+  const reviewStatus = record.verification_status ?? (record.notes === "APPROVED" ? "APPROVED" : record.category === "robot_model" ? "APPROVED" : record.category === "owned_inventory" ? "APPROVED" : null);
   const evidenceKind = record.evidence_kind ?? (isReviewed ? "reviewed_assertion" : "inferred_relation");
   return mergeNode(nodes, {
     id: nodeId(type, label),
@@ -883,6 +907,7 @@ function filterBuiltGraph(nodes: NetworkNode[], edges: NetworkEdge[], options: N
     if (options.cluster && node.cluster !== options.cluster) return false;
     if (options.nodeType && node.type !== options.nodeType) return false;
     if (options.includeLowConfidence === false && node.is_low_confidence) return false;
+    if (options.onlyReviewed && !node.is_reviewed && node.review_status !== "APPROVED") return false;
     if (!options.includePrivate && node.is_private) return false;
     if (node.confidence < minConfidence) return false;
     nodeSet.add(node.id);
@@ -892,10 +917,75 @@ function filterBuiltGraph(nodes: NetworkNode[], edges: NetworkEdge[], options: N
     if (!nodeSet.has(edge.source) || !nodeSet.has(edge.target)) return false;
     if (options.relation && edge.relation !== options.relation) return false;
     if (options.includeLowConfidence === false && edge.is_low_confidence) return false;
+    if (options.onlyReviewed && !edge.is_reviewed && edge.review_status !== "APPROVED") return false;
     if (edge.confidence < minConfidence) return false;
     return true;
   });
   return { nodes: filteredNodes, edges: filteredEdges };
+}
+
+export function filterGraph(
+  graph: NetworkGraph,
+  filters: Record<string, string> = {},
+  toggles: {
+    showLowConfidence?: boolean;
+    onlyReviewed?: boolean;
+    showOwned?: boolean;
+    showMedia?: boolean;
+    showAcademic?: boolean;
+  } = {}
+): NetworkGraph {
+  const allOption = "all";
+  const year = filters.year && filters.year !== allOption ? Number(filters.year) : null;
+  const confidenceMin = Number(filters.confidenceMin || 0);
+  const showLowConfidence = toggles.showLowConfidence ?? true;
+  const showOwned = toggles.showOwned ?? true;
+  const showMedia = toggles.showMedia ?? true;
+  const showAcademic = toggles.showAcademic ?? true;
+  const onlyReviewed = toggles.onlyReviewed ?? false;
+
+  const allowedNodes = new Set<string>();
+  const nodes = graph.nodes.filter((node) => {
+    if (!showLowConfidence && node.is_low_confidence) return false;
+    if (!showOwned && node.type === "owned_inventory") return false;
+    if (!showMedia && (node.type === "perspective_annotation" || node.type === "perspective_theme" || node.cluster === "media_perspectives")) return false;
+    if (!showAcademic && node.cluster === "research_and_academic_contributions") return false;
+    if (onlyReviewed && !node.is_reviewed && node.review_status !== "APPROVED") return false;
+    if (node.confidence < confidenceMin) return false;
+    if (filters.nodeType && filters.nodeType !== allOption && node.type !== filters.nodeType) return false;
+    if (filters.cluster && filters.cluster !== allOption && node.cluster !== filters.cluster) return false;
+    if (filters.robotType && filters.robotType !== allOption && node.robot_type !== filters.robotType) return false;
+    if (filters.organization && filters.organization !== allOption && node.organization !== filters.organization) return false;
+    if (filters.country && filters.country !== allOption && node.country !== filters.country) return false;
+    if (filters.visibility === "public" && node.is_private) return false;
+    if (filters.visibility === "private" && !node.is_private) return false;
+    allowedNodes.add(node.id);
+    return true;
+  });
+
+  const edges = graph.edges.filter((edge) => {
+    if (!allowedNodes.has(edge.source) || !allowedNodes.has(edge.target)) return false;
+    if (!showLowConfidence && edge.is_low_confidence) return false;
+    if (onlyReviewed && !edge.is_reviewed && edge.review_status !== "APPROVED") return false;
+    if (edge.confidence < confidenceMin) return false;
+    if (filters.relation && filters.relation !== allOption && edge.relation !== filters.relation) return false;
+    if (filters.sourcePlatform && filters.sourcePlatform !== allOption && edge.source_platform !== filters.sourcePlatform) return false;
+    if (year && edge.published_at && new Date(edge.published_at).getFullYear() !== year) return false;
+    return true;
+  });
+
+  const connected = new Set<string>();
+  edges.forEach((edge) => {
+    connected.add(edge.source);
+    connected.add(edge.target);
+  });
+
+  return {
+    ...graph,
+    nodes: nodes.filter((node) => connected.has(node.id) || edges.length === 0),
+    edges,
+    meta: { ...graph.meta, node_count: nodes.length, edge_count: edges.length }
+  };
 }
 
 export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Promise<NetworkGraph> {
@@ -933,6 +1023,11 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
 
     if (record.organization) {
       for (const org of splitNames(record.organization)) {
+        const isRobotModel = record.category === "robot_model";
+        const isOrgReviewed = isRobotModel || Boolean(record.is_reviewed || record.verification_status === "APPROVED" || record.notes === "APPROVED");
+        const orgReviewStatus = isOrgReviewed ? "APPROVED" : null;
+        const orgEvidenceKind = isOrgReviewed ? "reviewed_assertion" : "inferred_relation";
+
         const orgId = mergeNode(nodes, {
           id: nodeId("organization", org),
           label: org,
@@ -945,6 +1040,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
           source_count: 1,
           is_private: false,
           is_low_confidence: false,
+          is_reviewed: isOrgReviewed,
+          review_status: orgReviewStatus,
+          evidence_kind: orgEvidenceKind,
           url: record.url,
           evidence_excerpt: record.evidence_excerpt,
           record_id: null,
@@ -958,6 +1056,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
           description: `${record.canonical_name || record.title} is connected to ${org}.`,
           confidence: record.category === "robot_model" ? 0.88 : 0.74,
           weight: 1,
+          is_reviewed: isOrgReviewed,
+          review_status: orgReviewStatus,
+          evidence_kind: orgEvidenceKind,
           evidence_excerpt: record.evidence_excerpt,
           url: record.url,
           source_platform: record.source_platform,
@@ -1052,6 +1153,16 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
     }
 
     for (const author of splitNames(record.author)) {
+      const isRecordReviewed = Boolean(
+        record.is_reviewed ||
+        record.verification_status === "APPROVED" ||
+        record.notes === "APPROVED" ||
+        record.category === "robot_model" ||
+        record.category === "owned_inventory"
+      );
+      const authorReviewStatus = record.verification_status ?? (record.notes === "APPROVED" ? "APPROVED" : isRecordReviewed ? "APPROVED" : null);
+      const authorEvidenceKind = isRecordReviewed ? "reviewed_assertion" : "inferred_relation";
+
       const authorId = mergeNode(nodes, {
         id: nodeId("author", author),
         label: author,
@@ -1064,9 +1175,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
         source_count: 1,
         is_private: false,
         is_low_confidence: false,
-        is_reviewed: Boolean(record.is_reviewed),
-        review_status: record.verification_status,
-        evidence_kind: Boolean(record.is_reviewed) ? "reviewed_assertion" : "inferred_relation",
+        is_reviewed: isRecordReviewed,
+        review_status: authorReviewStatus,
+        evidence_kind: authorEvidenceKind,
         url: record.url,
         evidence_excerpt: record.evidence_excerpt,
         record_id: null,
@@ -1080,9 +1191,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
         description: `${record.title} was authored by ${author}.`,
         confidence: 0.78,
         weight: 1,
-        is_reviewed: Boolean(record.is_reviewed),
-        review_status: record.verification_status,
-        evidence_kind: Boolean(record.is_reviewed) ? "reviewed_assertion" : "inferred_relation",
+        is_reviewed: isRecordReviewed,
+        review_status: authorReviewStatus,
+        evidence_kind: authorEvidenceKind,
         evidence_excerpt: record.evidence_excerpt,
         url: record.url,
         source_platform: record.source_platform,
@@ -1129,7 +1240,7 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
         : `${record.title} is held by ${ownerLabel}.`;
 
       const teamId = mergeNode(nodes, {
-        id: nodeId("organization", ownerLabel.toLowerCase()),
+        id: nodeId("organization", ownerLabel),
         label: ownerLabel,
         type: "organization",
         cluster: "owned_inventory",

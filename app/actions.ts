@@ -133,24 +133,23 @@ export async function runDataPull(formData: FormData) {
 }
 
 export async function loginAsUser(email: string, role: string) {
+  // Public user logins cannot grant administrative roles
+  const safeRole = "USER";
   const user = await prisma.user.upsert({
     where: { email },
-    update: { role: role as any },
+    update: { role: safeRole as any },
     create: {
       email,
       name: email.split("@")[0],
-      role: role as any
+      role: safeRole as any
     }
   });
 
   const cookieStore = await cookies();
   cookieStore.set("user_email", user.email, { path: "/" });
-  cookieStore.set("user_role", user.role, { path: "/" });
-  if (user.role === "ADMIN") {
-    cookieStore.set("admin_session", "true", { path: "/" });
-  } else {
-    cookieStore.delete("admin_session");
-  }
+  cookieStore.set("user_role", safeRole, { path: "/" });
+  cookieStore.delete("admin_session");
+
   revalidatePath("/profile");
   revalidateAtlasCms();
   redirect("/profile");
@@ -159,7 +158,8 @@ export async function loginAsUser(email: string, role: string) {
 export async function registerAndLoginUser(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const name = String(formData.get("name") ?? "").trim();
-  const role = String(formData.get("role") ?? "USER") as any;
+  // Role from public form input is strictly ignored; public registrations are always USER
+  const role = "USER";
   const redirectTo = String(formData.get("redirectTo") ?? "/profile");
 
   if (!email) {
@@ -181,12 +181,9 @@ export async function registerAndLoginUser(formData: FormData) {
 
   const cookieStore = await cookies();
   cookieStore.set("user_email", user.email, { path: "/" });
-  cookieStore.set("user_role", user.role, { path: "/" });
-  if (user.role === "ADMIN") {
-    cookieStore.set("admin_session", "true", { path: "/" });
-  } else {
-    cookieStore.delete("admin_session");
-  }
+  cookieStore.set("user_role", "USER", { path: "/" });
+  cookieStore.delete("admin_session");
+
   revalidatePath("/profile");
   revalidateAtlasCms();
   redirect(redirectTo.startsWith("/") ? redirectTo : "/profile");
@@ -206,8 +203,12 @@ export async function adminLoginAction(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "").trim();
 
-  const expectedUser = process.env.ADMIN_BASIC_USER || "creativelab.co.th@gmail.com";
-  const expectedPassword = process.env.ADMIN_BASIC_PASSWORD || "I@M_Cr3LabTH_F4M";
+  const expectedUser = process.env.ADMIN_BASIC_USER;
+  const expectedPassword = process.env.ADMIN_BASIC_PASSWORD;
+
+  if (!expectedUser || !expectedPassword) {
+    redirect("/admin-login?error=unavailable");
+  }
 
   if (email === expectedUser && password === expectedPassword) {
     const user = await prisma.user.upsert({

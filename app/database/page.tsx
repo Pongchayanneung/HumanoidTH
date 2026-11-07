@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
+import { getOperatorPrincipal } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
@@ -29,23 +30,25 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
   const q = params.q ?? "";
 
   const cookieStore = await cookies();
-  const adminSession = cookieStore.get("admin_session")?.value;
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
   // Defense in depth (M3 / T03): Raw database browsing is restricted to verified operators.
-  // Unsigned browser-supplied cookies cannot grant access to sensitive database tables.
-  return (
-    <div className="panel" style={{ padding: "32px", textAlign: "center", margin: "40px auto", maxWidth: "600px" }}>
-      <h1 style={{ color: "var(--danger)", marginBottom: "12px" }}>Access Restricted</h1>
-      <p className="muted" style={{ lineHeight: "1.6", marginBottom: "20px" }}>
-        The Raw Database Browser contains internal inventory details, pending community submissions, and unverified data. It is restricted to authenticated operators in accordance with the public data projection policy (M3).
-      </p>
-      <Link className="button primary" href="/admin-login?from=/database">
-        Log in as Operator
-      </Link>
-    </div>
-  );
+  // Reads verified operator principal; unauthenticated visitors are gated with an access restricted view.
+  const session = await getOperatorPrincipal();
+  if (!session.ok) {
+    return (
+      <div className="panel" style={{ padding: "32px", textAlign: "center", margin: "40px auto", maxWidth: "600px" }}>
+        <h1 style={{ color: "var(--danger)", marginBottom: "12px" }}>Access Restricted</h1>
+        <p className="muted" style={{ lineHeight: "1.6", marginBottom: "20px" }}>
+          The Raw Database Browser contains internal inventory details, pending community submissions, and unverified data. It is restricted to authenticated operators in accordance with the public data projection policy (M3).
+        </p>
+        <Link className="button primary" href="/admin-login?from=/database">
+          Log in as Operator
+        </Link>
+      </div>
+    );
+  }
 
   let data: any[] = [];
 

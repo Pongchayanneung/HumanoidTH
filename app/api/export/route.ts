@@ -56,14 +56,23 @@ export async function GET(req: NextRequest) {
       data = await prisma.submittedData.findMany();
       break;
     case "inventory":
+    case "owned_inventory":
       data = await prisma.ownedInventory.findMany();
       break;
-    case "sources":
-    default:
-      data = await prisma.sourceRecord.findMany({
-        take: 1000
-      });
+    case "perspective_annotations":
+      data = await prisma.perspectiveAnnotation.findMany();
       break;
+    case "pull_jobs":
+      data = await prisma.sourcePullJob.findMany();
+      break;
+    case "sources":
+      data = await prisma.sourceRecord.findMany();
+      break;
+    default:
+      return new NextResponse(JSON.stringify({ error: `Unknown export table '${table}'.` }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
   }
 
   if (!data || data.length === 0) {
@@ -87,7 +96,7 @@ export async function GET(req: NextRequest) {
       str = `'${str}`;
     }
 
-    if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+    if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
       return `"${str.replace(/"/g, '""')}"`;
     }
     return str;

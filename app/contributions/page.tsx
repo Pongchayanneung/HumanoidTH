@@ -1,3 +1,4 @@
+import React from "react";
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
@@ -44,8 +45,13 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   const params = await searchParams;
   const { type, org, robot, status, q } = params;
 
-  const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  let lang: "en" | "th" = "en";
+  try {
+    const cookieStore = await cookies();
+    lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  } catch {
+    // Default to 'en' when rendered outside request store (e.g. unit tests)
+  }
   const t = getTranslation(lang);
 
   // Build filter conditions enforcing public data projection (M3)

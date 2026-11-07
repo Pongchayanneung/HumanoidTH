@@ -70,6 +70,10 @@ export function sanitizeInventoryForPublic<T extends {
   notes?: string | null;
   custodian?: string | null;
   visibility?: string;
+  accessories?: any;
+  documentationLinks?: any;
+  createdAt?: any;
+  updatedAt?: any;
 }>(item: T): T {
   return {
     id: item.id,
@@ -84,7 +88,11 @@ export function sanitizeInventoryForPublic<T extends {
     serialNumber: item.publicSerialSafe ? item.serialNumber : "🔒 [Masked for privacy]",
     locationLabel: item.locationLabel ? "🔒 [Masked for privacy]" : null,
     notes: "🔒 [Masked for privacy]",
-    custodian: "🔒 [Restricted]"
+    custodian: "🔒 [Restricted]",
+    accessories: Array.isArray(item.accessories) ? item.accessories : [],
+    documentationLinks: Array.isArray(item.documentationLinks) ? item.documentationLinks : [],
+    createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
+    updatedAt: item.updatedAt ? new Date(item.updatedAt) : new Date()
   } as T;
 }
 

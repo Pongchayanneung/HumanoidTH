@@ -1,3 +1,5 @@
+process.env.DATABASE_URL = process.env.DATABASE_URL || "postgresql://mock:mock@localhost:5432/mock";
+
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { NextRequest } from "next/server";
@@ -12,6 +14,9 @@ import {
   PUBLIC_DATASET_SCOPE_LABEL
 } from "../lib/public-projection";
 import { GET as exportRoute } from "../app/api/export/route";
+import { getOperatorPrincipal } from "../lib/operator";
+import ContributionsPage from "../app/contributions/page";
+import { prisma } from "../lib/prisma";
 
 test("public-data projection rules enforce mandatory public fields", () => {
   assert.equal(publicContributionWhere.visibility, "public");
@@ -168,8 +173,81 @@ test("Export API: rejects unauthorized access with 401 and WWW-Authenticate", as
     });
     const res3 = await exportRoute(req3);
     assert.equal(res3.status, 401);
+
+    // 4. Unknown table returns 400 Bad Request
+    const authHeader = `Basic ${Buffer.from("operator@test.local:super-secret-password-xyz").toString("base64")}`;
+    const req4 = new NextRequest("http://localhost:3000/api/export?table=unsupported_table_xyz", {
+      headers: { authorization: authHeader }
+    });
+    const res4 = await exportRoute(req4);
+    assert.equal(res4.status, 400, "Unknown table must return 400 Bad Request");
   } finally {
     delete process.env.ADMIN_BASIC_USER;
     delete process.env.ADMIN_BASIC_PASSWORD;
+  }
+});
+
+test("sanitizeInventoryForPublic: preserves updatedAt, createdAt, accessories, and docs without throwing", () => {
+  const row = {
+    id: "inv-unit-1",
+    displayName: "Dinsaw Home Unit",
+    ownershipStatus: "deployed",
+    ownerOrg: "Hospital A",
+    conditionStatus: "good",
+    robotModelId: "rm-1",
+    robotModel: { canonicalName: "Dinsaw Robot", manufacturer: "CT Asia" },
+    serialNumber: "SN-SECRET-999",
+    publicSerialSafe: false,
+    locationLabel: "Room 101",
+    custodian: "Nurse Somchai",
+    notes: "Internal maintenance note",
+    visibility: "public",
+    accessories: ["Charger", "Docking Station"],
+    documentationLinks: ["https://example.com/manual.pdf"],
+    createdAt: new Date("2026-01-01T00:00:00Z"),
+    updatedAt: new Date("2026-06-01T12:00:00Z")
+  };
+
+  const sanitized = sanitizeInventoryForPublic(row);
+  assert.equal(sanitized.serialNumber, "🔒 [Masked for privacy]");
+  assert.equal(sanitized.notes, "🔒 [Masked for privacy]");
+  assert.equal(sanitized.custodian, "🔒 [Restricted]");
+  assert.equal(sanitized.locationLabel, "🔒 [Masked for privacy]");
+  assert.deepEqual(sanitized.accessories, ["Charger", "Docking Station"]);
+  assert.deepEqual(sanitized.documentationLinks, ["https://example.com/manual.pdf"]);
+  assert.ok(sanitized.updatedAt instanceof Date);
+  assert.equal(typeof sanitized.updatedAt.toLocaleDateString(), "string", "toLocaleDateString must not throw on public row");
+});
+
+test("getOperatorPrincipal: anonymous visitor returns UNAUTHENTICATED fail-closed", async () => {
+  const result = await getOperatorPrincipal();
+  assert.equal(result.ok, false);
+});
+
+test("Contributions page: caller-supplied ?status=REJECTED cannot override APPROVED public predicate", async () => {
+  let capturedWhere: any = null;
+  const originalFindMany = prisma.contribution.findMany;
+  const originalRobotFindMany = prisma.robotModel.findMany;
+
+  (prisma.contribution as any).findMany = async (args: any) => {
+    if (!capturedWhere && args?.where) {
+      capturedWhere = args.where;
+    }
+    return [];
+  };
+  (prisma.robotModel as any).findMany = async () => [];
+
+  try {
+    await ContributionsPage({
+      searchParams: Promise.resolve({ status: "REJECTED" })
+    });
+
+    assert.ok(capturedWhere, "findMany should have been called with where condition");
+    assert.equal(capturedWhere.verificationStatus, "APPROVED", "verificationStatus must remain strictly APPROVED");
+    assert.equal(capturedWhere.visibility, "public", "visibility must remain strictly public");
+    assert.notEqual(capturedWhere.status, "REJECTED", "Caller status=REJECTED must not override public predicate");
+  } finally {
+    prisma.contribution.findMany = originalFindMany;
+    prisma.robotModel.findMany = originalRobotFindMany;
   }
 });

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
+import { publicContributionWhere, isEligiblePublicRobot } from "@/lib/public-projection";
 
 export const dynamic = "force-dynamic";
 
@@ -48,21 +49,14 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   const t = getTranslation(lang);
 
   // Build filter conditions enforcing public data projection (M3)
+  // Anonymous public access is strictly constrained to approved, public contributions.
+  // Query flags (e.g. ?status=...) cannot broaden access or reveal internal review states.
   const where: any = {
-    visibility: "public",
-    NOT: [
-      { sourceUrl: { contains: "placeholder" } },
-      { sourceUrl: { contains: "seed:contribution:thai-hri-research" } }
-    ]
+    ...publicContributionWhere
   };
   if (type) where.contributionType = type;
   if (org) where.organization = org;
   if (robot) where.relatedRobotModelId = robot;
-  if (status) {
-    where.verificationStatus = status;
-  } else {
-    where.verificationStatus = "APPROVED";
-  }
   if (q) {
     where.AND = [
       {
@@ -87,11 +81,23 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         orderBy: { updatedAt: "desc" },
         take: 200
       }),
-      prisma.robotModel.findMany({ select: { id: true, canonicalName: true } }),
+      prisma.robotModel.findMany({
+        where: {
+          NOT: [
+            { canonicalName: { contains: "placeholder", mode: "insensitive" } },
+            { canonicalName: { contains: "pending", mode: "insensitive" } },
+            { canonicalName: { contains: "unverified", mode: "insensitive" } }
+          ]
+        },
+        select: { id: true, canonicalName: true }
+      }),
       prisma.contribution.findMany({
         select: { organization: true },
         distinct: ["organization"],
-        where: { organization: { not: null } }
+        where: {
+          organization: { not: null },
+          ...publicContributionWhere
+        }
       })
     ]);
     dbItems = resItems;
@@ -102,8 +108,8 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   }
 
   const items = dbItems;
-  const robots = dbRobots;
-  const uniqueOrgs = dbOrganizations.map(o => o.organization).filter(Boolean) as string[];
+  const robots = dbRobots.filter((r) => isEligiblePublicRobot(r.canonicalName));
+  const uniqueOrgs = dbOrganizations.map((o) => o.organization).filter(Boolean) as string[];
 
   // Taxonomies
   const contributionTypes = [

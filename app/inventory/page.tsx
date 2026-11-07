@@ -41,10 +41,10 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
   const isAdmin = cookieStore.get("admin_session")?.value === "true";
   
   // Public data protection (M3 / T03):
-  // Anonymous visitors are strictly confined to public-safe mode.
-  // Query flags (e.g. ?mode=operator) cannot bypass access boundaries.
-  const isOperator = isAdmin && params.mode === "operator";
-  const isPublic = !isOperator;
+  // Visitors to the public web interface are strictly confined to public-safe mode.
+  // Query flags (e.g. ?mode=operator) or unsigned cookies cannot bypass access boundaries.
+  const isOperator = false;
+  const isPublic = true;
   
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
@@ -52,11 +52,11 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
   let inventory: any[] = [];
   try {
     const rawInventory = await prisma.ownedInventory.findMany({
-      where: isOperator ? {} : { visibility: "public" },
+      where: { visibility: "public" },
       include: { robotModel: true },
       orderBy: { updatedAt: "desc" }
     });
-    inventory = isOperator ? rawInventory : rawInventory.map((item) => sanitizeInventoryForPublic(item));
+    inventory = rawInventory.map((item) => sanitizeInventoryForPublic(item));
   } catch (error) {
     console.error("Failed to query inventory in inventory page:", error);
   }

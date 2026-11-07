@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { NextRequest } from "next/server";
 import {
   sanitizeInventoryForPublic,
   isEligiblePublicRobot,
@@ -10,6 +11,7 @@ import {
   publicPerspectiveWhere,
   PUBLIC_DATASET_SCOPE_LABEL
 } from "../lib/public-projection";
+import { GET as exportRoute } from "../app/api/export/route";
 
 test("public-data projection rules enforce mandatory public fields", () => {
   assert.equal(publicContributionWhere.visibility, "public");
@@ -20,15 +22,24 @@ test("public-data projection rules enforce mandatory public fields", () => {
   assert.ok(PUBLIC_DATASET_SCOPE_LABEL.includes("2026-11-07"));
 });
 
-test("sanitizeInventoryForPublic masks sensitive hardware fields", () => {
+test("sanitizeInventoryForPublic masks sensitive hardware fields and allowlists properties", () => {
   const privateItem = {
+    id: "item-1",
     displayName: "Dinsaw Unit 1",
+    ownershipStatus: "deployed",
+    ownerOrg: "Chulalongkorn Hospital",
+    conditionStatus: "operational",
+    robotModelId: "model-1",
     serialNumber: "SN-98234-CTASIA",
     publicSerialSafe: false,
     locationLabel: "Building 4, Chulalongkorn Hospital Room 302",
     custodian: "Dr. Somchai (somchai@hospital.th)",
     notes: "Internal calibration log: motor replaced 2026-08-12",
-    visibility: "private"
+    visibility: "private",
+    // Un-allowlisted internal leak candidates:
+    internalRepairNotes: "Motor replacement invoice #9923",
+    repairCostThb: 150000,
+    operatorSecretKey: "secret-key-123"
   };
 
   const sanitized = sanitizeInventoryForPublic(privateItem);
@@ -36,6 +47,11 @@ test("sanitizeInventoryForPublic masks sensitive hardware fields", () => {
   assert.ok(sanitized.locationLabel?.includes("Masked"), "Exact location must be masked");
   assert.ok(sanitized.custodian?.includes("Restricted"), "Custodian details must be restricted");
   assert.ok(sanitized.notes?.includes("Masked"), "Internal notes must be masked");
+
+  // Allowlist verification: un-allowlisted keys must not exist on the returned projection
+  assert.equal((sanitized as any).internalRepairNotes, undefined);
+  assert.equal((sanitized as any).repairCostThb, undefined);
+  assert.equal((sanitized as any).operatorSecretKey, undefined);
 
   // Public-safe serial is permitted if explicitly flagged safe
   const publicSafeItem = {
@@ -108,4 +124,52 @@ test("isEligiblePublicContribution rejects private, unapproved, or placeholder r
     }),
     false
   );
+});
+
+test("Export API: fails closed with 503 if credentials are not configured", async () => {
+  const origUser = process.env.ADMIN_BASIC_USER;
+  const origPass = process.env.ADMIN_BASIC_PASSWORD;
+
+  delete process.env.ADMIN_BASIC_USER;
+  delete process.env.ADMIN_BASIC_PASSWORD;
+
+  try {
+    const req = new NextRequest("http://localhost:3000/api/export?table=submissions");
+    const res = await exportRoute(req);
+    assert.equal(res.status, 503, "Must fail closed with 503 when credentials are not configured");
+  } finally {
+    if (origUser) process.env.ADMIN_BASIC_USER = origUser;
+    if (origPass) process.env.ADMIN_BASIC_PASSWORD = origPass;
+  }
+});
+
+test("Export API: rejects unauthorized access with 401 and WWW-Authenticate", async () => {
+  process.env.ADMIN_BASIC_USER = "operator@test.local";
+  process.env.ADMIN_BASIC_PASSWORD = "super-secret-password-xyz";
+
+  try {
+    // 1. No Authorization header
+    const req1 = new NextRequest("http://localhost:3000/api/export?table=submissions");
+    const res1 = await exportRoute(req1);
+    assert.equal(res1.status, 401);
+    assert.ok(res1.headers.get("WWW-Authenticate")?.includes("Basic"));
+
+    // 2. Forged unsigned cookie cannot authorize
+    const req2 = new NextRequest("http://localhost:3000/api/export?table=submissions", {
+      headers: { cookie: "admin_session=true" }
+    });
+    const res2 = await exportRoute(req2);
+    assert.equal(res2.status, 401, "Forged admin_session cookie must be rejected with 401");
+
+    // 3. Wrong credentials
+    const badAuth = Buffer.from("wrong:credentials").toString("base64");
+    const req3 = new NextRequest("http://localhost:3000/api/export?table=submissions", {
+      headers: { authorization: `Basic ${badAuth}` }
+    });
+    const res3 = await exportRoute(req3);
+    assert.equal(res3.status, 401);
+  } finally {
+    delete process.env.ADMIN_BASIC_USER;
+    delete process.env.ADMIN_BASIC_PASSWORD;
+  }
 });

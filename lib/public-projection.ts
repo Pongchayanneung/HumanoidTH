@@ -13,15 +13,15 @@ export const PUBLIC_DATASET_SCOPE_LABEL = "Checked Public Subset (Audit Date: 20
 
 /**
  * Prisma WHERE filter for public contributions.
+ * Pins verificationStatus to APPROVED and visibility to public.
  */
 export const publicContributionWhere = {
   visibility: "public",
   verificationStatus: "APPROVED" as const,
-  NOT: {
-    sourceUrl: {
-      contains: "placeholder"
-    }
-  }
+  NOT: [
+    { sourceUrl: { contains: "placeholder" } },
+    { sourceUrl: { contains: "seed:contribution:thai-hri-research" } }
+  ]
 };
 
 /**
@@ -49,26 +49,43 @@ export const publicPerspectiveWhere = {
 };
 
 /**
- * Sanitizes an inventory record for anonymous public consumption.
+ * Sanitizes an inventory record for anonymous public consumption using a strict allowlist.
  * Masking rules:
- * - Serials are masked unless publicSerialSafe is true.
+ * - Serials are masked unless publicSerialSafe is explicitly true.
  * - Exact locations and internal notes are redacted.
  * - Custodian details are redacted.
+ * - Un-whitelisted internal fields are omitted.
  */
 export function sanitizeInventoryForPublic<T extends {
+  id?: string;
+  displayName?: string;
+  ownershipStatus?: string;
+  ownerOrg?: string | null;
+  conditionStatus?: string | null;
+  robotModelId?: string | null;
+  robotModel?: any;
   serialNumber?: string | null;
   publicSerialSafe?: boolean;
   locationLabel?: string | null;
   notes?: string | null;
   custodian?: string | null;
+  visibility?: string;
 }>(item: T): T {
   return {
-    ...item,
+    id: item.id,
+    displayName: item.displayName,
+    ownershipStatus: item.ownershipStatus,
+    ownerOrg: item.ownerOrg,
+    conditionStatus: item.conditionStatus,
+    robotModelId: item.robotModelId,
+    robotModel: item.robotModel,
+    visibility: item.visibility,
+    publicSerialSafe: item.publicSerialSafe,
     serialNumber: item.publicSerialSafe ? item.serialNumber : "🔒 [Masked for privacy]",
     locationLabel: item.locationLabel ? "🔒 [Masked for privacy]" : null,
     notes: "🔒 [Masked for privacy]",
     custodian: "🔒 [Restricted]"
-  };
+  } as T;
 }
 
 /**

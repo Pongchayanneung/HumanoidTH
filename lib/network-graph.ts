@@ -287,7 +287,13 @@ export async function loadGraphRecordsFromFile(): Promise<AtlasRecord[]> {
   if (!Array.isArray(raw)) {
     throw new Error("Imported graph file must contain a JSON array.");
   }
-  return raw.map((record, index) => normalizeFileRecord(record, index));
+  // Public data projection (M3 / T03): Exclude internal submissions, jobs, and private inventory
+  const publicRecords = raw.filter((r) => {
+    if (r.category === "submission_record" || r.category === "source_pull_job") return false;
+    if (r.category === "owned_inventory" && r.visibility !== "public") return false;
+    return true;
+  });
+  return publicRecords.map((record, index) => normalizeFileRecord(record, index));
 }
 
 function sourceTypeToCategory(sourceType: string) {
@@ -365,14 +371,14 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
   }
 
   for (const item of inventory) {
-    const isPrivate = item.visibility !== "public";
+    if (item.visibility !== "public") continue;
     records.push({
       id: item.id,
       category: "owned_inventory",
       title: item.displayName,
       canonical_name: item.displayName,
-      description: isPrivate ? "Private inventory record. Sensitive details are hidden." : item.notes,
-      organization: isPrivate ? "internal_team" : item.ownerOrg,
+      description: "Public inventory unit",
+      organization: item.ownerOrg,
       country: null,
       robot_type: item.robotModel?.robotType ?? null,
       embodiment_level: null,
@@ -388,8 +394,8 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
       published_at: item.acquisitionDate?.toISOString() ?? null,
       author: null,
       confidence: 0.82,
-      evidence_excerpt: isPrivate ? null : item.notes,
-      notes: isPrivate ? "private" : item.notes,
+      evidence_excerpt: null,
+      notes: null,
       data_origin: "database"
     });
   }

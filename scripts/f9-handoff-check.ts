@@ -128,9 +128,11 @@ export function checkNoClientReferences(root: string): CheckResult {
     : { name, passed: false, detail: `references data/search: ${hits.join(", ")}` };
 }
 
+const SENSITIVE_SECRET_REGEX = /(?:^|[._-])(?:api[._-]?token|auth[._-]?token|secret|access[._-]?token|token)(?:[._-]|$)/i;
+
 export function isSecretLikeName(fileName: string): boolean {
   const n = fileName.toLowerCase();
-  return n === ".env" || n.startsWith(".env.") || n.endsWith(".pem") || n.includes("token");
+  return n === ".env" || n.startsWith(".env.") || n.endsWith(".pem") || SENSITIVE_SECRET_REGEX.test(n);
 }
 
 /** (c) No secret-like file names under public/. */

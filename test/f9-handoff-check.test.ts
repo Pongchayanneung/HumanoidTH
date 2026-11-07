@@ -88,6 +88,8 @@ test("secret-like names under public/ are detected", () => {
   assert.equal(isSecretLikeName(".env.local"), true);
   assert.equal(isSecretLikeName("key.pem"), true);
   assert.equal(isSecretLikeName("logo.svg"), false);
+  assert.equal(isSecretLikeName("design-tokens.css"), false);
+  assert.equal(isSecretLikeName("tokens.json"), false);
   const root = makeTree();
   try {
     put(root, "public/my-token.txt", "x");

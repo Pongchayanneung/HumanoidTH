@@ -1,0 +1,57 @@
+# Minimal CI. Blocking: typecheck + unit tests. Advisory: no-mock-data scan (fails on main today,
+# see issue #12 M7). Not wired yet: Playwright (needs a database and a running server) and pytest.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # prisma generate (postinstall) only needs the variable to exist; nothing here connects to a database.
+  DATABASE_URL: postgresql://postgres@127.0.0.1:5432/ci
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      # pnpm 11 breaks `pnpm run` in this repo (ERR_PNPM_IGNORED_BUILDS); 9.15.9 is the version that works.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm run typecheck
+      - name: Unit tests
+        run: pnpm run test
+
+  no-mock-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Advisory: red on main today (flags "fallback" wording). Remove continue-on-error once main is clean.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: No-mock-data scan
+        run: pnpm run check:no-mock-data

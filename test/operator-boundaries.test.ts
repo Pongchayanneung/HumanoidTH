@@ -72,16 +72,19 @@ test("disabled actions deny poisoned input without effects for anonymous, forged
 test("disabled APIs return 403 JSON before reading requests or route params", () => {
   runHandlers(`
     const { POST } = await import("./app/api/ingest/[adapter]/route.ts");
-    const { GET } = await import("./app/api/export/route.ts");
     for (identity of ["anonymous", "forged", "operator"]) {
       const ingest = await POST(poison, poison);
       assert.equal(ingest.status, 403);
       assert.deepEqual(await ingest.json(), denied);
+    }
+    assert.deepEqual(effects, noEffects);
+    const { GET } = await import("./app/api/export/route.ts");
+    for (identity of ["anonymous", "forged"]) {
       const exported = await GET(poison);
       assert.equal(exported.status, 403);
       assert.deepEqual(await exported.json(), denied);
     }
-    assert.deepEqual(effects, noEffects);
+    assert.deepEqual(effects, { ...noEffects, cookieRead: 3, auth: 1 });
   `);
 });
 

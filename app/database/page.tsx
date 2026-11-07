@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { getTranslation, parseLanguage } from "@/lib/translations";
 import { getOperatorPrincipal } from "@/lib/operator";
 import { normalizeScalarParam, readBoundedTextParam } from "@/lib/contribution-filters";
+import { getSearchWhere, type AllowedTable } from "@/lib/csv-export";
 
 export const dynamic = "force-dynamic";
 
@@ -62,49 +63,49 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
         break;
       case "robots":
         data = await prisma.robotModel.findMany({
-          where: q ? { canonicalName: { contains: q, mode: "insensitive" } } : {},
+          where: getSearchWhere("robots", q),
           orderBy: { createdAt: "desc" },
           take: 250
         });
         break;
       case "owned_inventory":
         data = await prisma.ownedInventory.findMany({
-          where: q ? { displayName: { contains: q, mode: "insensitive" } } : {},
+          where: getSearchWhere("owned_inventory", q),
           orderBy: { createdAt: "desc" },
           take: 250
         });
         break;
       case "contributions":
         data = await prisma.contribution.findMany({
-          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
+          where: getSearchWhere("contributions", q),
           orderBy: { createdAt: "desc" },
           take: 250
         });
         break;
       case "submissions":
         data = await prisma.submittedData.findMany({
-          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
+          where: getSearchWhere("submissions", q),
           orderBy: { createdAt: "desc" },
           take: 250
         });
         break;
       case "perspective_annotations":
         data = await prisma.perspectiveAnnotation.findMany({
-          where: q ? { perspectiveTheme: { contains: q, mode: "insensitive" } } : {},
+          where: getSearchWhere("perspective_annotations", q),
           orderBy: { createdAt: "desc" },
           take: 250
         });
         break;
       case "pull_jobs":
         data = await prisma.sourcePullJob.findMany({
-          where: q ? { query: { contains: q, mode: "insensitive" } } : {},
+          where: getSearchWhere("pull_jobs", q),
           orderBy: { createdAt: "desc" },
           take: 250
         });
         break;
       default:
         data = await prisma.sourceRecord.findMany({
-          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
+          where: getSearchWhere("sources", q),
           orderBy: { createdAt: "desc" },
           take: 250
         });
@@ -124,10 +125,18 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
           <p className="muted">{t.databaseDesc}</p>
         </div>
         <div className="toolbar">
-          <a className="button primary" href={`/api/export?table=${table}`} download>
+          <a
+            className="button primary"
+            href={`/api/export?table=${table}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+            download
+          >
             Export CSV ({table.replace(/_/g, " ")})
           </a>
         </div>
+      </div>
+
+      <div className="panel muted" style={{ fontSize: "12px", marginBottom: "16px", padding: "10px 14px" }}>
+        <strong>Export Policy Notice (S3):</strong> CSV downloads apply public privacy boundaries (sensitive hardware serials, exact locations, custodians, and unreviewed submitter contacts are redacted; only verified/approved rows are exported) matching active search query filters.
       </div>
 
 

@@ -39,14 +39,14 @@ test("API defaults and clamps the result limit", async () => {
   for (const [limit, expected] of [[undefined, 10], [1, 1], [100, 20]] as const) {
     const res = await many(request(JSON.stringify({ query: "", limit })));
     assert.equal(res.status, 200);
-    assert.equal((await res.json()).groups[0].results.length, expected);
+    assert.equal((await res.json()).groups.length, expected);
   }
 });
 
 test("constructed titles are labelled derived in matches and result evidence", async () => {
-  for (const kind of ["perspective", "relationship"] as const) {
+  for (const [kind, fieldName] of [["perspective", "perspective_theme"], ["relationship", "relation"]] as const) {
     const title = "Constructed title";
-    const doc = { ...documents[0], kind, title, evidence: [{ ...documents[0].evidence[0], originalText: title }] };
+    const doc = { ...documents[0], kind, title, evidence: [{ ...documents[0].evidence[0], fieldName, originalText: title }] };
     const handler = createSearchPost(async () => ({ documents: [doc], release: { id: "fixture", generatedAt: "2026-01-01" }, coverage: { indexed: 1, eligible: 1 } }));
     const result = (await (await handler(request(JSON.stringify({ query: "Constructed" })))).json()).groups[0].results[0];
     assert.equal(result.match.evidence.evidenceKind, "derived");
@@ -63,7 +63,8 @@ test("fixture search returns grouped original evidence and UTF-16 literal ranges
     assert.deepEqual(data.coverage, { indexed: 0, eligible: 2 });
     assert.ok(data.groups.length);
     const result = data.groups[0].results[0];
-    assert.equal(data.groups[0].kind, result.reference.kind);
+    assert.equal(data.groups[0].groupKey, result.reference.id);
+    assert.equal(data.view, "results");
     const { evidence, ranges, methods } = result.match;
     assert.deepEqual(methods, ["keyword"]);
     assert.equal(evidence.evidenceKind, evidence.label === "Constructed title" ? "derived" : "source");
@@ -76,7 +77,8 @@ test("fixture search returns grouped original evidence and UTF-16 literal ranges
   const thai = await (await send({ query: "หุ่นยนต์", types: ["source"] })).json();
   assert.deepEqual(thai.groups, []);
   const limited = await (await send({ query: "", limit: 1 })).json();
-  assert.equal(limited.mode, "browse");
+  assert.equal(limited.mode, "keyword");
+  assert.equal(limited.view, "browse");
   assert.equal(limited.groups[0].results.length, 1);
   assert.equal("match" in limited.groups[0].results[0], false);
 });
@@ -87,6 +89,7 @@ test("missing or failed index is unavailable without leaking errors, GET is reje
     assert.equal(res.status, 503);
     const text = await res.text();
     assert.equal(JSON.parse(text).mode, "unavailable");
+    assert.equal(JSON.parse(text).view, "results");
     assert.doesNotMatch(text, /secret|provider/);
   }
   assert.equal(GET().status, 405);

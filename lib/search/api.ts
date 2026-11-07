@@ -1,5 +1,39 @@
 import { validateSearchRequest } from "./types";
-import type { SearchBrowseResult, SearchDocument, SearchResultEvidence, SearchMatchedResult, SearchResponse, SearchResult, SearchResultGroup } from "./types";
+import type { SearchBrowseResult, SearchContentType, SearchDocument, SearchResultEvidence, SearchMatchedResult, SearchResponse, SearchResult, SearchResultGroup } from "./types";
+
+// Evidence fields whose text the exporter builds itself (perspective "theme: target" titles and
+// "subject relation object" titles). Everything else is stored text from the record.
+const CONSTRUCTED_FIELDS = new Set(["perspective_theme", "perspectiveTheme", "relation"]);
+const hasConstructedTitle = (doc: SearchDocument) => doc.kind === "perspective" || doc.kind === "relationship";
+const evidenceKindFor = (doc: SearchDocument, fieldName: string): SearchResultEvidence["evidenceKind"] =>
+  hasConstructedTitle(doc) && CONSTRUCTED_FIELDS.has(fieldName) ? "derived" : "source";
+
+const hostMatches = (host: string, domains: string[]) => domains.some((domain) => host === domain || host.endsWith(`.${domain}`));
+function contentTypeFor(doc: SearchDocument): SearchContentType {
+  if (doc.kind !== "source") return doc.kind;
+  const platform = String(doc.metadata.platform ?? "").toLowerCase();
+  let host = "";
+  try { host = doc.url ? new URL(doc.url).hostname.toLowerCase() : ""; } catch { /* unparseable URL: platform alone decides */ }
+  if (platform === "openalex" || hostMatches(host, ["openalex.org", "doi.org", "arxiv.org"])) return "paper";
+  if (platform === "github" || hostMatches(host, ["github.com"])) return "repository";
+  if (platform === "youtube" || hostMatches(host, ["youtube.com", "youtu.be"])) return "video";
+  return doc.url || platform ? "news_web" : "source";
+}
+
+// Group by canonical external identity (URL) or explicit parent-source association; records
+// without either stay typed singletons. Titles and empty URLs never merge records.
+function groupKeyFor(doc: SearchDocument, byId: Map<string, SearchDocument>): string {
+  const own = (item: SearchDocument) => (item.url ? item.groupId : item.typedId);
+  const parent = doc.parentTypedId ? byId.get(doc.parentTypedId) : undefined;
+  return own(parent ?? doc);
+}
+function addToGroup<T extends SearchResult>(groups: Map<string, T[]>, limit: number, key: string, result: T) {
+  const members = groups.get(key);
+  if (members) members.push(result);
+  else if (groups.size < limit) groups.set(key, [result]);
+}
+const toGroups = <T extends SearchResult>(groups: Map<string, T[]>): SearchResultGroup<T>[] =>
+  Array.from(groups, ([groupKey, results]) => ({ groupKey, results }));
 
 export interface SearchFixtureIndex {
   documents: SearchDocument[];
@@ -33,37 +67,37 @@ export function createSearchPost(loadIndex: SearchIndexLoader) {
     } catch { return invalid(); }
     const input = validateSearchRequest(value);
     if (!input) return invalid();
-    const unavailable: SearchResponse = { mode: "unavailable", release: null, coverage: { indexed: 0, eligible: 0 }, warnings: ["unavailable"], groups: [] };
+    const view = input.query ? "results" : "browse";
+    const unavailable: SearchResponse = { mode: "unavailable", view, release: null, coverage: { indexed: 0, eligible: 0 }, warnings: ["unavailable"], groups: [] };
     try {
       const index = await loadIndex();
       if (!index) return Response.json(unavailable, { status: 503 });
-      const browseGroups: SearchResultGroup<SearchBrowseResult>[] = [];
-      const matchedGroups: SearchResultGroup<SearchMatchedResult>[] = [];
-      function addResult<T extends SearchResult>(groups: SearchResultGroup<T>[], kind: SearchDocument["kind"], result: T) {
-        let group = groups.find((item) => item.kind === kind);
-        if (!group) { group = { kind, results: [] }; groups.push(group); }
-        group.results.push(result);
-      }
-      let count = 0;
+      const browseGroups = new Map<string, SearchBrowseResult[]>();
+      const matchedGroups = new Map<string, SearchMatchedResult[]>();
+      const byId = new Map(index.documents.map((doc) => [doc.typedId, doc]));
+      const pattern = input.query ? new RegExp(input.query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "iu") : null;
       for (const doc of index.documents) {
         if (input.types && !input.types.includes(doc.kind)) continue;
-        const evidence: SearchResultEvidence[] = doc.evidence.map(({ fieldName, originalText, label, coverage, startOffset, endOffset }) => ({ fieldName, originalText, label, coverage, startOffset, endOffset, evidenceKind: (doc.kind === "perspective" || doc.kind === "relationship") && originalText === doc.title ? "derived" : "source" }));
+        const evidence: SearchResultEvidence[] = doc.evidence.map(({ fieldName, originalText, label, coverage, startOffset, endOffset }) => ({ fieldName, originalText, label, coverage, startOffset, endOffset, evidenceKind: evidenceKindFor(doc, fieldName) }));
         let match: SearchResult["match"];
-        if (input.query) {
-          const pattern = new RegExp(input.query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "iu");
-          const titleEvidence: SearchResultEvidence = { fieldName: "title", originalText: doc.title, label: "Constructed title", evidenceKind: "derived", coverage: doc.isTitleOnly ? "title-only" : "full", startOffset: 0, endOffset: doc.title.length };
-          const matchedEvidence = [titleEvidence, ...evidence].find((item) => pattern.test(item.originalText));
+        if (pattern) {
+          // Stored evidence is original; synthesize a title only when none carries that text.
+          const hasTitleEvidence = evidence.some((item) => item.originalText === doc.title);
+          const titleEvidence: SearchResultEvidence = hasConstructedTitle(doc)
+            ? { fieldName: "title", originalText: doc.title, label: "Constructed title", evidenceKind: "derived", coverage: doc.isTitleOnly ? "title-only" : "full", startOffset: 0, endOffset: doc.title.length }
+            : { fieldName: "title", originalText: doc.title, label: "Title", evidenceKind: "source", coverage: doc.isTitleOnly ? "title-only" : "full", startOffset: 0, endOffset: doc.title.length };
+          const matchedEvidence = (hasTitleEvidence ? evidence : [titleEvidence, ...evidence]).find((item) => pattern.test(item.originalText));
           if (!matchedEvidence) continue;
           const found = pattern.exec(matchedEvidence.originalText)!;
           match = { methods: ["keyword"], evidence: matchedEvidence, ranges: [{ start: found.index, end: found.index + found[0].length }] };
         }
-        const result: SearchBrowseResult = { reference: { kind: doc.kind, id: doc.typedId }, title: doc.title, url: doc.url, evidence };
-        if (match) addResult(matchedGroups, doc.kind, { ...result, match });
-        else addResult(browseGroups, doc.kind, result);
-        if (++count === input.limit) break;
+        const result: SearchBrowseResult = { reference: { kind: doc.kind, id: doc.typedId }, contentType: contentTypeFor(doc), title: doc.title, url: doc.url, evidence };
+        const key = groupKeyFor(doc, byId);
+        if (match) addToGroup(matchedGroups, input.limit, key, { ...result, match });
+        else addToGroup(browseGroups, input.limit, key, result);
       }
       const common = { release: { id: index.release.id, generatedAt: index.release.generatedAt }, coverage: { indexed: index.coverage.indexed, eligible: index.coverage.eligible }, warnings: [] };
-      const response: SearchResponse = input.query ? { ...common, mode: "keyword", groups: matchedGroups } : { ...common, mode: "browse", groups: browseGroups };
+      const response: SearchResponse = input.query ? { ...common, mode: "keyword", view: "results", groups: toGroups(matchedGroups) } : { ...common, mode: "keyword", view: "browse", groups: toGroups(browseGroups) };
       return Response.json(response);
     } catch { return Response.json(unavailable, { status: 503 }); }
   };

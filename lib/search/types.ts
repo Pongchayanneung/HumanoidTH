@@ -91,7 +91,9 @@ export interface RevalidationResult {
 }
 
 export const SEARCH_RECORD_KINDS = ["source", "robot", "contribution", "perspective", "inventory", "relationship", "entity"] as const satisfies readonly SearchRecordKind[];
-export type SearchMode = "keyword" | "hybrid" | "browse" | "unavailable";
+export type SearchMode = "keyword" | "hybrid" | "unavailable";
+export type SearchView = "results" | "browse";
+export type SearchContentType = "paper" | "repository" | "video" | "news_web" | "source" | Exclude<SearchRecordKind, "source">;
 export type SearchWarning = "degraded_semantic" | "partial_vector_coverage" | "stale_index" | "unavailable";
 export interface SearchReference { kind: SearchRecordKind; id: string }
 export interface SearchRequest { query: string; types?: SearchRecordKind[]; limit?: number }
@@ -123,18 +125,20 @@ export type SearchMatch = { evidence: SearchResultEvidence } & (
   | { methods: ["keyword"] | ["keyword", "semantic"] | ["semantic", "keyword"]; ranges?: { start: number; end: number }[] }
 );
 interface SearchResultFields {
-  reference: SearchReference; title: string; url: string | null; evidence: SearchResultEvidence[];
+  reference: SearchReference; contentType: SearchContentType; title: string; url: string | null; evidence: SearchResultEvidence[];
 }
 export type SearchBrowseResult = SearchResultFields & { match?: never };
 export type SearchMatchedResult = SearchResultFields & { match: SearchMatch };
 export type SearchResult = SearchBrowseResult | SearchMatchedResult;
-export interface SearchResultGroup<T extends SearchResult = SearchResult> { kind: SearchRecordKind; results: T[] }
+/** One canonical source or parent association. Members are typed and may differ in kind; `groupKey` is the shared external identity or a singleton typed id. */
+export interface SearchResultGroup<T extends SearchResult = SearchResult> { groupKey: string; results: T[] }
 export type SearchResponse = {
   release: { id: string; generatedAt: string } | null;
   coverage: SearchCoverage; warnings: SearchWarning[];
 } & (
-  | { mode: "browse" | "unavailable"; groups: SearchResultGroup<SearchBrowseResult>[] }
-  | { mode: "keyword" | "hybrid"; groups: SearchResultGroup<SearchMatchedResult>[] }
+  | { mode: "keyword" | "hybrid"; view: "browse"; groups: SearchResultGroup<SearchBrowseResult>[] }
+  | { mode: "keyword" | "hybrid"; view: "results"; groups: SearchResultGroup<SearchMatchedResult>[] }
+  | { mode: "unavailable"; view: SearchView; groups: SearchResultGroup<SearchBrowseResult>[] }
 );
 export interface SearchError { error: { code: "invalid_request"; message: string } }
 

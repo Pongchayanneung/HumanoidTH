@@ -1,0 +1,4214 @@
+[
+  {
+    "typedId": "contribution:seed-11",
+    "kind": "contribution",
+    "title": "CU-RoboCOVID Pinto and Mirror deployment",
+    "body": "COVID-19 robotics initiative that developed and deployed Pinto delivery robots and Mirror telepresence communication systems.",
+    "retrievalText": "CU-RoboCOVID Pinto and Mirror deployment Chulalongkorn University Chulalongkorn University Faculty of Engineering community_healthcare_robotics_project COVID-19 robotics initiative that developed and deployed Pinto delivery robots and Mirror telepresence communication systems.",
+    "url": "https://www.chula.ac.th/en/news/42184/",
+    "groupId": "https://www.chula.ac.th/en/news/42184/",
+    "origin": "approved_community",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "c160c3b13a682c28fbab848e716f73802d3bcaa23583cef744b70a37efe47f69",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "COVID-19 robotics initiative that developed and deployed Pinto delivery robots and Mirror telepresence communication systems.",
+        "label": "Contribution Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 125
+      }
+    ],
+    "metadata": {
+      "contributorName": "Chulalongkorn University",
+      "organization": "Chulalongkorn University Faculty of Engineering",
+      "contributionType": "community_healthcare_robotics_project",
+      "license": "unknown"
+    }
+  },
+  {
+    "typedId": "contribution:seed-30",
+    "kind": "contribution",
+    "title": "Robotics for All",
+    "body": "KMUTT FIBO initiative for enhancing robotics skills of innovators, researchers, engineers, and startups.",
+    "retrievalText": "Robotics for All KMUTT Research, Innovation and Partnerships Office KMUTT Institute of Field Robotics education_capacity_building_program KMUTT FIBO initiative for enhancing robotics skills of innovators, researchers, engineers, and startups.",
+    "url": "https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall/",
+    "groupId": "https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall/",
+    "origin": "approved_community",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "8f53390cd4904968917b7e4f94fcfd1bef3b606a0df607fe0bf488a45c1fa5ea",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "KMUTT FIBO initiative for enhancing robotics skills of innovators, researchers, engineers, and startups.",
+        "label": "Contribution Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 104
+      }
+    ],
+    "metadata": {
+      "contributorName": "KMUTT Research, Innovation and Partnerships Office",
+      "organization": "KMUTT Institute of Field Robotics",
+      "contributionType": "education_capacity_building_program",
+      "license": "unknown"
+    }
+  },
+  {
+    "typedId": "contribution:seed-33",
+    "kind": "contribution",
+    "title": "Robo-Buddy: A Robot Companion for Elementary School Coding",
+    "body": "Educational robotics project for teaching coding concepts to elementary school students through a small robot and command-card interaction.",
+    "retrievalText": "Robo-Buddy: A Robot Companion for Elementary School Coding Chulalongkorn University Sustainability Chulalongkorn University education_robotics_project Educational robotics project for teaching coding concepts to elementary school students through a small robot and command-card interaction.",
+    "url": "https://sustainability.chula.ac.th/report/3802/",
+    "groupId": "https://sustainability.chula.ac.th/report/3802/",
+    "origin": "approved_community",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "60fc4eec5512003cb19b4bd72931e1cacfefe9003b2b52a2cd7c5b38fad8d96a",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Educational robotics project for teaching coding concepts to elementary school students through a small robot and command-card interaction.",
+        "label": "Contribution Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 139
+      }
+    ],
+    "metadata": {
+      "contributorName": "Chulalongkorn University Sustainability",
+      "organization": "Chulalongkorn University",
+      "contributionType": "education_robotics_project",
+      "license": "unknown"
+    }
+  },
+  {
+    "typedId": "entity:seed-1",
+    "kind": "entity",
+    "title": "CT Asia Robotics / Asia Robotic Company",
+    "body": "organization",
+    "retrievalText": "CT Asia Robotics / Asia Robotic Company organization",
+    "url": "https://www.dinsaw.com/en/home-english/",
+    "groupId": "https://www.dinsaw.com/en/home-english/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "55199cf9230d5235057357c7b2691a60ea321babe6d50cb22b22220dda06083c",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "CT Asia Robotics / Asia Robotic Company",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 39
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://www.dinsaw.com/en/home-english/"
+    }
+  },
+  {
+    "typedId": "entity:seed-10",
+    "kind": "entity",
+    "title": "Chulalongkorn University Robotics and Automation Center",
+    "body": "organization",
+    "retrievalText": "Chulalongkorn University Robotics and Automation Center organization",
+    "url": "https://www.chula.ac.th/en/highlight/59061/",
+    "groupId": "https://www.chula.ac.th/en/highlight/59061/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "38dcad40efc44a674ea0c052507b417a45149a3ff6ea363ab4b5f5a57fcb343b",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "Chulalongkorn University Robotics and Automation Center",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 55
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://www.chula.ac.th/en/highlight/59061/"
+    }
+  },
+  {
+    "typedId": "entity:seed-11",
+    "kind": "entity",
+    "title": "The Straits Times",
+    "body": "organization",
+    "retrievalText": "The Straits Times organization",
+    "url": "https://www.straitstimes.com/asia/se-asia/thailand-unveils-robocop-style-ai-police-cyborg-1-0-officer-to-enhance-songkran-safety",
+    "groupId": "https://www.straitstimes.com/asia/se-asia/thailand-unveils-robocop-style-ai-police-cyborg-1-0-officer-to-enhance-songkran-safety",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "55ae2848c78e33b9018f626fa18bb0fd1df1be98a3f18cda193575ada4865059",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "The Straits Times",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 17
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://www.straitstimes.com/asia/se-asia/thailand-unveils-robocop-style-ai-police-cyborg-1-0-officer-to-enhance-songkran-safety"
+    }
+  },
+  {
+    "typedId": "entity:seed-12",
+    "kind": "entity",
+    "title": "Noetix Robotics",
+    "body": "organization",
+    "retrievalText": "Noetix Robotics organization",
+    "url": "https://noetixrobotics.com/en/news/events/962",
+    "groupId": "https://noetixrobotics.com/en/news/events/962",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "07801b2d5214e4606e763dc6d43b4ef88795f067ffd12222ebec28d48bbc9621",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "Noetix Robotics",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 15
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://noetixrobotics.com/en/news/events/962"
+    }
+  },
+  {
+    "typedId": "entity:seed-13",
+    "kind": "entity",
+    "title": "University of Wisconsin–Milwaukee",
+    "body": "organization",
+    "retrievalText": "University of Wisconsin–Milwaukee organization",
+    "url": "https://doi.org/10.1137/050631562",
+    "groupId": "https://doi.org/10.1137/050631562",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "5de61bb9c9f863fe281092e33d53bbf74b218e34de55a4c7d0c590170ea50069",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "University of Wisconsin–Milwaukee",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 33
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://doi.org/10.1137/050631562"
+    }
+  },
+  {
+    "typedId": "entity:seed-14",
+    "kind": "entity",
+    "title": "Academic Publisher",
+    "body": "organization",
+    "retrievalText": "Academic Publisher organization",
+    "url": "https://doi.org/10.31256/hsmr2017.14",
+    "groupId": "https://doi.org/10.31256/hsmr2017.14",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "eb9085906aead78b7a11bbd4595a0278ead37ff33084569afb6a2265491af9ee",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "Academic Publisher",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 18
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://doi.org/10.31256/hsmr2017.14"
+    }
+  },
+  {
+    "typedId": "entity:seed-15",
+    "kind": "entity",
+    "title": "Mahidol University",
+    "body": "organization",
+    "retrievalText": "Mahidol University organization",
+    "url": "https://doi.org/10.1007/s12553-020-00489-4",
+    "groupId": "https://doi.org/10.1007/s12553-020-00489-4",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "9d46261472010ee865c5c2ad3cd7872c1784b3890b9a8dc2949d0f75bf0c56ae",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "Mahidol University",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 18
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://doi.org/10.1007/s12553-020-00489-4"
+    }
+  },
+  {
+    "typedId": "entity:seed-2",
+    "kind": "entity",
+    "title": "CT Asia Robotics",
+    "body": "organization",
+    "retrievalText": "CT Asia Robotics organization",
+    "url": "https://www.dinsaw.com/about/",
+    "groupId": "https://www.dinsaw.com/about/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "cd68f34d3b71118817aec8b07b1263bbd0b6169e20f386337b2281e749ef5df5",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "CT Asia Robotics",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 16
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://www.dinsaw.com/about/"
+    }
+  },
+  {
+    "typedId": "entity:seed-3",
+    "kind": "entity",
+    "title": "Thailand.go.th",
+    "body": "organization",
+    "retrievalText": "Thailand.go.th organization",
+    "url": "https://thailand.go.th/public/issue-focus-detail/thai-innovation-goes-global-dinsaw-mini-robot-takes-care-of-the-elderly",
+    "groupId": "https://thailand.go.th/public/issue-focus-detail/thai-innovation-goes-global-dinsaw-mini-robot-takes-care-of-the-elderly",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "8fd48e38baf26fc813c2b2497c9a64539237806fcff38129f856901a1fc7c579",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "Thailand.go.th",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 14
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://thailand.go.th/public/issue-focus-detail/thai-innovation-goes-global-dinsaw-mini-robot-takes-care-of-the-elderly"
+    }
+  },
+  {
+    "typedId": "entity:seed-4",
+    "kind": "entity",
+    "title": "National Innovation Agency",
+    "body": "organization",
+    "retrievalText": "National Innovation Agency organization",
+    "url": "https://www.nia.or.th/DinsawMiniHomeAI",
+    "groupId": "https://www.nia.or.th/DinsawMiniHomeAI",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "e1dbaaab66ff463867192eb46303547acf0f5c765e0002373f2b8a4a168f920b",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "National Innovation Agency",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 26
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://www.nia.or.th/DinsawMiniHomeAI"
+    }
+  },
+  {
+    "typedId": "entity:seed-5",
+    "kind": "entity",
+    "title": "Chulalongkorn University",
+    "body": "organization",
+    "retrievalText": "Chulalongkorn University organization",
+    "url": "https://www.chula.ac.th/en/news/42184/",
+    "groupId": "https://www.chula.ac.th/en/news/42184/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "a10d572f6b1a0ea95a1440f435901f5d663d2eca4715e3f18e95cd943b914039",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "Chulalongkorn University",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 24
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://www.chula.ac.th/en/news/42184/"
+    }
+  },
+  {
+    "typedId": "entity:seed-6",
+    "kind": "entity",
+    "title": "Obodroid",
+    "body": "organization",
+    "retrievalText": "Obodroid organization",
+    "url": "https://www.obodroid.com/about-us/",
+    "groupId": "https://www.obodroid.com/about-us/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "49aa644fd5f9c83691a6f07a7f3fd5401a6f9e9f7efa2b882580e1ce8bd519e6",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "Obodroid",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 8
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://www.obodroid.com/about-us/"
+    }
+  },
+  {
+    "typedId": "entity:seed-7",
+    "kind": "entity",
+    "title": "True Digital Group / King Chulalongkorn Memorial Hospital",
+    "body": "organization",
+    "retrievalText": "True Digital Group / King Chulalongkorn Memorial Hospital organization",
+    "url": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+    "groupId": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "7382774994ded09c3c0f331a8d903c90715cac97b691c4fc241930d52e94f53f",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "True Digital Group / King Chulalongkorn Memorial Hospital",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 57
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/"
+    }
+  },
+  {
+    "typedId": "entity:seed-8",
+    "kind": "entity",
+    "title": "King Chulalongkorn Memorial Hospital / Chulalongkorn University",
+    "body": "organization",
+    "retrievalText": "King Chulalongkorn Memorial Hospital / Chulalongkorn University organization",
+    "url": "https://www.chula.ac.th/en/news/287038/",
+    "groupId": "https://www.chula.ac.th/en/news/287038/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "63f54d1d0e83ee9335b00f5e4a0a577e561b1cdc8ad1a0b73ece3c4e5d919e9e",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "King Chulalongkorn Memorial Hospital / Chulalongkorn University",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 63
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://www.chula.ac.th/en/news/287038/"
+    }
+  },
+  {
+    "typedId": "entity:seed-9",
+    "kind": "entity",
+    "title": "Bangkok Post",
+    "body": "organization",
+    "retrievalText": "Bangkok Post organization",
+    "url": "https://www.bangkokpost.com/thailand/general/2726860/robots-to-speed-up-service-at-chulalongkorn-hospital",
+    "groupId": "https://www.bangkokpost.com/thailand/general/2726860/robots-to-speed-up-service-at-chulalongkorn-hospital",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "f7f97ff57b701701e44c7c4784cffcd793a28f686b97da167617ab35f093a80b",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "name",
+        "originalText": "Bangkok Post",
+        "label": "Verified Entity Name",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 12
+      }
+    ],
+    "metadata": {
+      "entityType": "organization",
+      "provenanceUrl": "https://www.bangkokpost.com/thailand/general/2726860/robots-to-speed-up-service-at-chulalongkorn-hospital"
+    }
+  },
+  {
+    "typedId": "perspective:seed-20",
+    "kind": "perspective",
+    "title": "quality_of_life_and_service_robotics: The Story Thailand",
+    "body": "Obodroid is focused on developing service robots and AI technology to serve the people of Thailand.",
+    "retrievalText": "quality_of_life_and_service_robotics: The Story Thailand supportive positive quality_of_life_and_service_robotics The Story Thailand The Story Thailand frames Obodroid robots as future servants and quality-of-life technology Obodroid is focused on developing service robots and AI technology to serve the people of Thailand.",
+    "url": "https://www.thestorythailand.com/en/thai-robot-developer-obodroid-arrives-along-with-servants-of-the-future/",
+    "groupId": "https://www.thestorythailand.com/en/thai-robot-developer-obodroid-arrives-along-with-servants-of-the-future/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://www.thestorythailand.com/en/thai-robot-developer-obodroid-arrives-along-with-servants-of-the-future/",
+    "contentHash": "4221b269ead709be1684be6f7120ff137e4c0abfe14cf84113f2f3b5de6b7fc3",
+    "dependencyHash": "eaa208ed0ca52e489c9edfb87508be791e156f8db65fadeb516d14619fa3e65b",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Obodroid is focused on developing service robots and AI technology to serve the people of Thailand.",
+        "label": "Perspective Evidence",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 99
+      }
+    ],
+    "metadata": {
+      "stance": "supportive",
+      "sentiment": "positive",
+      "perspectiveTheme": "quality_of_life_and_service_robotics",
+      "targetEntity": "The Story Thailand",
+      "parentTitle": "The Story Thailand frames Obodroid robots as future servants and quality-of-life technology",
+      "method": "seed_annotation"
+    }
+  },
+  {
+    "typedId": "perspective:seed-42",
+    "kind": "perspective",
+    "title": "public_safety_and_surveillance: Amazon Web Services Thailand",
+    "body": "Public safety in Thailand: piloting AI Police Cyborg.",
+    "retrievalText": "public_safety_and_surveillance: Amazon Web Services Thailand supportive positive public_safety_and_surveillance Amazon Web Services Thailand AWS Thailand frames AI Police Cyborg as public-safety innovation Public safety in Thailand: piloting AI Police Cyborg.",
+    "url": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "groupId": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "contentHash": "51d3a4164551656913935936e829704d0e69f36389645b59f671c7316776d6e8",
+    "dependencyHash": "24fb56de9f90194c3b979d52c630e3e3daad284759cf6a2a72ec4394a6bd3fa4",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Public safety in Thailand: piloting AI Police Cyborg.",
+        "label": "Perspective Evidence",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 53
+      }
+    ],
+    "metadata": {
+      "stance": "supportive",
+      "sentiment": "positive",
+      "perspectiveTheme": "public_safety_and_surveillance",
+      "targetEntity": "Amazon Web Services Thailand",
+      "parentTitle": "AWS Thailand frames AI Police Cyborg as public-safety innovation",
+      "method": "seed_annotation"
+    }
+  },
+  {
+    "typedId": "perspective:seed-44",
+    "kind": "perspective",
+    "title": "industrial_market_opportunity: Bangkok Post",
+    "body": "Humanoid robots set to reshape manufacturing.",
+    "retrievalText": "industrial_market_opportunity: Bangkok Post informational neutral_positive industrial_market_opportunity Bangkok Post Bangkok Post presents humanoid robots as a manufacturing market opportunity Humanoid robots set to reshape manufacturing.",
+    "url": "https://www.bangkokpost.com/business/general/3257948/humanoid-robots-set-to-reshape-manufacturing",
+    "groupId": "https://www.bangkokpost.com/business/general/3257948/humanoid-robots-set-to-reshape-manufacturing",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://www.bangkokpost.com/business/general/3257948/humanoid-robots-set-to-reshape-manufacturing",
+    "contentHash": "accf2fafa5006c6173f61a0d7664428218caefdabcbb117e002fedf0d5c4e3d0",
+    "dependencyHash": "d10644eab7aed0a4274706cecb9738c8288ff7e117f184a49cecdfd4b12d4acf",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Humanoid robots set to reshape manufacturing.",
+        "label": "Perspective Evidence",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 45
+      }
+    ],
+    "metadata": {
+      "stance": "informational",
+      "sentiment": "neutral_positive",
+      "perspectiveTheme": "industrial_market_opportunity",
+      "targetEntity": "Bangkok Post",
+      "parentTitle": "Bangkok Post presents humanoid robots as a manufacturing market opportunity",
+      "method": "seed_annotation"
+    }
+  },
+  {
+    "typedId": "perspective:seed-5",
+    "kind": "perspective",
+    "title": "elderly_care_safety: Chulalongkorn University",
+    "body": "Elderly and bedridden patients who have no caregivers can feel safe and confident.",
+    "retrievalText": "elderly_care_safety: Chulalongkorn University supportive positive elderly_care_safety Chulalongkorn University Chula coverage frames Dinsaw Home AI Assistance as elderly-care safety support Elderly and bedridden patients who have no caregivers can feel safe and confident.",
+    "url": "https://www.chula.ac.th/en/highlight/198924/",
+    "groupId": "https://www.chula.ac.th/en/highlight/198924/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://www.chula.ac.th/en/highlight/198924/",
+    "contentHash": "fc9892f05f656564dcf5643c9f9274687d4e90036402a6e19fad5b5e1b40c658",
+    "dependencyHash": "b677f349cf7fe51b2c8fbc8f5387de3ca553ec8c5eab9ab31460d91280217da2",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Elderly and bedridden patients who have no caregivers can feel safe and confident.",
+        "label": "Perspective Evidence",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 82
+      }
+    ],
+    "metadata": {
+      "stance": "supportive",
+      "sentiment": "positive",
+      "perspectiveTheme": "elderly_care_safety",
+      "targetEntity": "Chulalongkorn University",
+      "parentTitle": "Chula coverage frames Dinsaw Home AI Assistance as elderly-care safety support",
+      "method": "seed_annotation"
+    }
+  },
+  {
+    "typedId": "relationship:seed-12",
+    "kind": "relationship",
+    "title": "Pinto Robot deployed_in hospitals across Thailand",
+    "body": "Pinto Robot - deployed_in -> hospitals across Thailand",
+    "retrievalText": "Pinto Robot deployed_in hospitals across Thailand Pinto Robot deployed in hospitals across Thailand Pinto Robot - deployed_in -> hospitals across Thailand",
+    "url": "https://www.chula.ac.th/en/news/42184/",
+    "groupId": "https://www.chula.ac.th/en/news/42184/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://www.chula.ac.th/en/news/42184/",
+    "contentHash": "a440f40fd4bfb7da50a48db26119a4a0233dfbef1f14ea2411cb24f1ac2fb698",
+    "dependencyHash": "ecb0a66a5a7cca3822966a651de098ec8cd3590486dc702b02f2b73f0765a449",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "relation",
+        "originalText": "Pinto Robot deployed_in hospitals across Thailand",
+        "label": "Structured Relation",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 49
+      }
+    ],
+    "metadata": {
+      "subject": "Pinto Robot",
+      "relation": "deployed_in",
+      "object": "hospitals across Thailand",
+      "confidence": 0.93,
+      "sourceTitle": "Pinto Robot deployed in hospitals across Thailand"
+    }
+  },
+  {
+    "typedId": "relationship:seed-19",
+    "kind": "relationship",
+    "title": "Kaitomm Robot developed_by Obodroid",
+    "body": "Kaitomm Robot - developed_by -> Obodroid",
+    "retrievalText": "Kaitomm Robot developed_by Obodroid Kaitomm Robot developed by Obodroid Kaitomm Robot - developed_by -> Obodroid",
+    "url": "https://www.obodroid.com/about-us/",
+    "groupId": "https://www.obodroid.com/about-us/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://www.obodroid.com/about-us/",
+    "contentHash": "eb7473ef69659e72caad5acad1cc2dcb3e89a974f9557593e84c5adc94b17814",
+    "dependencyHash": "eec5b06bf8a35a5c7efbb6e8fbf0eebc9d0106160223885fec5ad4b5d7619b1d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "relation",
+        "originalText": "Kaitomm Robot developed_by Obodroid",
+        "label": "Structured Relation",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 35
+      }
+    ],
+    "metadata": {
+      "subject": "Kaitomm Robot",
+      "relation": "developed_by",
+      "object": "Obodroid",
+      "confidence": 0.88,
+      "sourceTitle": "Kaitomm Robot developed by Obodroid"
+    }
+  },
+  {
+    "typedId": "relationship:seed-2",
+    "kind": "relationship",
+    "title": "Dinsaw Robot developed_by CT Asia Robotics",
+    "body": "Dinsaw Robot - developed_by -> CT Asia Robotics",
+    "retrievalText": "Dinsaw Robot developed_by CT Asia Robotics Dinsaw Robot developed by CT Asia Robotics Dinsaw Robot - developed_by -> CT Asia Robotics",
+    "url": "https://www.ctasia.com/about-us/",
+    "groupId": "https://www.ctasia.com/about-us/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://www.ctasia.com/about-us/",
+    "contentHash": "e0de4f8cbe610e2c4c285247b23fcdf74c91f85f55e6429d03de7703ab10ab4f",
+    "dependencyHash": "86ae09d4f40c99ae39c000a23be8e94f61b1c123dfd19a3791bcb7214ba562ee",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "relation",
+        "originalText": "Dinsaw Robot developed_by CT Asia Robotics",
+        "label": "Structured Relation",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 42
+      }
+    ],
+    "metadata": {
+      "subject": "Dinsaw Robot",
+      "relation": "developed_by",
+      "object": "CT Asia Robotics",
+      "confidence": 0.96,
+      "sourceTitle": "Dinsaw Robot developed by CT Asia Robotics"
+    }
+  },
+  {
+    "typedId": "relationship:seed-23",
+    "kind": "relationship",
+    "title": "True Digital Group collaborated_with King Chulalongkorn Memorial Hospital",
+    "body": "True Digital Group - collaborated_with -> King Chulalongkorn Memorial Hospital",
+    "retrievalText": "True Digital Group collaborated_with King Chulalongkorn Memorial Hospital True Digital collaborated with King Chulalongkorn Memorial Hospital on nuclear medicine robot True Digital Group - collaborated_with -> King Chulalongkorn Memorial Hospital",
+    "url": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+    "groupId": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+    "contentHash": "7b5268562773f76ca410ea319436c19c3fbd9f495cd472ce4b224033c3cd22b0",
+    "dependencyHash": "c3863b8c27231cd4912254b80271ac4ca5fa33202b5c22dfa8d25b6f2b11e27b",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "relation",
+        "originalText": "True Digital Group collaborated_with King Chulalongkorn Memorial Hospital",
+        "label": "Structured Relation",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 73
+      }
+    ],
+    "metadata": {
+      "subject": "True Digital Group",
+      "relation": "collaborated_with",
+      "object": "King Chulalongkorn Memorial Hospital",
+      "confidence": 0.92,
+      "sourceTitle": "True Digital collaborated with King Chulalongkorn Memorial Hospital on nuclear medicine robot"
+    }
+  },
+  {
+    "typedId": "relationship:seed-26",
+    "kind": "relationship",
+    "title": "CORGI Healthcare and Physical Therapy Assistant Robot developed_by True Digital Group and King Chulalongkorn Memorial Hospital",
+    "body": "CORGI Healthcare and Physical Therapy Assistant Robot - developed_by -> True Digital Group and King Chulalongkorn Memorial Hospital",
+    "retrievalText": "CORGI Healthcare and Physical Therapy Assistant Robot developed_by True Digital Group and King Chulalongkorn Memorial Hospital CORGI developed by True Digital and King Chulalongkorn Memorial Hospital CORGI Healthcare and Physical Therapy Assistant Robot - developed_by -> True Digital Group and King Chulalongkorn Memorial Hospital",
+    "url": "https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E/",
+    "groupId": "https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E/",
+    "contentHash": "f58ae88df36a9af866c5a4eef5c0b90f87ef376c006e1e4533d79436b7f52515",
+    "dependencyHash": "7a81c6d6d0eb30f69a4d53eb45ed9c4a81a0394d3aa611a8223ba4b82c731c8a",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "relation",
+        "originalText": "CORGI Healthcare and Physical Therapy Assistant Robot developed_by True Digital Group and King Chulalongkorn Memorial Hospital",
+        "label": "Structured Relation",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 126
+      }
+    ],
+    "metadata": {
+      "subject": "CORGI Healthcare and Physical Therapy Assistant Robot",
+      "relation": "developed_by",
+      "object": "True Digital Group and King Chulalongkorn Memorial Hospital",
+      "confidence": 0.86,
+      "sourceTitle": "CORGI developed by True Digital and King Chulalongkorn Memorial Hospital"
+    }
+  },
+  {
+    "typedId": "relationship:seed-31",
+    "kind": "relationship",
+    "title": "Robotics for All initiated_by KMUTT Institute of Field Robotics",
+    "body": "Robotics for All - initiated_by -> KMUTT Institute of Field Robotics",
+    "retrievalText": "Robotics for All initiated_by KMUTT Institute of Field Robotics Robotics for All initiated by KMUTT FIBO Robotics for All - initiated_by -> KMUTT Institute of Field Robotics",
+    "url": "https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall/",
+    "groupId": "https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall/",
+    "contentHash": "a221e8ef9de2aae7db74acae6bf6916734d676bfab604bbb1164583bad09bddd",
+    "dependencyHash": "c2dde45392fe134ea5b85c440a236538774a8c92d7439a4a90c6200201f79464",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "relation",
+        "originalText": "Robotics for All initiated_by KMUTT Institute of Field Robotics",
+        "label": "Structured Relation",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 63
+      }
+    ],
+    "metadata": {
+      "subject": "Robotics for All",
+      "relation": "initiated_by",
+      "object": "KMUTT Institute of Field Robotics",
+      "confidence": 0.9,
+      "sourceTitle": "Robotics for All initiated by KMUTT FIBO"
+    }
+  },
+  {
+    "typedId": "relationship:seed-40",
+    "kind": "relationship",
+    "title": "AI Police Cyborg 1.0 developed_by Security Pitch",
+    "body": "AI Police Cyborg 1.0 - developed_by -> Security Pitch",
+    "retrievalText": "AI Police Cyborg 1.0 developed_by Security Pitch AI Police Cyborg 1.0 developed by Security Pitch AI Police Cyborg 1.0 - developed_by -> Security Pitch",
+    "url": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "groupId": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "contentHash": "38a2776a9a6b27da3d34a07d82084447b5ad64d339447479db5cd2a93f2a6185",
+    "dependencyHash": "24fb56de9f90194c3b979d52c630e3e3daad284759cf6a2a72ec4394a6bd3fa4",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "relation",
+        "originalText": "AI Police Cyborg 1.0 developed_by Security Pitch",
+        "label": "Structured Relation",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 48
+      }
+    ],
+    "metadata": {
+      "subject": "AI Police Cyborg 1.0",
+      "relation": "developed_by",
+      "object": "Security Pitch",
+      "confidence": 0.84,
+      "sourceTitle": "AI Police Cyborg 1.0 developed by Security Pitch"
+    }
+  },
+  {
+    "typedId": "relationship:seed-41",
+    "kind": "relationship",
+    "title": "AI Police Cyborg 1.0 operated_by Royal Thai Police",
+    "body": "AI Police Cyborg 1.0 - operated_by -> Royal Thai Police",
+    "retrievalText": "AI Police Cyborg 1.0 operated_by Royal Thai Police AI Police Cyborg 1.0 operated by Royal Thai Police AI Police Cyborg 1.0 - operated_by -> Royal Thai Police",
+    "url": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "groupId": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "contentHash": "fd2dadecccda663d0e615925b9d1b97c78d9ce15604a3d6bb15eb669f193c310",
+    "dependencyHash": "24fb56de9f90194c3b979d52c630e3e3daad284759cf6a2a72ec4394a6bd3fa4",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "relation",
+        "originalText": "AI Police Cyborg 1.0 operated_by Royal Thai Police",
+        "label": "Structured Relation",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 50
+      }
+    ],
+    "metadata": {
+      "subject": "AI Police Cyborg 1.0",
+      "relation": "operated_by",
+      "object": "Royal Thai Police",
+      "confidence": 0.84,
+      "sourceTitle": "AI Police Cyborg 1.0 operated by Royal Thai Police"
+    }
+  },
+  {
+    "typedId": "relationship:seed-47",
+    "kind": "relationship",
+    "title": "Bumi humanoid robot showcased_at 13th Asia-Pacific Sustainable Development Forum, Bangkok",
+    "body": "Bumi humanoid robot - showcased_at -> 13th Asia-Pacific Sustainable Development Forum, Bangkok",
+    "retrievalText": "Bumi humanoid robot showcased_at 13th Asia-Pacific Sustainable Development Forum, Bangkok Bumi showcased in Bangkok Bumi humanoid robot - showcased_at -> 13th Asia-Pacific Sustainable Development Forum, Bangkok",
+    "url": "https://noetixrobotics.com/en/news/events/962",
+    "groupId": "https://noetixrobotics.com/en/news/events/962",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://noetixrobotics.com/en/news/events/962",
+    "contentHash": "50de6b967e360ba4472aa7a6d827b1adfc907f7d77a550c4889d4c73ecb47750",
+    "dependencyHash": "55f250ca514cdd0f5de5e56540058478a2da16ec0313fa2a577722f5be4992ad",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "relation",
+        "originalText": "Bumi humanoid robot showcased_at 13th Asia-Pacific Sustainable Development Forum, Bangkok",
+        "label": "Structured Relation",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 89
+      }
+    ],
+    "metadata": {
+      "subject": "Bumi humanoid robot",
+      "relation": "showcased_at",
+      "object": "13th Asia-Pacific Sustainable Development Forum, Bangkok",
+      "confidence": 0.75,
+      "sourceTitle": "Bumi showcased in Bangkok"
+    }
+  },
+  {
+    "typedId": "relationship:seed-8",
+    "kind": "relationship",
+    "title": "Dinsaw Mini Home AI Assistance connects_to hospital care",
+    "body": "Dinsaw Mini Home AI Assistance - connects_to -> hospital care",
+    "retrievalText": "Dinsaw Mini Home AI Assistance connects_to hospital care Dinsaw Mini Home AI Assistance connected to hospital care Dinsaw Mini Home AI Assistance - connects_to -> hospital care",
+    "url": "https://www.nia.or.th/DinsawMiniHomeAI",
+    "groupId": "https://www.nia.or.th/DinsawMiniHomeAI",
+    "origin": "seed",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": "source:https://www.nia.or.th/DinsawMiniHomeAI",
+    "contentHash": "379c37c5038714eb90b385eeea8021ec934af8ce7d391f299a4c25d5097fb270",
+    "dependencyHash": "dc935a0c2dc5644c05b87144bf7d48561dd9ab72d7635af2247c1ca2c2952473",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "relation",
+        "originalText": "Dinsaw Mini Home AI Assistance connects_to hospital care",
+        "label": "Structured Relation",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 56
+      }
+    ],
+    "metadata": {
+      "subject": "Dinsaw Mini Home AI Assistance",
+      "relation": "connects_to",
+      "object": "hospital care",
+      "confidence": 0.85,
+      "sourceTitle": "Dinsaw Mini Home AI Assistance connected to hospital care"
+    }
+  },
+  {
+    "typedId": "robot:seed-1",
+    "kind": "robot",
+    "title": "Dinsaw Robot",
+    "body": "Thai-developed service and social robot product family for healthcare, elderly care, and service contexts.",
+    "retrievalText": "Dinsaw Robot CT Asia Robotics Thailand social_service_robot mobile_screen_based_robot Thai-developed service and social robot product family for healthcare, elderly care, and service contexts.",
+    "url": "https://www.ctasia.com/about-us/",
+    "groupId": "https://www.ctasia.com/about-us/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "621e20e8043108d75505a95c0df920424e7520eea4a3bc4ab4277d55e844cb68",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Thai-developed service and social robot product family for healthcare, elderly care, and service contexts.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 106
+      }
+    ],
+    "metadata": {
+      "manufacturer": "CT Asia Robotics",
+      "countryOfOrigin": "Thailand",
+      "robotType": "social_service_robot",
+      "embodimentLevel": "mobile_screen_based_robot"
+    }
+  },
+  {
+    "typedId": "robot:seed-10",
+    "kind": "robot",
+    "title": "Pinto Robot",
+    "body": "Small quarantine delivery robot used to deliver food, medicine, or medical supplies and reduce infection exposure for healthcare workers.",
+    "retrievalText": "Pinto Robot CU-RoboCOVID / Chulalongkorn Engineering / Mi Workspace / HG Robotics / Obodroid Thailand medical_delivery_robot mobile_non_humanoid_robot Small quarantine delivery robot used to deliver food, medicine, or medical supplies and reduce infection exposure for healthcare workers.",
+    "url": "https://www.chula.ac.th/en/news/29278/",
+    "groupId": "https://www.chula.ac.th/en/news/29278/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "5757c826f40954b13c5aafd49c1a370032587d9f7427dfcd271e83f14ad94f08",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Small quarantine delivery robot used to deliver food, medicine, or medical supplies and reduce infection exposure for healthcare workers.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 137
+      }
+    ],
+    "metadata": {
+      "manufacturer": "CU-RoboCOVID / Chulalongkorn Engineering / Mi Workspace / HG Robotics / Obodroid",
+      "countryOfOrigin": "Thailand",
+      "robotType": "medical_delivery_robot",
+      "embodimentLevel": "mobile_non_humanoid_robot",
+      "firstSeenYear": 2020
+    }
+  },
+  {
+    "typedId": "robot:seed-13",
+    "kind": "robot",
+    "title": "Mirror Telepresence System",
+    "body": "Long-distance communication system used with Pinto in the CU-RoboCOVID deployment to reduce infection exposure.",
+    "retrievalText": "Mirror Telepresence System CU-RoboCOVID / Chulalongkorn University / Obodroid Thailand telepresence_robot_system telepresence_screen_system Long-distance communication system used with Pinto in the CU-RoboCOVID deployment to reduce infection exposure.",
+    "url": "https://csii.chula.ac.th/robots-and-the-covid-strip-test-innovations-by-chulalongkorn-university-to-combat-the-covid-pandemic/",
+    "groupId": "https://csii.chula.ac.th/robots-and-the-covid-strip-test-innovations-by-chulalongkorn-university-to-combat-the-covid-pandemic/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "f6accc39a074d51c7d445476d6eebb8e0e8effbd3245817bdb0409693c24de8c",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Long-distance communication system used with Pinto in the CU-RoboCOVID deployment to reduce infection exposure.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 111
+      }
+    ],
+    "metadata": {
+      "manufacturer": "CU-RoboCOVID / Chulalongkorn University / Obodroid",
+      "countryOfOrigin": "Thailand",
+      "robotType": "telepresence_robot_system",
+      "embodimentLevel": "telepresence_screen_system",
+      "firstSeenYear": 2020
+    }
+  },
+  {
+    "typedId": "robot:seed-14",
+    "kind": "robot",
+    "title": "Ninja Robot",
+    "body": "Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+    "retrievalText": "Ninja Robot Chulalongkorn University / CU-RoboCOVID partners Thailand medical_telepresence_robot mobile_non_humanoid_robot Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+    "url": "https://www.nationthailand.com/tech/30385613",
+    "groupId": "https://www.nationthailand.com/tech/30385613",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "7aa1712735921666cd67a7f7d5f823f5e1175508b97807004378fd0aed42254c",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Hospital support robot used during COVID-19 to connect monitors and send patient data such as blood pressure, pulse, and temperature to doctors.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 144
+      }
+    ],
+    "metadata": {
+      "manufacturer": "Chulalongkorn University / CU-RoboCOVID partners",
+      "countryOfOrigin": "Thailand",
+      "robotType": "medical_telepresence_robot",
+      "embodimentLevel": "mobile_non_humanoid_robot",
+      "firstSeenYear": 2020
+    }
+  },
+  {
+    "typedId": "robot:seed-16",
+    "kind": "robot",
+    "title": "Kaitomm Robot",
+    "body": "Thai companion and personal-assistant robot with Thai-language interaction, smart-home functions, video calls, and health-device connectivity.",
+    "retrievalText": "Kaitomm Robot Obodroid Thailand companion_personal_assistant_robot desktop_or_home_assistant_robot Thai companion and personal-assistant robot with Thai-language interaction, smart-home functions, video calls, and health-device connectivity.",
+    "url": "https://www.obodroid.com/about-us/",
+    "groupId": "https://www.obodroid.com/about-us/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "48b9dfdf944cad19e5b7634cbdb4ade470dc862ff6ed8f70327f8fa40f5f4223",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Thai companion and personal-assistant robot with Thai-language interaction, smart-home functions, video calls, and health-device connectivity.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 142
+      }
+    ],
+    "metadata": {
+      "manufacturer": "Obodroid",
+      "countryOfOrigin": "Thailand",
+      "robotType": "companion_personal_assistant_robot",
+      "embodimentLevel": "desktop_or_home_assistant_robot"
+    }
+  },
+  {
+    "typedId": "robot:seed-17",
+    "kind": "robot",
+    "title": "SR1 Security Robot",
+    "body": "Residential security robot from Obodroid, described in the company timeline as a security robot with advanced navigation.",
+    "retrievalText": "SR1 Security Robot Obodroid Thailand security_robot mobile_non_humanoid_robot Residential security robot from Obodroid, described in the company timeline as a security robot with advanced navigation.",
+    "url": "https://www.obodroid.com/about-us/",
+    "groupId": "https://www.obodroid.com/about-us/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "6831e3fb0f4114121bd98184f73bda0aeb3fca7c61d60ad194e7c16d4f37f15e",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Residential security robot from Obodroid, described in the company timeline as a security robot with advanced navigation.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 121
+      }
+    ],
+    "metadata": {
+      "manufacturer": "Obodroid",
+      "countryOfOrigin": "Thailand",
+      "robotType": "security_robot",
+      "embodimentLevel": "mobile_non_humanoid_robot"
+    }
+  },
+  {
+    "typedId": "robot:seed-22",
+    "kind": "robot",
+    "title": "Radioactive Iodine Therapy Medical Assistant Robot",
+    "body": "Medical assistant robot developed for King Chulalongkorn Memorial Hospital to support thyroid cancer treatment with radioactive iodine therapy.",
+    "retrievalText": "Radioactive Iodine Therapy Medical Assistant Robot True Digital Group / King Chulalongkorn Memorial Hospital Thailand medical_assistant_robot mobile_medical_service_robot Medical assistant robot developed for King Chulalongkorn Memorial Hospital to support thyroid cancer treatment with radioactive iodine therapy.",
+    "url": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+    "groupId": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "79d97f18a219eb68c8e5a8ad93c96a23b339c32fccb386d951d06364182c616f",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Medical assistant robot developed for King Chulalongkorn Memorial Hospital to support thyroid cancer treatment with radioactive iodine therapy.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 143
+      }
+    ],
+    "metadata": {
+      "manufacturer": "True Digital Group / King Chulalongkorn Memorial Hospital",
+      "countryOfOrigin": "Thailand",
+      "robotType": "medical_assistant_robot",
+      "embodimentLevel": "mobile_medical_service_robot",
+      "firstSeenYear": 2023
+    }
+  },
+  {
+    "typedId": "robot:seed-25",
+    "kind": "robot",
+    "title": "CORGI Healthcare and Physical Therapy Assistant Robot",
+    "body": "Healthcare and physical therapy assistant robot designed to assist medical teams with patient care and physical therapy support.",
+    "retrievalText": "CORGI Healthcare and Physical Therapy Assistant Robot True Digital Group / King Chulalongkorn Memorial Hospital Thailand healthcare_physical_therapy_robot mobile_medical_service_robot Healthcare and physical therapy assistant robot designed to assist medical teams with patient care and physical therapy support.",
+    "url": "https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E/",
+    "groupId": "https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "c57d37745649d3e2903934a60f26d96bb0ecb0581f5ee6bb29ed87c84e74b26f",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Healthcare and physical therapy assistant robot designed to assist medical teams with patient care and physical therapy support.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 128
+      }
+    ],
+    "metadata": {
+      "manufacturer": "True Digital Group / King Chulalongkorn Memorial Hospital",
+      "countryOfOrigin": "Thailand",
+      "robotType": "healthcare_physical_therapy_robot",
+      "embodimentLevel": "mobile_medical_service_robot",
+      "firstSeenYear": 2026
+    }
+  },
+  {
+    "typedId": "robot:seed-28",
+    "kind": "robot",
+    "title": "Mr SAM outpatient service robot",
+    "body": "Hospital service robot deployed for outpatient administrative processes, including patient registration and appointment support.",
+    "retrievalText": "Mr SAM outpatient service robot King Chulalongkorn Memorial Hospital / Thai Red Cross Society Thailand hospital_administrative_service_robot mobile_service_robot Hospital service robot deployed for outpatient administrative processes, including patient registration and appointment support.",
+    "url": "https://en.vietnamplus.vn/thailand-introduces-robot-assistants-at-hospital-post276507.vnp",
+    "groupId": "https://en.vietnamplus.vn/thailand-introduces-robot-assistants-at-hospital-post276507.vnp",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "a6bb81612e91c70842c2cc0f0dbe33e56b0927b04d5f83145aac8f9288c2bdbb",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Hospital service robot deployed for outpatient administrative processes, including patient registration and appointment support.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 128
+      }
+    ],
+    "metadata": {
+      "manufacturer": "King Chulalongkorn Memorial Hospital / Thai Red Cross Society",
+      "countryOfOrigin": "Thailand",
+      "robotType": "hospital_administrative_service_robot",
+      "embodimentLevel": "mobile_service_robot",
+      "firstSeenYear": 2024
+    }
+  },
+  {
+    "typedId": "robot:seed-32",
+    "kind": "robot",
+    "title": "Robo-Buddy",
+    "body": "Small-scale educational robot using RFID command cards to teach elementary students coding concepts through physical navigation activities.",
+    "retrievalText": "Robo-Buddy Chulalongkorn University Thailand education_robot small_mobile_educational_robot Small-scale educational robot using RFID command cards to teach elementary students coding concepts through physical navigation activities.",
+    "url": "https://sustainability.chula.ac.th/report/3802/",
+    "groupId": "https://sustainability.chula.ac.th/report/3802/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "ca3d90a02faf0595c293a99231bdf2432f5467a9290a9223d5c6fbb9fa73515a",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Small-scale educational robot using RFID command cards to teach elementary students coding concepts through physical navigation activities.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 139
+      }
+    ],
+    "metadata": {
+      "manufacturer": "Chulalongkorn University",
+      "countryOfOrigin": "Thailand",
+      "robotType": "education_robot",
+      "embodimentLevel": "small_mobile_educational_robot"
+    }
+  },
+  {
+    "typedId": "robot:seed-34",
+    "kind": "robot",
+    "title": "Khun Sean Smart Robot",
+    "body": "Smart robot project connected to computational thinking and primary school curriculum robotics integration.",
+    "retrievalText": "Khun Sean Smart Robot Chulalongkorn University Thailand education_robot education_robot Smart robot project connected to computational thinking and primary school curriculum robotics integration.",
+    "url": "https://sustainability.chula.ac.th/report/3801/",
+    "groupId": "https://sustainability.chula.ac.th/report/3801/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "63812382a05c3e46e14ded9665ceeb53881bb6f2c5156219796483768bf136c5",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Smart robot project connected to computational thinking and primary school curriculum robotics integration.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 107
+      }
+    ],
+    "metadata": {
+      "manufacturer": "Chulalongkorn University",
+      "countryOfOrigin": "Thailand",
+      "robotType": "education_robot",
+      "embodimentLevel": "education_robot"
+    }
+  },
+  {
+    "typedId": "robot:seed-36",
+    "kind": "robot",
+    "title": "Chula Rehabilitation Robots for Stroke Patients",
+    "body": "Set of five rehabilitation robot types for shoulder, elbow, wrist, hip, knee, and ankle training.",
+    "retrievalText": "Chula Rehabilitation Robots for Stroke Patients Chulalongkorn University Robotics and Automation Center Thailand rehabilitation_robot assistive_rehabilitation_robot Set of five rehabilitation robot types for shoulder, elbow, wrist, hip, knee, and ankle training.",
+    "url": "https://sustainability.chula.ac.th/report/2683/",
+    "groupId": "https://sustainability.chula.ac.th/report/2683/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "4c1c82dfbb24d842e7955855d441b6b04f395fec273a3e298f380177c53f7427",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Set of five rehabilitation robot types for shoulder, elbow, wrist, hip, knee, and ankle training.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 97
+      }
+    ],
+    "metadata": {
+      "manufacturer": "Chulalongkorn University Robotics and Automation Center",
+      "countryOfOrigin": "Thailand",
+      "robotType": "rehabilitation_robot",
+      "embodimentLevel": "assistive_rehabilitation_robot"
+    }
+  },
+  {
+    "typedId": "robot:seed-37",
+    "kind": "robot",
+    "title": "Exoskeleton Wheelchair Robot",
+    "body": "Wearable robotic wheelchair/exoskeleton system that can assist people with disabilities in sitting, standing, and moving.",
+    "retrievalText": "Exoskeleton Wheelchair Robot Chulalongkorn University Thailand assistive_wearable_robot wearable_exoskeleton Wearable robotic wheelchair/exoskeleton system that can assist people with disabilities in sitting, standing, and moving.",
+    "url": "https://www.chula.ac.th/en/highlight/218151/",
+    "groupId": "https://www.chula.ac.th/en/highlight/218151/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "e8e160f87fcde8ba21f8a039a080d5f40531fd4329d67e589a7a98e6c1e6174d",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Wearable robotic wheelchair/exoskeleton system that can assist people with disabilities in sitting, standing, and moving.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 121
+      }
+    ],
+    "metadata": {
+      "manufacturer": "Chulalongkorn University",
+      "countryOfOrigin": "Thailand",
+      "robotType": "assistive_wearable_robot",
+      "embodimentLevel": "wearable_exoskeleton",
+      "firstSeenYear": 2025
+    }
+  },
+  {
+    "typedId": "robot:seed-39",
+    "kind": "robot",
+    "title": "AI Police Cyborg 1.0",
+    "body": "AI-powered public-safety robotic platform deployed by Thai police in Nakhon Pathom, with 360-degree cameras and command-center integration.",
+    "retrievalText": "AI Police Cyborg 1.0 Royal Thai Police / Security Pitch / Provincial Police Region 7 / Nakhon Pathom Provincial Police / Nakhon Pathom Municipality Thailand public_safety_robot humanoid_or_human_like_static_robot AI-powered public-safety robotic platform deployed by Thai police in Nakhon Pathom, with 360-degree cameras and command-center integration.",
+    "url": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "groupId": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "997a959f506b38bcbd4b11d77f652a897a99a7c8e3808fe1ba1a9d97cb1ac2f5",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "AI-powered public-safety robotic platform deployed by Thai police in Nakhon Pathom, with 360-degree cameras and command-center integration.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 139
+      }
+    ],
+    "metadata": {
+      "manufacturer": "Royal Thai Police / Security Pitch / Provincial Police Region 7 / Nakhon Pathom Provincial Police / Nakhon Pathom Municipality",
+      "countryOfOrigin": "Thailand",
+      "robotType": "public_safety_robot",
+      "embodimentLevel": "humanoid_or_human_like_static_robot",
+      "firstSeenYear": 2025
+    }
+  },
+  {
+    "typedId": "robot:seed-4",
+    "kind": "robot",
+    "title": "Dinsaw Mini Home AI Assistance",
+    "body": "Elderly-care home assistance robot model that can move in the house, support companionship, and connect to hospitals for remote care.",
+    "retrievalText": "Dinsaw Mini Home AI Assistance CT Asia Robotics Thailand elderly_care_robot mobile_screen_based_robot Elderly-care home assistance robot model that can move in the house, support companionship, and connect to hospitals for remote care.",
+    "url": "https://www.chula.ac.th/en/highlight/198924/",
+    "groupId": "https://www.chula.ac.th/en/highlight/198924/",
+    "origin": "public_catalog",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "811c6854d44b14b992101885d337d6513f7a7ae4d190a21a7ea8f6706f3e9cd3",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "description",
+        "originalText": "Elderly-care home assistance robot model that can move in the house, support companionship, and connect to hospitals for remote care.",
+        "label": "Robot Description",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 133
+      }
+    ],
+    "metadata": {
+      "manufacturer": "CT Asia Robotics",
+      "countryOfOrigin": "Thailand",
+      "robotType": "elderly_care_robot",
+      "embodimentLevel": "mobile_screen_based_robot",
+      "firstSeenYear": 2024
+    }
+  },
+  {
+    "typedId": "source:seed-0",
+    "kind": "source",
+    "title": "Home - English - Dinsaw Robot",
+    "body": "Dinsaw Robot is an artificial intelligence or AI that can listen and respond to commands.",
+    "retrievalText": "Home - English - Dinsaw Robot official_company_website Dinsaw Robot is an artificial intelligence or AI that can listen and respond to commands.",
+    "url": "https://www.dinsaw.com/en/home-english/",
+    "groupId": "https://www.dinsaw.com/en/home-english/",
+    "origin": "web",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "d1c03fbe6c207c1182637c3ea31f90454a0f45c2e0c35d6bf7328fc3de59092c",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Dinsaw Robot is an artificial intelligence or AI that can listen and respond to commands.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 89
+      }
+    ],
+    "metadata": {
+      "platform": "official_company_website",
+      "canonicalName": "Dinsaw Robot official website"
+    }
+  },
+  {
+    "typedId": "source:seed-15",
+    "kind": "source",
+    "title": "Obodroid About Us",
+    "body": "Obodroid supplies hospitals with over 100 Pinto delivery robots.",
+    "retrievalText": "Obodroid About Us official_company_website Obodroid supplies hospitals with over 100 Pinto delivery robots.",
+    "url": "https://www.obodroid.com/about-us/",
+    "groupId": "https://www.obodroid.com/about-us/",
+    "origin": "web",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "626b7101253af2af94c40b565ad48b7ea63b6430c98535dd47044f675f88dbd1",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Obodroid supplies hospitals with over 100 Pinto delivery robots.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 64
+      }
+    ],
+    "metadata": {
+      "platform": "official_company_website",
+      "canonicalName": "Obodroid official timeline"
+    }
+  },
+  {
+    "typedId": "source:seed-18",
+    "kind": "source",
+    "title": "Kaitomm Hospital and Pinto at Light of Heart Field Hospital",
+    "body": "Kaitomm Hospital helped nurses at Light of Heart Field Hospital.",
+    "retrievalText": "Kaitomm Hospital and Pinto at Light of Heart Field Hospital official_company_website Kaitomm Hospital helped nurses at Light of Heart Field Hospital.",
+    "url": "https://www.obodroid.com/project/kaitomm-hospital-and-pinto-at-light-of-heart-field-hospital/",
+    "groupId": "https://www.obodroid.com/project/kaitomm-hospital-and-pinto-at-light-of-heart-field-hospital/",
+    "origin": "web",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "3e07f13ea893461ea27b4ea9a38bbe63fe1098ad5a539a3f8d9c7fa2802e59e8",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Kaitomm Hospital helped nurses at Light of Heart Field Hospital.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 64
+      }
+    ],
+    "metadata": {
+      "platform": "official_company_website",
+      "canonicalName": "Kaitomm Hospital and Pinto field hospital deployment"
+    }
+  },
+  {
+    "typedId": "source:seed-21",
+    "kind": "source",
+    "title": "First Time in Thailand, Introducing a Medical Assistant Robot That Supports Nuclear Medicine",
+    "body": "Medical assistant robot that supports nuclear medicine ... thyroid cancer treatment with radioactive iodine therapy.",
+    "retrievalText": "First Time in Thailand, Introducing a Medical Assistant Robot That Supports Nuclear Medicine PR True company_blog Medical assistant robot that supports nuclear medicine ... thyroid cancer treatment with radioactive iodine therapy.",
+    "url": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+    "groupId": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+    "origin": "web",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "4c7cb16c13867f2534277b680ecc90d24a19537d691764c0050b9d776849530a",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Medical assistant robot that supports nuclear medicine ... thyroid cancer treatment with radioactive iodine therapy.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 116
+      }
+    ],
+    "metadata": {
+      "author": "PR True",
+      "platform": "company_blog",
+      "publishedAt": "2023-10-27",
+      "canonicalName": "True Digital nuclear medicine assistant robot"
+    }
+  },
+  {
+    "typedId": "source:seed-24",
+    "kind": "source",
+    "title": "True Digital Partners with King Chulalongkorn Memorial Hospital to Launch Digital Hospital Powered by Physical AI",
+    "body": "Healthcare and Physical Therapy Assistant Robot named CORGI.",
+    "retrievalText": "True Digital Partners with King Chulalongkorn Memorial Hospital to Launch Digital Hospital Powered by Physical AI True Digital Group company_blog Healthcare and Physical Therapy Assistant Robot named CORGI.",
+    "url": "https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E/",
+    "groupId": "https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E/",
+    "origin": "web",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "1c6c4074b4fecaca75369f703a3ae189a800c3a1e3e472bb1953e8da3b7ea538",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Healthcare and Physical Therapy Assistant Robot named CORGI.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 60
+      }
+    ],
+    "metadata": {
+      "author": "True Digital Group",
+      "platform": "company_blog",
+      "publishedAt": "2026-02-09",
+      "canonicalName": "True Digital CORGI physical therapy assistant robot launch"
+    }
+  },
+  {
+    "typedId": "source:seed-2431",
+    "kind": "source",
+    "title": "การรบรและความตองการใชบรการ Mobile Telepresence Robotics ของประชาคมจฬาลงกรณมหาวทยาลย | Perceptions and Expectation in Mobile Telepresence Robotics Service of Chulalongkorn University Community",
+    "body": "",
+    "retrievalText": "การรบรและความตองการใชบรการ Mobile Telepresence Robotics ของประชาคมจฬาลงกรณมหาวทยาลย | Perceptions and Expectation in Mobile Telepresence Robotics Service of Chulalongkorn University Community ระเบียบ แสงจันทร์ openalex",
+    "url": "https://openalex.org/W2954843585",
+    "groupId": "https://openalex.org/W2954843585",
+    "origin": "openalex",
+    "language": "mixed",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "9165a93b4217cbf3a73a9c5f9e2a9db734e37f96a558ea3bdf6dea07a38449d8",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "การรบรและความตองการใชบรการ Mobile Telepresence Robotics ของประชาคมจฬาลงกรณมหาวทยาลย | Perceptions and Expectation in Mobile Telepresence Robotics Service of Chulalongkorn University Community",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 191
+      }
+    ],
+    "metadata": {
+      "author": "ระเบียบ แสงจันทร์",
+      "platform": "openalex",
+      "publishedAt": "2019-01-01",
+      "canonicalName": "OpenAlex work: การรบรและความตองการใชบรการ Mobile Telepresence Rob"
+    }
+  },
+  {
+    "typedId": "source:seed-27",
+    "kind": "source",
+    "title": "King Chulalongkorn Memorial Hospital Launches Physical AI Robot Initiative",
+    "body": "Robots help enhance patient services, reduce risks for physicians and medical staff.",
+    "retrievalText": "King Chulalongkorn Memorial Hospital Launches Physical AI Robot Initiative Chulalongkorn University university_news Robots help enhance patient services, reduce risks for physicians and medical staff.",
+    "url": "https://www.chula.ac.th/en/news/287038/",
+    "groupId": "https://www.chula.ac.th/en/news/287038/",
+    "origin": "web",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "31d02e9d823ce8bb6fe8ef9a831bd7d9b0144f7a90b764c92f43f3f82ad9fa84",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Robots help enhance patient services, reduce risks for physicians and medical staff.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 84
+      }
+    ],
+    "metadata": {
+      "author": "Chulalongkorn University",
+      "platform": "university_news",
+      "publishedAt": "2026-02-11",
+      "canonicalName": "KCMH Physical AI smart medical robots launch"
+    }
+  },
+  {
+    "typedId": "source:seed-3",
+    "kind": "source",
+    "title": "About - Dinsaw Robot",
+    "body": "Dinsaw is used in hospitals, public medical universities, and private hospitals more than 50 places.",
+    "retrievalText": "About - Dinsaw Robot official_company_website Dinsaw is used in hospitals, public medical universities, and private hospitals more than 50 places.",
+    "url": "https://www.dinsaw.com/about/",
+    "groupId": "https://www.dinsaw.com/about/",
+    "origin": "web",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "10704359d6a4a6cdb3c03c24a33c9114c8c47ad414626a1b2bb59562cb88f82c",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Dinsaw is used in hospitals, public medical universities, and private hospitals more than 50 places.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 100
+      }
+    ],
+    "metadata": {
+      "platform": "official_company_website",
+      "canonicalName": "Dinsaw Robot about page"
+    }
+  },
+  {
+    "typedId": "source:seed-3067",
+    "kind": "source",
+    "title": "ปญหาการกำกบดแลโทเคนทไมสามารถทดแทนกนได (Non-Fungible Token : NFT) ภายใตพระราชกำหนดการประกอบธรกจสนทรพยดจทล พ.ศ. 2561",
+    "body": "",
+    "retrievalText": "ปญหาการกำกบดแลโทเคนทไมสามารถทดแทนกนได (Non-Fungible Token : NFT) ภายใตพระราชกำหนดการประกอบธรกจสนทรพยดจทล พ.ศ. 2561 สุจารี จิตรหัสต์ชัย openalex",
+    "url": "https://doi.org/10.58837/chula.is.2021.185",
+    "groupId": "https://doi.org/10.58837/chula.is.2021.185",
+    "origin": "openalex",
+    "language": "mixed",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "b9840bc4e2ef956998d82b90196b53752ccf67f47385d756f40793c039bdad0d",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "ปญหาการกำกบดแลโทเคนทไมสามารถทดแทนกนได (Non-Fungible Token : NFT) ภายใตพระราชกำหนดการประกอบธรกจสนทรพยดจทล พ.ศ. 2561",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 114
+      }
+    ],
+    "metadata": {
+      "author": "สุจารี จิตรหัสต์ชัย",
+      "platform": "openalex",
+      "publishedAt": "2021-01-01",
+      "canonicalName": "OpenAlex work: ปญหาการกำกบดแลโทเคนทไมสามารถทดแทนกนได (Non-Fungibl"
+    }
+  },
+  {
+    "typedId": "source:seed-3524",
+    "kind": "source",
+    "title": "ระบบควบคมแบบปรบตวไดพรอมการควบคมแรงฉดลากสำหรบหนยนตขบเคลอนสองลอ",
+    "body": "",
+    "retrievalText": "ระบบควบคมแบบปรบตวไดพรอมการควบคมแรงฉดลากสำหรบหนยนตขบเคลอนสองลอ ไม้ไฑ ดะห์ลัน openalex",
+    "url": "https://doi.org/10.58837/chula.the.2019.1198",
+    "groupId": "https://doi.org/10.58837/chula.the.2019.1198",
+    "origin": "openalex",
+    "language": "th",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "ff0837165c15c5653ed2764cd8628e161f0b8916deace0fca61e1ca07f510d81",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "ระบบควบคมแบบปรบตวไดพรอมการควบคมแรงฉดลากสำหรบหนยนตขบเคลอนสองลอ",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 61
+      }
+    ],
+    "metadata": {
+      "author": "ไม้ไฑ ดะห์ลัน",
+      "platform": "openalex",
+      "publishedAt": "2019-01-01",
+      "canonicalName": "OpenAlex work: ระบบควบคมแบบปรบตวไดพรอมการควบคมแรงฉดลากสำหรบหนยนตข"
+    }
+  },
+  {
+    "typedId": "source:seed-3598",
+    "kind": "source",
+    "title": "AtsushiSakai/PythonRobotics",
+    "body": "Stars: 29926, Language: Python. Description: Python sample codes and textbook for robotics algorithms.",
+    "retrievalText": "AtsushiSakai/PythonRobotics AtsushiSakai github Stars: 29926, Language: Python. Description: Python sample codes and textbook for robotics algorithms.",
+    "url": "https://github.com/AtsushiSakai/PythonRobotics",
+    "groupId": "https://github.com/AtsushiSakai/PythonRobotics",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "bdc37e9a7026c4915cfa1598c5b8468d6d7ba7f07dbcdb4563488f974a4e3bf6",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 29926, Language: Python. Description: Python sample codes and textbook for robotics algorithms.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 102
+      }
+    ],
+    "metadata": {
+      "author": "AtsushiSakai",
+      "platform": "github",
+      "publishedAt": "2016-03-21",
+      "canonicalName": "GitHub Repository: AtsushiSakai/PythonRobotics"
+    }
+  },
+  {
+    "typedId": "source:seed-3599",
+    "kind": "source",
+    "title": "kiloreux/awesome-robotics",
+    "body": "Stars: 6718, Language: None. Description: A list of awesome Robotics resources",
+    "retrievalText": "kiloreux/awesome-robotics kiloreux github Stars: 6718, Language: None. Description: A list of awesome Robotics resources",
+    "url": "https://github.com/kiloreux/awesome-robotics",
+    "groupId": "https://github.com/kiloreux/awesome-robotics",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "bd3e300e8de251c13f84089d65cd1dbccdc91c046ef583a9682af2f611629324",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 6718, Language: None. Description: A list of awesome Robotics resources",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 78
+      }
+    ],
+    "metadata": {
+      "author": "kiloreux",
+      "platform": "github",
+      "publishedAt": "2015-11-26",
+      "canonicalName": "GitHub Repository: kiloreux/awesome-robotics"
+    }
+  },
+  {
+    "typedId": "source:seed-3600",
+    "kind": "source",
+    "title": "mithi/robotics-coursework",
+    "body": "Stars: 4987, Language: None. Description: 🤖 Places where you can learn robotics (and stuff like that) online 🤖",
+    "retrievalText": "mithi/robotics-coursework mithi github Stars: 4987, Language: None. Description: 🤖 Places where you can learn robotics (and stuff like that) online 🤖",
+    "url": "https://github.com/mithi/robotics-coursework",
+    "groupId": "https://github.com/mithi/robotics-coursework",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "e71fe07bddf9f35c6b40883f77ab5270853dcc3e4d302983574cb60913aefdb9",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 4987, Language: None. Description: 🤖 Places where you can learn robotics (and stuff like that) online 🤖",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 112
+      }
+    ],
+    "metadata": {
+      "author": "mithi",
+      "platform": "github",
+      "publishedAt": "2017-06-24",
+      "canonicalName": "GitHub Repository: mithi/robotics-coursework"
+    }
+  },
+  {
+    "typedId": "source:seed-3601",
+    "kind": "source",
+    "title": "NxRLab/ModernRobotics",
+    "body": "Stars: 2831, Language: Python. Description: Modern Robotics: Mechanics, Planning, and Control Code Library --- The primary purpose of the provided software is to be easy to read and educational, reinforcing the concepts in the book. The code is optimized neither for efficiency nor robustness.",
+    "retrievalText": "NxRLab/ModernRobotics NxRLab github Stars: 2831, Language: Python. Description: Modern Robotics: Mechanics, Planning, and Control Code Library --- The primary purpose of the provided software is to be easy to read and educational, reinforcing the concepts in the book. The code is optimized neither for efficiency nor robustness.",
+    "url": "https://github.com/NxRLab/ModernRobotics",
+    "groupId": "https://github.com/NxRLab/ModernRobotics",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "8703a77a7e908694ed8bc1eea2947d42271caec120bf051702814420f007c593",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 2831, Language: Python. Description: Modern Robotics: Mechanics, Planning, and Control Code Library --- The primary purpose of the provided software is to be easy to read and educational, reinforcing the concepts in the book. The code is optimized neither for efficiency nor robustness.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 293
+      }
+    ],
+    "metadata": {
+      "author": "NxRLab",
+      "platform": "github",
+      "publishedAt": "2016-10-04",
+      "canonicalName": "GitHub Repository: NxRLab/ModernRobotics"
+    }
+  },
+  {
+    "typedId": "source:seed-3602",
+    "kind": "source",
+    "title": "JdeRobot/RoboticsAcademy",
+    "body": "Stars: 476, Language: Python. Description: Learn Robotics with JdeRobot",
+    "retrievalText": "JdeRobot/RoboticsAcademy JdeRobot github Stars: 476, Language: Python. Description: Learn Robotics with JdeRobot",
+    "url": "https://github.com/JdeRobot/RoboticsAcademy",
+    "groupId": "https://github.com/JdeRobot/RoboticsAcademy",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "7fb9fe7eed26b87476130e4598ee4f849bf22dd7df50507ad892d9fea3659c35",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 476, Language: Python. Description: Learn Robotics with JdeRobot",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 71
+      }
+    ],
+    "metadata": {
+      "author": "JdeRobot",
+      "platform": "github",
+      "publishedAt": "2015-07-23",
+      "canonicalName": "GitHub Repository: JdeRobot/RoboticsAcademy"
+    }
+  },
+  {
+    "typedId": "source:seed-3603",
+    "kind": "source",
+    "title": "onlytailei/CppRobotics",
+    "body": "Stars: 2216, Language: C++. Description: cpp implementation of robotics algorithms including localization, mapping, SLAM, path planning and control",
+    "retrievalText": "onlytailei/CppRobotics onlytailei github Stars: 2216, Language: C++. Description: cpp implementation of robotics algorithms including localization, mapping, SLAM, path planning and control",
+    "url": "https://github.com/onlytailei/CppRobotics",
+    "groupId": "https://github.com/onlytailei/CppRobotics",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "120c7cd69a33d5d11361f3e485b13e0462898e8c90c87339660dcf82d57d2e75",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 2216, Language: C++. Description: cpp implementation of robotics algorithms including localization, mapping, SLAM, path planning and control",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 147
+      }
+    ],
+    "metadata": {
+      "author": "onlytailei",
+      "platform": "github",
+      "publishedAt": "2019-03-28",
+      "canonicalName": "GitHub Repository: onlytailei/CppRobotics"
+    }
+  },
+  {
+    "typedId": "source:seed-3604",
+    "kind": "source",
+    "title": "thu-ml/RoboticsDiffusionTransformer",
+    "body": "Stars: 1736, Language: Python. Description: RDT-1B: a Diffusion Foundation Model for Bimanual Manipulation",
+    "retrievalText": "thu-ml/RoboticsDiffusionTransformer thu-ml github Stars: 1736, Language: Python. Description: RDT-1B: a Diffusion Foundation Model for Bimanual Manipulation",
+    "url": "https://github.com/thu-ml/RoboticsDiffusionTransformer",
+    "groupId": "https://github.com/thu-ml/RoboticsDiffusionTransformer",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "6a6902629829c517c821996628fd21b29bece7256545d611c2dd53723bef4d35",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 1736, Language: Python. Description: RDT-1B: a Diffusion Foundation Model for Bimanual Manipulation",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 106
+      }
+    ],
+    "metadata": {
+      "author": "thu-ml",
+      "platform": "github",
+      "publishedAt": "2024-10-07",
+      "canonicalName": "GitHub Repository: thu-ml/RoboticsDiffusionTransformer"
+    }
+  },
+  {
+    "typedId": "source:seed-3605",
+    "kind": "source",
+    "title": "gtbook/robotics",
+    "body": "Stars: 769, Language: Jupyter Notebook. Description: Notebook-based book \"Introduction to Robotics and Perception\" by Frank Dellaert and Seth Hutchinson",
+    "retrievalText": "gtbook/robotics gtbook github Stars: 769, Language: Jupyter Notebook. Description: Notebook-based book \"Introduction to Robotics and Perception\" by Frank Dellaert and Seth Hutchinson",
+    "url": "https://github.com/gtbook/robotics",
+    "groupId": "https://github.com/gtbook/robotics",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "2f13a3c35039124e2e561b4c941981bd1a2dd425dd20d0b7fe120ccaf9bd558a",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 769, Language: Jupyter Notebook. Description: Notebook-based book \"Introduction to Robotics and Perception\" by Frank Dellaert and Seth Hutchinson",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 152
+      }
+    ],
+    "metadata": {
+      "author": "gtbook",
+      "platform": "github",
+      "publishedAt": "2022-01-06",
+      "canonicalName": "GitHub Repository: gtbook/robotics"
+    }
+  },
+  {
+    "typedId": "source:seed-3606",
+    "kind": "source",
+    "title": "petercorke/robotics-toolbox-python",
+    "body": "Stars: 3150, Language: C++. Description: Robotics Toolbox for Python",
+    "retrievalText": "petercorke/robotics-toolbox-python petercorke github Stars: 3150, Language: C++. Description: Robotics Toolbox for Python",
+    "url": "https://github.com/petercorke/robotics-toolbox-python",
+    "groupId": "https://github.com/petercorke/robotics-toolbox-python",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "275ce331c8ab49aa829d2c59f2ecad91269b94f12714f069e4ecbb26a4645011",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 3150, Language: C++. Description: Robotics Toolbox for Python",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 68
+      }
+    ],
+    "metadata": {
+      "author": "petercorke",
+      "platform": "github",
+      "publishedAt": "2015-04-06",
+      "canonicalName": "GitHub Repository: petercorke/robotics-toolbox-python"
+    }
+  },
+  {
+    "typedId": "source:seed-3607",
+    "kind": "source",
+    "title": "jslee02/awesome-robotics-libraries",
+    "body": "Stars: 2974, Language: Python. Description: :sunglasses: A curated list of robotics libraries and software",
+    "retrievalText": "jslee02/awesome-robotics-libraries jslee02 github Stars: 2974, Language: Python. Description: :sunglasses: A curated list of robotics libraries and software",
+    "url": "https://github.com/jslee02/awesome-robotics-libraries",
+    "groupId": "https://github.com/jslee02/awesome-robotics-libraries",
+    "origin": "github",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "8fd13df42f0fbeddb3291b9dab84b84371df90055ed21860f0e0a66f583bf4e4",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 2974, Language: Python. Description: :sunglasses: A curated list of robotics libraries and software",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 106
+      }
+    ],
+    "metadata": {
+      "author": "jslee02",
+      "platform": "github",
+      "publishedAt": "2016-04-16",
+      "canonicalName": "GitHub Repository: jslee02/awesome-robotics-libraries"
+    }
+  },
+  {
+    "typedId": "source:seed-4582",
+    "kind": "source",
+    "title": "jobsProjectt/kmutt",
+    "body": "Stars: 0, Language: JavaScript. Description: โปรเจค",
+    "retrievalText": "jobsProjectt/kmutt jobsProjectt github Stars: 0, Language: JavaScript. Description: โปรเจค",
+    "url": "https://github.com/jobsProjectt/kmutt",
+    "groupId": "https://github.com/jobsProjectt/kmutt",
+    "origin": "github",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "b9acfa208331d1cf578f4c99776ff8d28867cc63728813209249369f4dca03b9",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 0, Language: JavaScript. Description: โปรเจค",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 51
+      }
+    ],
+    "metadata": {
+      "author": "jobsProjectt",
+      "platform": "github",
+      "publishedAt": "2021-03-06",
+      "canonicalName": "GitHub Repository: jobsProjectt/kmutt"
+    }
+  },
+  {
+    "typedId": "source:seed-4615",
+    "kind": "source",
+    "title": "L0u1sss/com-pro",
+    "body": "Stars: 0, Language: Jupyter Notebook. Description: วิชาcpe100 kmutt",
+    "retrievalText": "L0u1sss/com-pro L0u1sss github Stars: 0, Language: Jupyter Notebook. Description: วิชาcpe100 kmutt",
+    "url": "https://github.com/L0u1sss/com-pro",
+    "groupId": "https://github.com/L0u1sss/com-pro",
+    "origin": "github",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "d594938ccb5990e977935d96800cc353100c86f91049b05e19ca2139db33621c",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 0, Language: Jupyter Notebook. Description: วิชาcpe100 kmutt",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 67
+      }
+    ],
+    "metadata": {
+      "author": "L0u1sss",
+      "platform": "github",
+      "publishedAt": "2024-10-01",
+      "canonicalName": "GitHub Repository: L0u1sss/com-pro"
+    }
+  },
+  {
+    "typedId": "source:seed-4621",
+    "kind": "source",
+    "title": "YorTzSmile/SpiderCamp-----------",
+    "body": "Stars: 0, Language: None. Description: สงการบ้านSpiderCAmp KMUTT ^>^",
+    "retrievalText": "YorTzSmile/SpiderCamp----------- YorTzSmile github Stars: 0, Language: None. Description: สงการบ้านSpiderCAmp KMUTT ^>^",
+    "url": "https://github.com/YorTzSmile/SpiderCamp-----------",
+    "groupId": "https://github.com/YorTzSmile/SpiderCamp-----------",
+    "origin": "github",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "de8af1773b72c5c41fca3bb68c0681671555dcb1cbfc22eca5fced686441c49b",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 0, Language: None. Description: สงการบ้านSpiderCAmp KMUTT ^>^",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 68
+      }
+    ],
+    "metadata": {
+      "author": "YorTzSmile",
+      "platform": "github",
+      "publishedAt": "2014-06-29",
+      "canonicalName": "GitHub Repository: YorTzSmile/SpiderCamp-----------"
+    }
+  },
+  {
+    "typedId": "source:seed-4639",
+    "kind": "source",
+    "title": "BabeZa/KMUTTElection",
+    "body": "Stars: 0, Language: JavaScript. Description: ทำเว็บสำหรับเลือกตั้งออนไลน์ให้กับมหาวิทยาลัย พัฒนา Front-End ด้วย react.js ออกแบบเว็บไซต์ให้ response ทุกขนาดหน้าจอ",
+    "retrievalText": "BabeZa/KMUTTElection BabeZa github Stars: 0, Language: JavaScript. Description: ทำเว็บสำหรับเลือกตั้งออนไลน์ให้กับมหาวิทยาลัย พัฒนา Front-End ด้วย react.js ออกแบบเว็บไซต์ให้ response ทุกขนาดหน้าจอ",
+    "url": "https://github.com/BabeZa/KMUTTElection",
+    "groupId": "https://github.com/BabeZa/KMUTTElection",
+    "origin": "github",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "ecc35a1801f87b785c5d3a8944194488c79953ce530655c12e758c1fe064d996",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 0, Language: JavaScript. Description: ทำเว็บสำหรับเลือกตั้งออนไลน์ให้กับมหาวิทยาลัย พัฒนา Front-End ด้วย react.js  ออกแบบเว็บไซต์ให้ response ทุกขนาดหน้าจอ",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 162
+      }
+    ],
+    "metadata": {
+      "author": "BabeZa",
+      "platform": "github",
+      "publishedAt": "2020-03-13",
+      "canonicalName": "GitHub Repository: BabeZa/KMUTTElection"
+    }
+  },
+  {
+    "typedId": "source:seed-4644",
+    "kind": "source",
+    "title": "OngarjDev/Alcohol-Shop",
+    "body": "Stars: 0, Language: Python. Description: ร้านเหล้า Kmutt วิชา Comthink",
+    "retrievalText": "OngarjDev/Alcohol-Shop OngarjDev github Stars: 0, Language: Python. Description: ร้านเหล้า Kmutt วิชา Comthink",
+    "url": "https://github.com/OngarjDev/Alcohol-Shop",
+    "groupId": "https://github.com/OngarjDev/Alcohol-Shop",
+    "origin": "github",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "cc3fbb9e5ec57faee2907a42f10c37a90e0393741dbb7b8cd37eab90e46be045",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 0, Language: Python. Description: ร้านเหล้า Kmutt วิชา Comthink",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 70
+      }
+    ],
+    "metadata": {
+      "author": "OngarjDev",
+      "platform": "github",
+      "publishedAt": "2024-11-24",
+      "canonicalName": "GitHub Repository: OngarjDev/Alcohol-Shop"
+    }
+  },
+  {
+    "typedId": "source:seed-4733",
+    "kind": "source",
+    "title": "L0u1sss/Modcom-kmutt",
+    "body": "Stars: 0, Language: Jupyter Notebook. Description: ค่ายมดคอมที่มหาลัยเทคโนโลยีพระจอมเกล้าธนบุรี",
+    "retrievalText": "L0u1sss/Modcom-kmutt L0u1sss github Stars: 0, Language: Jupyter Notebook. Description: ค่ายมดคอมที่มหาลัยเทคโนโลยีพระจอมเกล้าธนบุรี",
+    "url": "https://github.com/L0u1sss/Modcom-kmutt",
+    "groupId": "https://github.com/L0u1sss/Modcom-kmutt",
+    "origin": "github",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "9dca230a83989c4f9199ae16bffaa26d4fe5fe6fac2408a766594fa2e4229867",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 0, Language: Jupyter Notebook. Description: ค่ายมดคอมที่มหาลัยเทคโนโลยีพระจอมเกล้าธนบุรี",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 95
+      }
+    ],
+    "metadata": {
+      "author": "L0u1sss",
+      "platform": "github",
+      "publishedAt": "2024-07-26",
+      "canonicalName": "GitHub Repository: L0u1sss/Modcom-kmutt"
+    }
+  },
+  {
+    "typedId": "source:seed-4785",
+    "kind": "source",
+    "title": "ImJustNon/Better-KMUTT-PEP",
+    "body": "Stars: 0, Language: TypeScript. Description: บ่ใช่ Official เด้อเเค่ทำให้มีดูดีขึ้นเเล้วค้นหาง่ายขึ้นหน่อย",
+    "retrievalText": "ImJustNon/Better-KMUTT-PEP ImJustNon github Stars: 0, Language: TypeScript. Description: บ่ใช่ Official เด้อเเค่ทำให้มีดูดีขึ้นเเล้วค้นหาง่ายขึ้นหน่อย",
+    "url": "https://github.com/ImJustNon/Better-KMUTT-PEP",
+    "groupId": "https://github.com/ImJustNon/Better-KMUTT-PEP",
+    "origin": "github",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "7ff8b80ee0dc5804ff0aa1e675f40f84e26275dd5ec1887232b857522b79c908",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 0, Language: TypeScript. Description: บ่ใช่ Official เด้อเเค่ทำให้มีดูดีขึ้นเเล้วค้นหาง่ายขึ้นหน่อย",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 106
+      }
+    ],
+    "metadata": {
+      "author": "ImJustNon",
+      "platform": "github",
+      "publishedAt": "2025-08-29",
+      "canonicalName": "GitHub Repository: ImJustNon/Better-KMUTT-PEP"
+    }
+  },
+  {
+    "typedId": "source:seed-50",
+    "kind": "source",
+    "title": "Erratum: Distributed Anonymous Mobile Robots: Formation of Geometric Patterns",
+    "body": "",
+    "retrievalText": "Erratum: Distributed Anonymous Mobile Robots: Formation of Geometric Patterns I. Suzuki openalex",
+    "url": "https://doi.org/10.1137/050631562",
+    "groupId": "https://doi.org/10.1137/050631562",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "a19c56c895e52caea8180f87b86cde81b88219f2473799a9a1dab44f52e0c8be",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Erratum: Distributed Anonymous Mobile Robots: Formation of Geometric Patterns",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 77
+      }
+    ],
+    "metadata": {
+      "author": "I. Suzuki",
+      "platform": "openalex",
+      "publishedAt": "2006-01-01",
+      "canonicalName": "OpenAlex work: Erratum: Distributed Anonymous Mobile Robots: Form"
+    }
+  },
+  {
+    "typedId": "source:seed-51",
+    "kind": "source",
+    "title": "Self-Supervised Siamese Learning on Stereo Image Pairs for Depth Estimation in Robotic Surgery",
+    "body": "",
+    "retrievalText": "Self-Supervised Siamese Learning on Stereo Image Pairs for Depth Estimation in Robotic Surgery M Ye openalex",
+    "url": "https://doi.org/10.31256/hsmr2017.14",
+    "groupId": "https://doi.org/10.31256/hsmr2017.14",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "773ded958a8909f7a9a90cdd0ad05722f02d31bc28b29c53fe5a23e813554d1c",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Self-Supervised Siamese Learning on Stereo Image Pairs for Depth Estimation in Robotic Surgery",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 94
+      }
+    ],
+    "metadata": {
+      "author": "M Ye",
+      "platform": "openalex",
+      "publishedAt": "2017-01-01",
+      "canonicalName": "OpenAlex work: Self-Supervised Siamese Learning on Stereo Image P"
+    }
+  },
+  {
+    "typedId": "source:seed-52",
+    "kind": "source",
+    "title": "Factors of healthcare robot adoption by medical staff in Thai government hospitals",
+    "body": "Academic paper about thailand robot indexed on OpenAlex.",
+    "retrievalText": "Factors of healthcare robot adoption by medical staff in Thai government hospitals Paniti Vichitkraivin openalex Academic paper about thailand robot indexed on OpenAlex.",
+    "url": "https://doi.org/10.1007/s12553-020-00489-4",
+    "groupId": "https://doi.org/10.1007/s12553-020-00489-4",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "4c4302baa1dc2d2634f6e594a8767c15e186894301a532c55eef8cdd07f3a830",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Academic paper about thailand robot indexed on OpenAlex.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 56
+      }
+    ],
+    "metadata": {
+      "author": "Paniti Vichitkraivin",
+      "platform": "openalex",
+      "publishedAt": "2020-01-01",
+      "canonicalName": "OpenAlex work: Factors of healthcare robot adoption by medical st"
+    }
+  },
+  {
+    "typedId": "source:seed-53",
+    "kind": "source",
+    "title": "Multiple cues produced by a robotic fish modulate aggressive behaviour in Siamese fighting fishes",
+    "body": "",
+    "retrievalText": "Multiple cues produced by a robotic fish modulate aggressive behaviour in Siamese fighting fishes Donato Romano openalex",
+    "url": "https://doi.org/10.1038/s41598-017-04840-0",
+    "groupId": "https://doi.org/10.1038/s41598-017-04840-0",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "cd8f661416a8d5f72335a672aec08116c53573ac781fd446c8f4505e798461fd",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Multiple cues produced by a robotic fish modulate aggressive behaviour in Siamese fighting fishes",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 97
+      }
+    ],
+    "metadata": {
+      "author": "Donato Romano",
+      "platform": "openalex",
+      "publishedAt": "2017-01-01",
+      "canonicalName": "OpenAlex work: Multiple cues produced by a robotic fish modulate "
+    }
+  },
+  {
+    "typedId": "source:seed-54",
+    "kind": "source",
+    "title": "Restaurant Service Robots Development in Thailand and Their Real Environment Evaluation",
+    "body": "",
+    "retrievalText": "Restaurant Service Robots Development in Thailand and Their Real Environment Evaluation Akkharaphong Eksiri openalex",
+    "url": "https://doi.org/10.20965/jrm.2015.p0091",
+    "groupId": "https://doi.org/10.20965/jrm.2015.p0091",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "455158963851416613d92fcafce53d8770211a4419ba925a3a9dda982676a0c2",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Restaurant Service Robots Development in Thailand and Their Real Environment Evaluation",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 87
+      }
+    ],
+    "metadata": {
+      "author": "Akkharaphong Eksiri",
+      "platform": "openalex",
+      "publishedAt": "2015-01-01",
+      "canonicalName": "OpenAlex work: Restaurant Service Robots Development in Thailand "
+    }
+  },
+  {
+    "typedId": "source:seed-55",
+    "kind": "source",
+    "title": "A Review of Point Cloud Registration Algorithms for Mobile Robotics",
+    "body": "",
+    "retrievalText": "A Review of Point Cloud Registration Algorithms for Mobile Robotics François Pomerleau openalex",
+    "url": "https://doi.org/10.1561/2300000035",
+    "groupId": "https://doi.org/10.1561/2300000035",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "08c3f2e3c9752647bd06416c5712595ae5e2606838f969b167aa2adcc9d6b451",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "A Review of Point Cloud Registration Algorithms for Mobile Robotics",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 67
+      }
+    ],
+    "metadata": {
+      "author": "François Pomerleau",
+      "platform": "openalex",
+      "publishedAt": "2015-01-01",
+      "canonicalName": "OpenAlex work: A Review of Point Cloud Registration Algorithms fo"
+    }
+  },
+  {
+    "typedId": "source:seed-56",
+    "kind": "source",
+    "title": "The Rise of Robots in China",
+    "body": "",
+    "retrievalText": "The Rise of Robots in China Hong Cheng openalex",
+    "url": "https://doi.org/10.1257/jep.33.2.71",
+    "groupId": "https://doi.org/10.1257/jep.33.2.71",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "04c7013f6d2b74da913695beaeebd7433efb5186dbb3a1addfd82d287a2759ee",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "The Rise of Robots in China",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 27
+      }
+    ],
+    "metadata": {
+      "author": "Hong Cheng",
+      "platform": "openalex",
+      "publishedAt": "2019-01-01",
+      "canonicalName": "OpenAlex work: The Rise of Robots in China"
+    }
+  },
+  {
+    "typedId": "source:seed-57",
+    "kind": "source",
+    "title": "Lower-Limb Robotic Rehabilitation: Literature Review and Challenges",
+    "body": "",
+    "retrievalText": "Lower-Limb Robotic Rehabilitation: Literature Review and Challenges Iñaki Díaz openalex",
+    "url": "https://doi.org/10.1155/2011/759764",
+    "groupId": "https://doi.org/10.1155/2011/759764",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "f10178b0293946ccf789e28e31979ecb4664b014d4ea962c6a74b75f4d6de784",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Lower-Limb Robotic Rehabilitation: Literature Review and Challenges",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 67
+      }
+    ],
+    "metadata": {
+      "author": "Iñaki Díaz",
+      "platform": "openalex",
+      "publishedAt": "2011-01-01",
+      "canonicalName": "OpenAlex work: Lower-Limb Robotic Rehabilitation: Literature Revi"
+    }
+  },
+  {
+    "typedId": "source:seed-58",
+    "kind": "source",
+    "title": "LSFP-Tracker: An Autonomous Laser Stripe Feature Point Extraction Algorithm Based on Siamese Network for Robotic Welding Seam Tracking",
+    "body": "",
+    "retrievalText": "LSFP-Tracker: An Autonomous Laser Stripe Feature Point Extraction Algorithm Based on Siamese Network for Robotic Welding Seam Tracking Runquan Xiao openalex",
+    "url": "https://doi.org/10.1109/tie.2023.3243265",
+    "groupId": "https://doi.org/10.1109/tie.2023.3243265",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "ed8631ff2ba5409488c40a82f4f562761842f3d4e53b0e17265e6ea77bee38ee",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "LSFP-Tracker: An Autonomous Laser Stripe Feature Point Extraction Algorithm Based on Siamese Network for Robotic Welding Seam Tracking",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 134
+      }
+    ],
+    "metadata": {
+      "author": "Runquan Xiao",
+      "platform": "openalex",
+      "publishedAt": "2023-01-01",
+      "canonicalName": "OpenAlex work: LSFP-Tracker: An Autonomous Laser Stripe Feature P"
+    }
+  },
+  {
+    "typedId": "source:seed-59",
+    "kind": "source",
+    "title": "Cyclic coordinate descent: A robotics algorithm for protein loop closure",
+    "body": "",
+    "retrievalText": "Cyclic coordinate descent: A robotics algorithm for protein loop closure Adrian A. Canutescu openalex",
+    "url": "https://doi.org/10.1110/ps.0242703",
+    "groupId": "https://doi.org/10.1110/ps.0242703",
+    "origin": "openalex",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "c2d25772e56637fa0fbdcd800c17f48a3954f2c125570edf8ef99f9beeaaeb28",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Cyclic coordinate descent: A robotics algorithm for protein loop closure",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 72
+      }
+    ],
+    "metadata": {
+      "author": "Adrian A. Canutescu",
+      "platform": "openalex",
+      "publishedAt": "2003-01-01",
+      "canonicalName": "OpenAlex work: Cyclic coordinate descent: A robotics algorithm fo"
+    }
+  },
+  {
+    "typedId": "source:seed-6",
+    "kind": "source",
+    "title": "Thai Innovation on the World Stage: Dinsaw Mini Robot for Elderly Care",
+    "body": "The robot supports mental health and daily living by playing music ... and offering memory games.",
+    "retrievalText": "Thai Innovation on the World Stage: Dinsaw Mini Robot for Elderly Care government_portal The robot supports mental health and daily living by playing music ... and offering memory games.",
+    "url": "https://thailand.go.th/public/issue-focus-detail/thai-innovation-goes-global-dinsaw-mini-robot-takes-care-of-the-elderly",
+    "groupId": "https://thailand.go.th/public/issue-focus-detail/thai-innovation-goes-global-dinsaw-mini-robot-takes-care-of-the-elderly",
+    "origin": "web",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "1b09038bf2ae36c30779609be3043694d3bc72ac337b9134ecb6e78699f59120",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "The robot supports mental health and daily living by playing music ... and offering memory games.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 97
+      }
+    ],
+    "metadata": {
+      "platform": "government_portal",
+      "publishedAt": "2025-05-19",
+      "canonicalName": "Thailand.go.th Dinsaw Mini coverage"
+    }
+  },
+  {
+    "typedId": "source:seed-6256",
+    "kind": "source",
+    "title": "nolfwin/Intro-to-Robotics-subject",
+    "body": "Stars: 0, Language: C++. Description: For 2110435 intro to robotics, approved elective subject in Department of Computer Engineering, Chulalongkorn University. 5430295521 นายนนทวัฒน์ เจริญภักดี 5430408121 นายพันธ์เลิศ อินอ่อน 5431019921 นายนัทธพงศ์ ชัยรัตนกุล",
+    "retrievalText": "nolfwin/Intro-to-Robotics-subject nolfwin github Stars: 0, Language: C++. Description: For 2110435 intro to robotics, approved elective subject in Department of Computer Engineering, Chulalongkorn University. 5430295521 นายนนทวัฒน์ เจริญภักดี 5430408121 นายพันธ์เลิศ อินอ่อน 5431019921 นายนัทธพงศ์ ชัยรัตนกุล",
+    "url": "https://github.com/nolfwin/Intro-to-Robotics-subject",
+    "groupId": "https://github.com/nolfwin/Intro-to-Robotics-subject",
+    "origin": "github",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "cc313d773543be3b07b01e1878e69ebcb084a01e0d39077087177cb07488976c",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Stars: 0, Language: C++. Description: For 2110435 intro to robotics, approved elective subject in Department of Computer Engineering, Chulalongkorn University. 5430295521 นายนนทวัฒน์ เจริญภักดี\t 5430408121 นายพันธ์เลิศ อินอ่อน 5431019921 นายนัทธพงศ์ ชัยรัตนกุล",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 260
+      }
+    ],
+    "metadata": {
+      "author": "nolfwin",
+      "platform": "github",
+      "publishedAt": "2014-09-04",
+      "canonicalName": "GitHub Repository: nolfwin/Intro-to-Robotics-subject"
+    }
+  },
+  {
+    "typedId": "source:seed-6422",
+    "kind": "source",
+    "title": "Don’t follow me! #robot  #robotics  #thailand",
+    "body": "",
+    "retrievalText": "Don’t follow me! #robot  #robotics  #thailand Paris Valentine Channel youtube",
+    "url": "https://www.youtube.com/watch?v=scTYhKFKyKM",
+    "groupId": "https://www.youtube.com/watch?v=scTYhKFKyKM",
+    "origin": "youtube",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "c45cb27f083f5b740cb815d42cb6db8e72759d0b7cf8e55c5b42b706f3491990",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Don’t follow me! #robot  #robotics  #thailand",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 45
+      }
+    ],
+    "metadata": {
+      "author": "Paris Valentine Channel",
+      "platform": "youtube",
+      "publishedAt": "2023-11-01",
+      "canonicalName": "YouTube video: Don’t follow me! #robot  #robotics  #thailand"
+    }
+  },
+  {
+    "typedId": "source:seed-6423",
+    "kind": "source",
+    "title": "ไทยพัฒนาหุ่นยนต์เพื่อการสงครามสำเร็จ🇹🇭💪 #thailand #military #army #thailandmilitary #Robo#bangkok",
+    "body": "",
+    "retrievalText": "ไทยพัฒนาหุ่นยนต์เพื่อการสงครามสำเร็จ🇹🇭💪 #thailand #military #army #thailandmilitary #Robo#bangkok Thailand Military 🇹🇭 youtube",
+    "url": "https://www.youtube.com/watch?v=yFV2rvg8jp8",
+    "groupId": "https://www.youtube.com/watch?v=yFV2rvg8jp8",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "3bdf1ccb964d634594e559daf624200a04100df9adc00b32056b3e7f02c095f1",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "ไทยพัฒนาหุ่นยนต์เพื่อการสงครามสำเร็จ🇹🇭💪 #thailand #military #army #thailandmilitary #Robo#bangkok",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 100
+      }
+    ],
+    "metadata": {
+      "author": "Thailand Military 🇹🇭",
+      "platform": "youtube",
+      "publishedAt": "2025-08-24",
+      "canonicalName": "YouTube video: ไทยพัฒนาหุ่นยนต์เพื่อการสงครามสำเร็จ🇹🇭💪 #thailand "
+    }
+  },
+  {
+    "typedId": "source:seed-6424",
+    "kind": "source",
+    "title": "Intense Robot Boxing Fight in China; Unitree Robot Boxing #unitree #boxingrobot",
+    "body": "",
+    "retrievalText": "Intense Robot Boxing Fight in China; Unitree Robot Boxing #unitree #boxingrobot Chris Wabs youtube",
+    "url": "https://www.youtube.com/watch?v=UjSWyhskFmQ",
+    "groupId": "https://www.youtube.com/watch?v=UjSWyhskFmQ",
+    "origin": "youtube",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "2691d0ccff1790c55d8888552a82403d0be351006dc0780037fba517de4c5866",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Intense Robot Boxing Fight in China; Unitree Robot Boxing #unitree #boxingrobot",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 79
+      }
+    ],
+    "metadata": {
+      "author": "Chris Wabs",
+      "platform": "youtube",
+      "publishedAt": "2025-07-27",
+      "canonicalName": "YouTube video: Intense Robot Boxing Fight in China; Unitree Robot"
+    }
+  },
+  {
+    "typedId": "source:seed-6425",
+    "kind": "source",
+    "title": "AI Girl Series จะ Gen จนกว่าจะเจอ | EP.1 [1/4] (ENG SUB)",
+    "body": "\" AI Girl Series จะเจ็นจนกว่าจะเจอ \" 🖊️ “เจ็น” รับบทโดย มายยู กวิสรา สิงห์ปลอด MYYU Khawisara Singplod as Gen “ไอ“ รับบทโดย ...",
+    "retrievalText": "AI Girl Series จะ Gen จนกว่าจะเจอ | EP.1 [1/4] (ENG SUB) MeMindY Official youtube \" AI Girl Series จะเจ็นจนกว่าจะเจอ \" 🖊️ “เจ็น” รับบทโดย มายยู กวิสรา สิงห์ปลอด MYYU Khawisara Singplod as Gen “ไอ“ รับบทโดย ...",
+    "url": "https://www.youtube.com/watch?v=3CC58stapKQ",
+    "groupId": "https://www.youtube.com/watch?v=3CC58stapKQ",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "b4b08b85764b62be1cb4cffeaa8ae64f3843d598000dd06e6074c47b3a39cd81",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "\" AI Girl Series จะเจ็นจนกว่าจะเจอ \" 🖊️ “เจ็น” รับบทโดย มายยู กวิสรา สิงห์ปลอด MYYU Khawisara Singplod as Gen “ไอ“ รับบทโดย ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 128
+      }
+    ],
+    "metadata": {
+      "author": "MeMindY Official",
+      "platform": "youtube",
+      "publishedAt": "2026-07-01",
+      "canonicalName": "YouTube video: AI Girl Series จะ Gen จนกว่าจะเจอ | EP.1 [1/4] (EN"
+    }
+  },
+  {
+    "typedId": "source:seed-6426",
+    "kind": "source",
+    "title": "Robot Waiters Serving Dinner in Thailand",
+    "body": "At Thailand's most original Japanese restaurant, the service is fast, friendly and extremely efficient - that's because two high-tech ...",
+    "retrievalText": "Robot Waiters Serving Dinner in Thailand Associated Press youtube At Thailand's most original Japanese restaurant, the service is fast, friendly and extremely efficient - that's because two high-tech ...",
+    "url": "https://www.youtube.com/watch?v=RTjlMBFx9I0",
+    "groupId": "https://www.youtube.com/watch?v=RTjlMBFx9I0",
+    "origin": "youtube",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "4190bb9faa6bf273eb9156e21b056a7bcdc49edec7683480928d44597fa23e7f",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "At Thailand's most original Japanese restaurant, the service is fast, friendly and extremely efficient - that's because two high-tech ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 137
+      }
+    ],
+    "metadata": {
+      "author": "Associated Press",
+      "platform": "youtube",
+      "publishedAt": "2010-06-14",
+      "canonicalName": "YouTube video: Robot Waiters Serving Dinner in Thailand"
+    }
+  },
+  {
+    "typedId": "source:seed-6427",
+    "kind": "source",
+    "title": "Robots in THAILAND 🇹🇭 😂🤷‍♂️ #robot #thailand #travel",
+    "body": "",
+    "retrievalText": "Robots in THAILAND 🇹🇭 😂🤷‍♂️ #robot #thailand #travel Xperience Travel youtube",
+    "url": "https://www.youtube.com/watch?v=5rwdSIxyCm8",
+    "groupId": "https://www.youtube.com/watch?v=5rwdSIxyCm8",
+    "origin": "youtube",
+    "language": "en",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "02f331c21e0870d4838ca14b0bbbb676c54a9f8fa0c2630f316ac81d0f876cda",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "Robots in THAILAND 🇹🇭 😂🤷‍♂️ #robot #thailand #travel",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 56
+      }
+    ],
+    "metadata": {
+      "author": "Xperience Travel",
+      "platform": "youtube",
+      "publishedAt": "2025-05-07",
+      "canonicalName": "YouTube video: Robots in THAILAND 🇹🇭 😂🤷‍♂️ #robot #thailand #trav"
+    }
+  },
+  {
+    "typedId": "source:seed-6428",
+    "kind": "source",
+    "title": "Ayutthaya Robot Museum part1  #thailand  #amazingthailand   #ayuttaya #bangkok #robot",
+    "body": "Thai Insights Team been to Ban Hun Lek is a museum where artists manufacture and display their scrap metal creations of ...",
+    "retrievalText": "Ayutthaya Robot Museum part1  #thailand  #amazingthailand   #ayuttaya #bangkok #robot Thailands Sites youtube Thai Insights Team been to Ban Hun Lek is a museum where artists manufacture and display their scrap metal creations of ...",
+    "url": "https://www.youtube.com/watch?v=ujIyPGsyqJg",
+    "groupId": "https://www.youtube.com/watch?v=ujIyPGsyqJg",
+    "origin": "youtube",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "d9746b4bce3cfd6381258a2c824ba5846b51d46f352decd8d825565929bbca0d",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Thai Insights Team been to Ban Hun Lek is a museum where artists manufacture and display their scrap metal creations of ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 123
+      }
+    ],
+    "metadata": {
+      "author": "Thailands Sites",
+      "platform": "youtube",
+      "publishedAt": "2022-05-29",
+      "canonicalName": "YouTube video: Ayutthaya Robot Museum part1  #thailand  #amazingt"
+    }
+  },
+  {
+    "typedId": "source:seed-6429",
+    "kind": "source",
+    "title": "Thailand&#39;s First AI Police Robot Patrols Streets - RoboCop Becomes Reality!",
+    "body": "Subscribe to our YouTube channel for free here: https://www.youtube.com/@TheNeuralAI Thailand's Royal Thai Police has ...",
+    "retrievalText": "Thailand&#39;s First AI Police Robot Patrols Streets - RoboCop Becomes Reality! The Neural Talks by Ranjith Melarkode youtube Subscribe to our YouTube channel for free here: https://www.youtube.com/@TheNeuralAI Thailand's Royal Thai Police has ...",
+    "url": "https://www.youtube.com/watch?v=I_G9NBqjcOk",
+    "groupId": "https://www.youtube.com/watch?v=I_G9NBqjcOk",
+    "origin": "youtube",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "f112b6b484b5878234f6082506430d1c9e46705f5d8f47392b39375f25b1718e",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Subscribe to our YouTube channel for free here: https://www.youtube.com/@TheNeuralAI Thailand's Royal Thai Police has ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 121
+      }
+    ],
+    "metadata": {
+      "author": "The Neural Talks by Ranjith Melarkode",
+      "platform": "youtube",
+      "publishedAt": "2025-04-23",
+      "canonicalName": "YouTube video: Thailand&#39;s First AI Police Robot Patrols Stree"
+    }
+  },
+  {
+    "typedId": "source:seed-6430",
+    "kind": "source",
+    "title": "mainan unik kreatif robot pemanjat tangga #toys #creative #ideas #robot #mainan #idebarangbekas",
+    "body": "creative robot pemanjat tangga super unik dari stik cara membuatnya cek video short kita sebelumnya atau klik video terkait ...",
+    "retrievalText": "mainan unik kreatif robot pemanjat tangga #toys #creative #ideas #robot #mainan #idebarangbekas Gudang Kreatif youtube creative robot pemanjat tangga super unik dari stik cara membuatnya cek video short kita sebelumnya atau klik video terkait ...",
+    "url": "https://www.youtube.com/watch?v=oh7no38FMyE",
+    "groupId": "https://www.youtube.com/watch?v=oh7no38FMyE",
+    "origin": "youtube",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "f844c58472cf5bd0f42ad63bcd82b2b80e28acffc882b1c7baa9bc7241c40eaa",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "creative robot pemanjat tangga super unik dari stik cara membuatnya cek video short kita sebelumnya atau klik video terkait ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 127
+      }
+    ],
+    "metadata": {
+      "author": "Gudang Kreatif",
+      "platform": "youtube",
+      "publishedAt": "2025-02-25",
+      "canonicalName": "YouTube video: mainan unik kreatif robot pemanjat tangga #toys #c"
+    }
+  },
+  {
+    "typedId": "source:seed-6431",
+    "kind": "source",
+    "title": "FLL Unearthed 545 Full points! Thailand Competition Robot Reveal | AP Robotics",
+    "body": "Only for Inspiration, not for sale* Any good idea? Comment down below! CONTACT US: Email: aprobotics19@gmail.com ...",
+    "retrievalText": "FLL Unearthed 545 Full points! Thailand Competition Robot Reveal | AP Robotics [ AP Robotics ] youtube Only for Inspiration, not for sale* Any good idea? Comment down below! CONTACT US: Email: aprobotics19@gmail.com ...",
+    "url": "https://www.youtube.com/watch?v=u4RW7apnP3g",
+    "groupId": "https://www.youtube.com/watch?v=u4RW7apnP3g",
+    "origin": "youtube",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "4ba9548df9e9c4743484b7a75ea5bb8952726e59782eb801ad282f68d5b0f5ad",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Only for Inspiration, not for sale* Any good idea? Comment down below! CONTACT US: Email: aprobotics19@gmail.com ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 116
+      }
+    ],
+    "metadata": {
+      "author": "[ AP Robotics ]",
+      "platform": "youtube",
+      "publishedAt": "2026-02-09",
+      "canonicalName": "YouTube video: FLL Unearthed 545 Full points! Thailand Competitio"
+    }
+  },
+  {
+    "typedId": "source:seed-6433",
+    "kind": "source",
+    "title": "หุ่นยนต์สุดสมจริงในงาน World Robot Conference #robot #หุ่นยนต์ #คอสเพลย์ #เทคโนโลยี #งานแสดงหุ่นยนต์",
+    "body": "ที่งาน World Robot Conference 2024 ที่ปักกิ่ง หุ่นยนต์ตัวหนึ่งดึงดูดความสนใจจากผู้เข้าร่วมงานด้วยความเหมือนมนุษย์จนทุกคนทึ่ง ...",
+    "retrievalText": "หุ่นยนต์สุดสมจริงในงาน World Robot Conference #robot #หุ่นยนต์ #คอสเพลย์ #เทคโนโลยี #งานแสดงหุ่นยนต์ ELF WISDOM youtube ที่งาน World Robot Conference 2024 ที่ปักกิ่ง หุ่นยนต์ตัวหนึ่งดึงดูดความสนใจจากผู้เข้าร่วมงานด้วยความเหมือนมนุษย์จนทุกคนทึ่ง ...",
+    "url": "https://www.youtube.com/watch?v=xbRoKb8ms5I",
+    "groupId": "https://www.youtube.com/watch?v=xbRoKb8ms5I",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "1b7a82667fe779fe43faa15781347cfd095b8f48768f7a95b3ccd7b82698814d",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "ที่งาน World Robot Conference 2024 ที่ปักกิ่ง หุ่นยนต์ตัวหนึ่งดึงดูดความสนใจจากผู้เข้าร่วมงานด้วยความเหมือนมนุษย์จนทุกคนทึ่ง ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 128
+      }
+    ],
+    "metadata": {
+      "author": "ELF WISDOM",
+      "platform": "youtube",
+      "publishedAt": "2024-10-24",
+      "canonicalName": "YouTube video: หุ่นยนต์สุดสมจริงในงาน World Robot Conference #rob"
+    }
+  },
+  {
+    "typedId": "source:seed-6439",
+    "kind": "source",
+    "title": "หุ่นยนต์อัตโนมัติภารกิจรวบรวมวัตถุ (Robot Gathering) อายุไม่เกิน 19 ปี",
+    "body": "",
+    "retrievalText": "หุ่นยนต์อัตโนมัติภารกิจรวบรวมวัตถุ (Robot Gathering) อายุไม่เกิน 19 ปี Thailand Robot League youtube",
+    "url": "https://www.youtube.com/watch?v=9iyQzM8MGZ0",
+    "groupId": "https://www.youtube.com/watch?v=9iyQzM8MGZ0",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "c86f8d9d50fdbf25d7ff380e70f16a87ede5eb6b101ed3e10a014444884eab86",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "หุ่นยนต์อัตโนมัติภารกิจรวบรวมวัตถุ (Robot Gathering) อายุไม่เกิน 19 ปี",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 70
+      }
+    ],
+    "metadata": {
+      "author": "Thailand Robot League",
+      "platform": "youtube",
+      "publishedAt": "2026-06-19",
+      "canonicalName": "YouTube video: หุ่นยนต์อัตโนมัติภารกิจรวบรวมวัตถุ (Robot Gatherin"
+    }
+  },
+  {
+    "typedId": "source:seed-6441",
+    "kind": "source",
+    "title": "การแข่งขันหุ่นยนต์ Thailand Robot League 2026 2026 06 19 08 50 59",
+    "body": "วิดีโอ โดย ถ่ายทอดสด ขอนแก่น จ้างงานโทร 0817396280.",
+    "retrievalText": "การแข่งขันหุ่นยนต์ Thailand Robot League 2026 2026 06 19 08 50 59 ถ่ายทอดสดขอนแก่น youtube วิดีโอ โดย ถ่ายทอดสด ขอนแก่น จ้างงานโทร 0817396280.",
+    "url": "https://www.youtube.com/watch?v=G_s96k-Yl4E",
+    "groupId": "https://www.youtube.com/watch?v=G_s96k-Yl4E",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "a7238ede821eeaf158de97f7eedaa13d69fb6a03d772db574091bfa4a2c3a2ed",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "วิดีโอ โดย ถ่ายทอดสด ขอนแก่น จ้างงานโทร 0817396280.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 51
+      }
+    ],
+    "metadata": {
+      "author": "ถ่ายทอดสดขอนแก่น",
+      "platform": "youtube",
+      "publishedAt": "2026-06-22",
+      "canonicalName": "YouTube video: การแข่งขันหุ่นยนต์ Thailand Robot League 2026 2026"
+    }
+  },
+  {
+    "typedId": "source:seed-6446",
+    "kind": "source",
+    "title": "Botlink-The Robot Master: Keenon W3 Butler Robot in Pattaya, Thailand",
+    "body": "การใช้งานหุ่นยนต์ส่งของ W3 ในประเทศไทย ที่โรงแรม Best Western พัทยา.",
+    "retrievalText": "Botlink-The Robot Master: Keenon W3 Butler Robot in Pattaya, Thailand BOTLINK - The Robot Master youtube การใช้งานหุ่นยนต์ส่งของ W3 ในประเทศไทย ที่โรงแรม Best Western พัทยา.",
+    "url": "https://www.youtube.com/watch?v=gs8e7XfpajE",
+    "groupId": "https://www.youtube.com/watch?v=gs8e7XfpajE",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "ea507c41ce30fdd7668ceeb3a35f3f13c5835f2c77360c83a7d7cf091c19fe13",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "การใช้งานหุ่นยนต์ส่งของ W3 ในประเทศไทย ที่โรงแรม Best Western พัทยา.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 68
+      }
+    ],
+    "metadata": {
+      "author": "BOTLINK - The Robot Master",
+      "platform": "youtube",
+      "publishedAt": "2023-06-14",
+      "canonicalName": "YouTube video: Botlink-The Robot Master: Keenon W3 Butler Robot i"
+    }
+  },
+  {
+    "typedId": "source:seed-6447",
+    "kind": "source",
+    "title": "Thailand Robot War 10 kg Highlight  : Cut by UNILAD Tech : หุ่นยนต์ต่อสู้ประเทศไทย",
+    "body": "หุ่นยนต์ต่อสู้ Battle Robot ภายในงาน วิศวกรรมแห่งชาติ 2562 น้ำหนักหุ่นยนต์ไม่เกิน 10 กิโลกรัม ขนาดรวม 35 x 35 x 35 CM.",
+    "retrievalText": "Thailand Robot War 10 kg Highlight  : Cut by UNILAD Tech : หุ่นยนต์ต่อสู้ประเทศไทย ASSEMZUI ลุงซุย Channel youtube หุ่นยนต์ต่อสู้ Battle Robot ภายในงาน วิศวกรรมแห่งชาติ 2562 น้ำหนักหุ่นยนต์ไม่เกิน 10 กิโลกรัม ขนาดรวม 35 x 35 x 35 CM.",
+    "url": "https://www.youtube.com/watch?v=X8SSAEV1Z_o",
+    "groupId": "https://www.youtube.com/watch?v=X8SSAEV1Z_o",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "f646c7321ec3ee4096058a471100ac1b50ad0121db0be2ed26e8ff12abbb4311",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "หุ่นยนต์ต่อสู้ Battle Robot ภายในงาน วิศวกรรมแห่งชาติ 2562 น้ำหนักหุ่นยนต์ไม่เกิน 10 กิโลกรัม ขนาดรวม 35 x 35 x 35 CM.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 118
+      }
+    ],
+    "metadata": {
+      "author": "ASSEMZUI ลุงซุย Channel",
+      "platform": "youtube",
+      "publishedAt": "2021-05-08",
+      "canonicalName": "YouTube video: Thailand Robot War 10 kg Highlight  : Cut by UNILA"
+    }
+  },
+  {
+    "typedId": "source:seed-6452",
+    "kind": "source",
+    "title": "Arm Robot Linkweld Industries - Linkweld (Thailand) Co.,Ltd.",
+    "body": "Arm Robot Linkweld Industries. คุณสมบัติ ✓ แขนโรบอทสามารถนำมาใช้ได้หลากหลายรูปแบบงาน เช่น งานเชื่อม, งานจัดวาง ฯลฯ ...",
+    "retrievalText": "Arm Robot Linkweld Industries - Linkweld (Thailand) Co.,Ltd. Linkweld Thailand youtube Arm Robot Linkweld Industries. คุณสมบัติ ✓ แขนโรบอทสามารถนำมาใช้ได้หลากหลายรูปแบบงาน เช่น งานเชื่อม, งานจัดวาง ฯลฯ ...",
+    "url": "https://www.youtube.com/watch?v=SAq1daO9o9M",
+    "groupId": "https://www.youtube.com/watch?v=SAq1daO9o9M",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "2ce875da052cc15ac94fcce7dd62c77fcc6b42deac9b28ba7dd9431a466a053a",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Arm Robot Linkweld Industries. คุณสมบัติ ✓ แขนโรบอทสามารถนำมาใช้ได้หลากหลายรูปแบบงาน เช่น งานเชื่อม, งานจัดวาง ฯลฯ ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 118
+      }
+    ],
+    "metadata": {
+      "author": "Linkweld Thailand",
+      "platform": "youtube",
+      "publishedAt": "2023-11-14",
+      "canonicalName": "YouTube video: Arm Robot Linkweld Industries - Linkweld (Thailand"
+    }
+  },
+  {
+    "typedId": "source:seed-6453",
+    "kind": "source",
+    "title": "การแข่งขันหุ่นยนต์ Thailand Robot League 2026 2026 06 21 12 20 28",
+    "body": "วิดีโอ โดย ถ่ายทอดสด ขอนแก่น จ้างงานโทร 0817396280.",
+    "retrievalText": "การแข่งขันหุ่นยนต์ Thailand Robot League 2026 2026 06 21 12 20 28 ถ่ายทอดสดขอนแก่น youtube วิดีโอ โดย ถ่ายทอดสด ขอนแก่น จ้างงานโทร 0817396280.",
+    "url": "https://www.youtube.com/watch?v=gpPkXUpbXj0",
+    "groupId": "https://www.youtube.com/watch?v=gpPkXUpbXj0",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "41a08fba4275e8a6691b588050f6ff93e9b694ceaa15b200c3e74e63ec4e5209",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "วิดีโอ โดย ถ่ายทอดสด ขอนแก่น จ้างงานโทร 0817396280.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 51
+      }
+    ],
+    "metadata": {
+      "author": "ถ่ายทอดสดขอนแก่น",
+      "platform": "youtube",
+      "publishedAt": "2026-06-22",
+      "canonicalName": "YouTube video: การแข่งขันหุ่นยนต์ Thailand Robot League 2026 2026"
+    }
+  },
+  {
+    "typedId": "source:seed-6457",
+    "kind": "source",
+    "title": "Atom Delta Robot MYGROWTECH (THAILAND) Propak Asia 2022",
+    "body": "บริษัท มายโกรว์เทค (ประเทศไทย) จำกัด / บางนา กม.5 ตัวแทนจำหน่ายหุ่นยนต์อุตสาหกรรม Atom Robot หุ่นยนต์หยิบวาง ที่ขายดีที่สุดขณะนี้ ...",
+    "retrievalText": "Atom Delta Robot MYGROWTECH (THAILAND) Propak Asia 2022 MYGROWTECH THAILAND youtube บริษัท มายโกรว์เทค (ประเทศไทย) จำกัด / บางนา กม.5 ตัวแทนจำหน่ายหุ่นยนต์อุตสาหกรรม Atom Robot หุ่นยนต์หยิบวาง ที่ขายดีที่สุดขณะนี้ ...",
+    "url": "https://www.youtube.com/watch?v=-4dVuOawzuc",
+    "groupId": "https://www.youtube.com/watch?v=-4dVuOawzuc",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "31e8b6d92d086dd5d531117f7eedcfaf5bae17d1cafa9ad173b90f97bea0dc7d",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "บริษัท มายโกรว์เทค (ประเทศไทย) จำกัด / บางนา กม.5 ตัวแทนจำหน่ายหุ่นยนต์อุตสาหกรรม Atom Robot หุ่นยนต์หยิบวาง ที่ขายดีที่สุดขณะนี้ ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 133
+      }
+    ],
+    "metadata": {
+      "author": "MYGROWTECH THAILAND",
+      "platform": "youtube",
+      "publishedAt": "2022-06-18",
+      "canonicalName": "YouTube video: Atom Delta Robot MYGROWTECH (THAILAND) Propak Asia"
+    }
+  },
+  {
+    "typedId": "source:seed-6461",
+    "kind": "source",
+    "title": "การแข่งขันหุ่นยนต์ Thailand Robot League 2026 2026 06 21 15 06 04",
+    "body": "วิดีโอ โดย ถ่ายทอดสด ขอนแก่น จ้างงานโทร 0817396280.",
+    "retrievalText": "การแข่งขันหุ่นยนต์ Thailand Robot League 2026 2026 06 21 15 06 04 ถ่ายทอดสดขอนแก่น youtube วิดีโอ โดย ถ่ายทอดสด ขอนแก่น จ้างงานโทร 0817396280.",
+    "url": "https://www.youtube.com/watch?v=WhXogiqeF2k",
+    "groupId": "https://www.youtube.com/watch?v=WhXogiqeF2k",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "f08a9306e50c37828c12f3e5a353abf23f7d8a10d9b8f33a04b05c102e697ee3",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "วิดีโอ โดย ถ่ายทอดสด ขอนแก่น จ้างงานโทร 0817396280.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 51
+      }
+    ],
+    "metadata": {
+      "author": "ถ่ายทอดสดขอนแก่น",
+      "platform": "youtube",
+      "publishedAt": "2026-06-22",
+      "canonicalName": "YouTube video: การแข่งขันหุ่นยนต์ Thailand Robot League 2026 2026"
+    }
+  },
+  {
+    "typedId": "source:seed-6464",
+    "kind": "source",
+    "title": "มิรามาร์เวลแข่งClick Robot Thailandครั้งแรก🥰",
+    "body": "",
+    "retrievalText": "มิรามาร์เวลแข่งClick Robot Thailandครั้งแรก🥰 Miramarvelfamily youtube",
+    "url": "https://www.youtube.com/watch?v=4gR6G2zM7LI",
+    "groupId": "https://www.youtube.com/watch?v=4gR6G2zM7LI",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "4881ed0e59d8afaea41014e4f5800366c68062784170e5d07011313200610b30",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "มิรามาร์เวลแข่งClick Robot Thailandครั้งแรก🥰",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 45
+      }
+    ],
+    "metadata": {
+      "author": "Miramarvelfamily",
+      "platform": "youtube",
+      "publishedAt": "2024-12-15",
+      "canonicalName": "YouTube video: มิรามาร์เวลแข่งClick Robot Thailandครั้งแรก🥰"
+    }
+  },
+  {
+    "typedId": "source:seed-6467",
+    "kind": "source",
+    "title": "ประมวลภาพ Thailand Robot 2014",
+    "body": "ชมภาพบรรยากาศงาน Thailand Robot 2014 ที่เอสซีจี ร่วมกับสมาคมวิชาการหุ่นยนต์แห่งประเทศไทย และมหาวิทยาลัยมหิดล ...",
+    "retrievalText": "ประมวลภาพ Thailand Robot 2014 SCG HOME Experience youtube ชมภาพบรรยากาศงาน Thailand Robot 2014 ที่เอสซีจี ร่วมกับสมาคมวิชาการหุ่นยนต์แห่งประเทศไทย และมหาวิทยาลัยมหิดล ...",
+    "url": "https://www.youtube.com/watch?v=Eg40iaipga0",
+    "groupId": "https://www.youtube.com/watch?v=Eg40iaipga0",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "c62622892d3c97a26085fe6f80033dd613ee2f5666e79bef1e856839b842db81",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "ชมภาพบรรยากาศงาน Thailand Robot 2014 ที่เอสซีจี ร่วมกับสมาคมวิชาการหุ่นยนต์แห่งประเทศไทย และมหาวิทยาลัยมหิดล ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 112
+      }
+    ],
+    "metadata": {
+      "author": "SCG HOME Experience",
+      "platform": "youtube",
+      "publishedAt": "2014-03-20",
+      "canonicalName": "YouTube video: ประมวลภาพ Thailand Robot 2014"
+    }
+  },
+  {
+    "typedId": "source:seed-6472",
+    "kind": "source",
+    "title": "(🔴LIVE-สนาม MS)Vex Robotics Competition Thailand National Championship 2025-2026🇹🇭",
+    "body": "LIVE-สนาม MS)มาชมบรรยากาศการแข่งขัน รอบชิงแชมป์ประเทศไทย ครึ่งบ่าย กันครับ! Vex Robotics Competition Thailand National ...",
+    "retrievalText": "(🔴LIVE-สนาม MS)Vex Robotics Competition Thailand National Championship 2025-2026🇹🇭 ALL Robotics youtube LIVE-สนาม MS)มาชมบรรยากาศการแข่งขัน รอบชิงแชมป์ประเทศไทย ครึ่งบ่าย กันครับ! Vex Robotics Competition Thailand National ...",
+    "url": "https://www.youtube.com/watch?v=ZtmYNsasBUo",
+    "groupId": "https://www.youtube.com/watch?v=ZtmYNsasBUo",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "9299bd4c57cc8045b9cdb2c3d351be383cc8728d46774dde7fe049386ade2128",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "LIVE-สนาม MS)มาชมบรรยากาศการแข่งขัน รอบชิงแชมป์ประเทศไทย ครึ่งบ่าย กันครับ! Vex Robotics Competition Thailand National ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 122
+      }
+    ],
+    "metadata": {
+      "author": "ALL Robotics",
+      "platform": "youtube",
+      "publishedAt": "2026-01-15",
+      "canonicalName": "YouTube video: (🔴LIVE-สนาม MS)Vex Robotics Competition Thailand N"
+    }
+  },
+  {
+    "typedId": "source:seed-6473",
+    "kind": "source",
+    "title": "เตรียมตัวให้พร้อม! ศึก VEX Robotics Thailand 2024-2025 คัดเลือกตัวแทนไทยสู่เวทีโลก!",
+    "body": "VEX Team Get Ready!! เตรียมตัวให้พร้อม! ศึก VEX Robotics Thailand 2024-2025 ...",
+    "retrievalText": "เตรียมตัวให้พร้อม! ศึก VEX Robotics Thailand 2024-2025 คัดเลือกตัวแทนไทยสู่เวทีโลก! ALL Robotics youtube VEX Team Get Ready!! เตรียมตัวให้พร้อม! ศึก VEX Robotics Thailand 2024-2025 ...",
+    "url": "https://www.youtube.com/watch?v=rJSz0qVAbPQ",
+    "groupId": "https://www.youtube.com/watch?v=rJSz0qVAbPQ",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "e880643811bd33308c1f1a835cd5b9fba007310fde7a51571e5cf9f01bcf2ed0",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "VEX Team Get Ready!! เตรียมตัวให้พร้อม! ศึก VEX Robotics Thailand 2024-2025 ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 79
+      }
+    ],
+    "metadata": {
+      "author": "ALL Robotics",
+      "platform": "youtube",
+      "publishedAt": "2024-11-09",
+      "canonicalName": "YouTube video: เตรียมตัวให้พร้อม! ศึก VEX Robotics Thailand 2024-"
+    }
+  },
+  {
+    "typedId": "source:seed-6474",
+    "kind": "source",
+    "title": "RobotLAB Thailand Institute - The best AI Robotics &amp; Coding in South East Asia.",
+    "body": "RobotLAB Thailand ร่วมมือกับ RobotLAB USA เปิด RobotLAB Thailand สาขาแรกในภูมิภาคเอเชียตะวันออกเฉียงใต้ ...",
+    "retrievalText": "RobotLAB Thailand Institute - The best AI Robotics &amp; Coding in South East Asia. RobotLAB Thailand youtube RobotLAB Thailand ร่วมมือกับ RobotLAB USA เปิด RobotLAB Thailand สาขาแรกในภูมิภาคเอเชียตะวันออกเฉียงใต้ ...",
+    "url": "https://www.youtube.com/watch?v=wPKhk0Swgyw",
+    "groupId": "https://www.youtube.com/watch?v=wPKhk0Swgyw",
+    "origin": "youtube",
+    "language": "mixed",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "351fa074d5d412a199ee0ff40f54a3be70376b70ce287306a3104d4d103083e2",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "RobotLAB Thailand ร่วมมือกับ RobotLAB USA เปิด RobotLAB Thailand สาขาแรกในภูมิภาคเอเชียตะวันออกเฉียงใต้ ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 107
+      }
+    ],
+    "metadata": {
+      "author": "RobotLAB Thailand",
+      "platform": "youtube",
+      "publishedAt": "2022-02-03",
+      "canonicalName": "YouTube video: RobotLAB Thailand Institute - The best AI Robotics"
+    }
+  },
+  {
+    "typedId": "source:seed-6476",
+    "kind": "source",
+    "title": "(🔴Live HS MS )𝗩𝗘𝗫 𝗥𝗼𝗯𝗼𝘁𝗶𝗰𝘀 𝗖𝗼𝗺𝗽𝗲𝘁𝗶𝘁𝗶𝗼𝗻 𝗧𝗵𝗮𝗶𝗹𝗮𝗻𝗱 𝗡𝗮𝘁𝗶𝗼𝗻𝗮𝗹 𝗖𝗵𝗮𝗺𝗽𝗶𝗼𝗻𝘀𝗵𝗶𝗽 𝟮𝟬𝟮𝟱-𝟮𝟬𝟮𝟲 รอบ FINAL",
+    "body": "Live HS MS) VEX Robotics Competition Thailand National Championship ...",
+    "retrievalText": "(🔴Live HS MS )𝗩𝗘𝗫 𝗥𝗼𝗯𝗼𝘁𝗶𝗰𝘀 𝗖𝗼𝗺𝗽𝗲𝘁𝗶𝘁𝗶𝗼𝗻 𝗧𝗵𝗮𝗶𝗹𝗮𝗻𝗱 𝗡𝗮𝘁𝗶𝗼𝗻𝗮𝗹 𝗖𝗵𝗮𝗺𝗽𝗶𝗼𝗻𝘀𝗵𝗶𝗽 𝟮𝟬𝟮𝟱-𝟮𝟬𝟮𝟲 รอบ FINAL ALL Robotics youtube Live HS MS) VEX Robotics Competition Thailand National Championship ...",
+    "url": "https://www.youtube.com/watch?v=SdTuAVE4z9E",
+    "groupId": "https://www.youtube.com/watch?v=SdTuAVE4z9E",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "70e7cee6119e525ebfe07a8410a12cf12795091de4904cdd937393c966f818a2",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Live HS MS) VEX Robotics Competition Thailand National Championship ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 71
+      }
+    ],
+    "metadata": {
+      "author": "ALL Robotics",
+      "platform": "youtube",
+      "publishedAt": "2026-01-16",
+      "canonicalName": "YouTube video: (🔴Live HS MS )𝗩𝗘𝗫 𝗥𝗼𝗯𝗼𝘁𝗶𝗰𝘀 𝗖𝗼𝗺𝗽𝗲𝘁𝗶𝘁𝗶𝗼𝗻 𝗧𝗵𝗮𝗶𝗹𝗮𝗻𝗱 𝗡𝗮"
+    }
+  },
+  {
+    "typedId": "source:seed-6520",
+    "kind": "source",
+    "title": "รศ.ดร.ชิต เหล่าวัฒนา ผู้บุกเบิกและวางรากฐานวิทยาการหุ่นยนต์ไทย",
+    "body": "โดย สถาบันวิทยาการหุ่นยนต์ภาคสนาม (ฟีโบ้) มจธ. ในโอกาสเกษียณอายุราชการ 30 กันยายน 2564.",
+    "retrievalText": "รศ.ดร.ชิต เหล่าวัฒนา ผู้บุกเบิกและวางรากฐานวิทยาการหุ่นยนต์ไทย FIBOKMUTT youtube โดย สถาบันวิทยาการหุ่นยนต์ภาคสนาม (ฟีโบ้) มจธ. ในโอกาสเกษียณอายุราชการ 30 กันยายน 2564.",
+    "url": "https://www.youtube.com/watch?v=HlHon-492oA",
+    "groupId": "https://www.youtube.com/watch?v=HlHon-492oA",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "52b8197bdd41bb8e3f8745a2d51df6175b2962b549200b4893963c23cd0ac1b9",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "โดย สถาบันวิทยาการหุ่นยนต์ภาคสนาม (ฟีโบ้) มจธ. ในโอกาสเกษียณอายุราชการ 30 กันยายน 2564.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 87
+      }
+    ],
+    "metadata": {
+      "author": "FIBOKMUTT",
+      "platform": "youtube",
+      "publishedAt": "2021-09-20",
+      "canonicalName": "YouTube video: รศ.ดร.ชิต เหล่าวัฒนา ผู้บุกเบิกและวางรากฐานวิทยากา"
+    }
+  },
+  {
+    "typedId": "source:seed-6530",
+    "kind": "source",
+    "title": "หุ่นยนต์ไม่กัด: เปิดโลกหุ่นยนต์และ AI",
+    "body": "เพราะ AI ไม่ใช่เรื่องไกลตัว แต่เป็นปัจจัยสำคัญในการขับเคลื่อนการเปลี่ยนแปลงอย่างก้าวกระโดดของประเทศ ฟีโบ้ยังคงเดินหน้า ...",
+    "retrievalText": "หุ่นยนต์ไม่กัด: เปิดโลกหุ่นยนต์และ AI FIBOKMUTT youtube เพราะ AI ไม่ใช่เรื่องไกลตัว แต่เป็นปัจจัยสำคัญในการขับเคลื่อนการเปลี่ยนแปลงอย่างก้าวกระโดดของประเทศ ฟีโบ้ยังคงเดินหน้า ...",
+    "url": "https://www.youtube.com/watch?v=B3Rp9NOYRlo",
+    "groupId": "https://www.youtube.com/watch?v=B3Rp9NOYRlo",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "0b8b2c61d75b34ad3ee40d98044da6dfc762b7a385ba59175284b2ae07cbb2eb",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "เพราะ AI ไม่ใช่เรื่องไกลตัว แต่เป็นปัจจัยสำคัญในการขับเคลื่อนการเปลี่ยนแปลงอย่างก้าวกระโดดของประเทศ ฟีโบ้ยังคงเดินหน้า ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 122
+      }
+    ],
+    "metadata": {
+      "author": "FIBOKMUTT",
+      "platform": "youtube",
+      "publishedAt": "2025-06-12",
+      "canonicalName": "YouTube video: หุ่นยนต์ไม่กัด: เปิดโลกหุ่นยนต์และ AI"
+    }
+  },
+  {
+    "typedId": "source:seed-6533",
+    "kind": "source",
+    "title": "วันซ้อมย่อยและถ่ายภาพหมู่บัณฑิต ปีการศึกษา 2566 l รับปริญญา",
+    "body": "ประมวลภาพบรรยากาศวันซ้อมย่อยและถ่ายภาพหมู่บัณฑิต สถาบันวิทยาการหุ่นยนต์ภาคสนาม มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี ...",
+    "retrievalText": "วันซ้อมย่อยและถ่ายภาพหมู่บัณฑิต ปีการศึกษา 2566 l รับปริญญา FIBOKMUTT youtube ประมวลภาพบรรยากาศวันซ้อมย่อยและถ่ายภาพหมู่บัณฑิต สถาบันวิทยาการหุ่นยนต์ภาคสนาม มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี ...",
+    "url": "https://www.youtube.com/watch?v=YLDxwvkJ4DA",
+    "groupId": "https://www.youtube.com/watch?v=YLDxwvkJ4DA",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "f9f85b0446b764cb6d51bf75199c311505903db6fcb2cb1e5b7e2ba66501b99b",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "ประมวลภาพบรรยากาศวันซ้อมย่อยและถ่ายภาพหมู่บัณฑิต สถาบันวิทยาการหุ่นยนต์ภาคสนาม มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 120
+      }
+    ],
+    "metadata": {
+      "author": "FIBOKMUTT",
+      "platform": "youtube",
+      "publishedAt": "2025-08-19",
+      "canonicalName": "YouTube video: วันซ้อมย่อยและถ่ายภาพหมู่บัณฑิต ปีการศึกษา 2566 l "
+    }
+  },
+  {
+    "typedId": "source:seed-6536",
+    "kind": "source",
+    "title": "งานเลี้ยงสานสัมพันธ์น้องพี่ฟีโบ้ 25 ปีแห่งการก่อตั้ง - Part 1",
+    "body": "สถาบันวิทยาการหุ่นยนต์ภาคสนาม มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี.",
+    "retrievalText": "งานเลี้ยงสานสัมพันธ์น้องพี่ฟีโบ้ 25 ปีแห่งการก่อตั้ง - Part 1 FIBOKMUTT youtube สถาบันวิทยาการหุ่นยนต์ภาคสนาม มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี.",
+    "url": "https://www.youtube.com/watch?v=hCFCYnnXLNc",
+    "groupId": "https://www.youtube.com/watch?v=hCFCYnnXLNc",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "b72dc21dfa69c9263d2061933aa5d0890066e61d2653f8fd43717922e47fb6c5",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "สถาบันวิทยาการหุ่นยนต์ภาคสนาม มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 68
+      }
+    ],
+    "metadata": {
+      "author": "FIBOKMUTT",
+      "platform": "youtube",
+      "publishedAt": "2020-02-20",
+      "canonicalName": "YouTube video: งานเลี้ยงสานสัมพันธ์น้องพี่ฟีโบ้ 25 ปีแห่งการก่อตั"
+    }
+  },
+  {
+    "typedId": "source:seed-6548",
+    "kind": "source",
+    "title": "FIBO จัดกิจกรรมอบรมครูโรงเรียนสวนกุหลาบวิทยาลัย",
+    "body": "สถาบันวิทยาการหุ่นยนต์ภาคสนาม (ฟีโบ้) มจธ. จัดกิจกรรมอบรมเพื่อพัฒนาศักยภาพครู โรงเรียนสวนกุหลาบวิทยาลัย ...",
+    "retrievalText": "FIBO จัดกิจกรรมอบรมครูโรงเรียนสวนกุหลาบวิทยาลัย FIBOKMUTT youtube สถาบันวิทยาการหุ่นยนต์ภาคสนาม (ฟีโบ้) มจธ. จัดกิจกรรมอบรมเพื่อพัฒนาศักยภาพครู โรงเรียนสวนกุหลาบวิทยาลัย ...",
+    "url": "https://www.youtube.com/watch?v=6dwUb2J96rQ",
+    "groupId": "https://www.youtube.com/watch?v=6dwUb2J96rQ",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "0458b21b0c600b2efffa0b3c75100b5b060b736ef84526b19cc32023d092a497",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "สถาบันวิทยาการหุ่นยนต์ภาคสนาม (ฟีโบ้) มจธ. จัดกิจกรรมอบรมเพื่อพัฒนาศักยภาพครู โรงเรียนสวนกุหลาบวิทยาลัย ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 107
+      }
+    ],
+    "metadata": {
+      "author": "FIBOKMUTT",
+      "platform": "youtube",
+      "publishedAt": "2026-05-07",
+      "canonicalName": "YouTube video: FIBO จัดกิจกรรมอบรมครูโรงเรียนสวนกุหลาบวิทยาลัย"
+    }
+  },
+  {
+    "typedId": "source:seed-6575",
+    "kind": "source",
+    "title": "คู่มือการตั้งค่าการใช้งานหุ่นยนต์ดินสอ มินิ",
+    "body": "",
+    "retrievalText": "คู่มือการตั้งค่าการใช้งานหุ่นยนต์ดินสอ มินิ Dinsaw Elderly Companion youtube",
+    "url": "https://www.youtube.com/watch?v=MeCF4dLpZn4",
+    "groupId": "https://www.youtube.com/watch?v=MeCF4dLpZn4",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "a74f87d93ed701441c651645c97a8f2d0353499c4492b9122ab2fc408f05075f",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "คู่มือการตั้งค่าการใช้งานหุ่นยนต์ดินสอ มินิ",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 43
+      }
+    ],
+    "metadata": {
+      "author": "Dinsaw Elderly Companion",
+      "platform": "youtube",
+      "publishedAt": "2019-01-14",
+      "canonicalName": "YouTube video: คู่มือการตั้งค่าการใช้งานหุ่นยนต์ดินสอ มินิ"
+    }
+  },
+  {
+    "typedId": "source:seed-6576",
+    "kind": "source",
+    "title": "เจาะข่าวเด่น ดินสอมินิ อัจฉริยะหุ่นยนต์ไทย",
+    "body": "ดินสอมินิ ออกรายการเจาะข่าวเด่นเมื่อวันที่ 5 พฤษภาคม 2557.",
+    "retrievalText": "เจาะข่าวเด่น ดินสอมินิ อัจฉริยะหุ่นยนต์ไทย Dinsaw Elderly Companion youtube ดินสอมินิ ออกรายการเจาะข่าวเด่นเมื่อวันที่ 5 พฤษภาคม 2557.",
+    "url": "https://www.youtube.com/watch?v=cMaD_MrFqOw",
+    "groupId": "https://www.youtube.com/watch?v=cMaD_MrFqOw",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "177866d6b65c16dd19cf3153a8b08985a7a7e5cb05de8460d7035b1e9a590f95",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "ดินสอมินิ ออกรายการเจาะข่าวเด่นเมื่อวันที่ 5 พฤษภาคม 2557.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 58
+      }
+    ],
+    "metadata": {
+      "author": "Dinsaw Elderly Companion",
+      "platform": "youtube",
+      "publishedAt": "2014-05-07",
+      "canonicalName": "YouTube video: เจาะข่าวเด่น ดินสอมินิ อัจฉริยะหุ่นยนต์ไทย"
+    }
+  },
+  {
+    "typedId": "source:seed-6580",
+    "kind": "source",
+    "title": "ดินสอ โชว์",
+    "body": "หุ่นยนต์ดินสอ หุ่นยนต์บริการตัวแรกของไทย โดย บริษัท ซีทีเอเซีย โรโบติกส์ จำกัด.",
+    "retrievalText": "ดินสอ โชว์ Dinsaw Elderly Companion youtube หุ่นยนต์ดินสอ หุ่นยนต์บริการตัวแรกของไทย โดย บริษัท ซีทีเอเซีย โรโบติกส์ จำกัด.",
+    "url": "https://www.youtube.com/watch?v=D5bo5O6tLDQ",
+    "groupId": "https://www.youtube.com/watch?v=D5bo5O6tLDQ",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "1c1c010892e41f23e38010cb94ad76116e9dddd77a7a4aa2ffa9d8d7cfe2523b",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "หุ่นยนต์ดินสอ หุ่นยนต์บริการตัวแรกของไทย โดย บริษัท ซีทีเอเซีย โรโบติกส์ จำกัด.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 79
+      }
+    ],
+    "metadata": {
+      "author": "Dinsaw Elderly Companion",
+      "platform": "youtube",
+      "publishedAt": "2010-09-09",
+      "canonicalName": "YouTube video: ดินสอ โชว์"
+    }
+  },
+  {
+    "typedId": "source:seed-6581",
+    "kind": "source",
+    "title": "คู่มือ การตั้งเพื่อเตือนทานยา ในหุ่นยนต์ดินสอ มินิ",
+    "body": "",
+    "retrievalText": "คู่มือ การตั้งเพื่อเตือนทานยา ในหุ่นยนต์ดินสอ มินิ Dinsaw Elderly Companion youtube",
+    "url": "https://www.youtube.com/watch?v=TtKkd4NIjhI",
+    "groupId": "https://www.youtube.com/watch?v=TtKkd4NIjhI",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": true,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "7716a1f01e20a9c21041c85c7a992efa9eceeb843aea8dc29429bded7e47c255",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "title",
+        "originalText": "คู่มือ การตั้งเพื่อเตือนทานยา ในหุ่นยนต์ดินสอ มินิ",
+        "label": "Title Only",
+        "coverage": "title-only",
+        "startOffset": 0,
+        "endOffset": 50
+      }
+    ],
+    "metadata": {
+      "author": "Dinsaw Elderly Companion",
+      "platform": "youtube",
+      "publishedAt": "2019-01-14",
+      "canonicalName": "YouTube video: คู่มือ การตั้งเพื่อเตือนทานยา ในหุ่นยนต์ดินสอ มินิ"
+    }
+  },
+  {
+    "typedId": "source:seed-6585",
+    "kind": "source",
+    "title": "“ดินสอมินิ” หุ่นยนต์ดูแลผู้สูงอายุฝีมือคนไทย",
+    "body": "รายการ ข่าววันใหม่ ช่องไทยพีบีเอส.",
+    "retrievalText": "“ดินสอมินิ” หุ่นยนต์ดูแลผู้สูงอายุฝีมือคนไทย Dinsaw Elderly Companion youtube รายการ ข่าววันใหม่ ช่องไทยพีบีเอส.",
+    "url": "https://www.youtube.com/watch?v=EMZEcYbt768",
+    "groupId": "https://www.youtube.com/watch?v=EMZEcYbt768",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "3d6481d6fe39c36c48b08f32b289a2fee8069579a7b9c5bb20eab55b0c3dd2aa",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "รายการ ข่าววันใหม่ ช่องไทยพีบีเอส.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 34
+      }
+    ],
+    "metadata": {
+      "author": "Dinsaw Elderly Companion",
+      "platform": "youtube",
+      "publishedAt": "2014-09-01",
+      "canonicalName": "YouTube video: “ดินสอมินิ” หุ่นยนต์ดูแลผู้สูงอายุฝีมือคนไทย"
+    }
+  },
+  {
+    "typedId": "source:seed-6588",
+    "kind": "source",
+    "title": "หุ่นยนต์ดินสอรำวง ต่อด้วยโชว์ AI ทางการแพทย์",
+    "body": "หนึ่งในโชว์ของนิสิตเก่า งานคืนสู่เหย้าจุฬาฯ 107 ปี.",
+    "retrievalText": "หุ่นยนต์ดินสอรำวง ต่อด้วยโชว์ AI ทางการแพทย์ Dinsaw Elderly Companion youtube หนึ่งในโชว์ของนิสิตเก่า งานคืนสู่เหย้าจุฬาฯ 107 ปี.",
+    "url": "https://www.youtube.com/watch?v=EQoPK6ycYuA",
+    "groupId": "https://www.youtube.com/watch?v=EQoPK6ycYuA",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "d971ba7bd79f180545f836e9bbd6efcdde2758c0ca9cd72f627e74c820946707",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "หนึ่งในโชว์ของนิสิตเก่า งานคืนสู่เหย้าจุฬาฯ 107 ปี.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 51
+      }
+    ],
+    "metadata": {
+      "author": "Dinsaw Elderly Companion",
+      "platform": "youtube",
+      "publishedAt": "2024-04-04",
+      "canonicalName": "YouTube video: หุ่นยนต์ดินสอรำวง ต่อด้วยโชว์ AI ทางการแพทย์"
+    }
+  },
+  {
+    "typedId": "source:seed-6591",
+    "kind": "source",
+    "title": "หุ่นยนต์ดินสอพัฒนาคุณภาพชีวิตผู้ป่วย",
+    "body": "จำนวนผู้สูงอายุติดเตียงที่เพิ่มมากขึ้น ลูกหลานยังต้องออกไปทำงาน สปสช. และเทศบาลห้วยงู ได้นำนวัตกรรม หุ่นยนต์ดินสอ มินิ ...",
+    "retrievalText": "หุ่นยนต์ดินสอพัฒนาคุณภาพชีวิตผู้ป่วย Dinsaw Elderly Companion youtube จำนวนผู้สูงอายุติดเตียงที่เพิ่มมากขึ้น ลูกหลานยังต้องออกไปทำงาน สปสช. และเทศบาลห้วยงู ได้นำนวัตกรรม หุ่นยนต์ดินสอ มินิ ...",
+    "url": "https://www.youtube.com/watch?v=a4VcgXwT4ak",
+    "groupId": "https://www.youtube.com/watch?v=a4VcgXwT4ak",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "4c6ed779cdf1ee2d84f207820eb1c980a16a911c179ce6ff05bd646445c46c35",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "จำนวนผู้สูงอายุติดเตียงที่เพิ่มมากขึ้น ลูกหลานยังต้องออกไปทำงาน สปสช. และเทศบาลห้วยงู ได้นำนวัตกรรม หุ่นยนต์ดินสอ มินิ ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 122
+      }
+    ],
+    "metadata": {
+      "author": "Dinsaw Elderly Companion",
+      "platform": "youtube",
+      "publishedAt": "2022-05-09",
+      "canonicalName": "YouTube video: หุ่นยนต์ดินสอพัฒนาคุณภาพชีวิตผู้ป่วย"
+    }
+  },
+  {
+    "typedId": "source:seed-6592",
+    "kind": "source",
+    "title": "เริ่มต้นใช้งาน",
+    "body": "หุ่นยนต์ดินสอมินิถูกพัฒนาขึ้นเพื่อช่วยดูแลผู้สูงอายุหรือผู้ป่วยโดย เฉพาะกรณีขาดแคลนผู้ดูแลหรือพยาบาล ที่จะสามารถใช้เวลาพูดคุย ...",
+    "retrievalText": "เริ่มต้นใช้งาน Dinsaw Elderly Companion youtube หุ่นยนต์ดินสอมินิถูกพัฒนาขึ้นเพื่อช่วยดูแลผู้สูงอายุหรือผู้ป่วยโดย เฉพาะกรณีขาดแคลนผู้ดูแลหรือพยาบาล ที่จะสามารถใช้เวลาพูดคุย ...",
+    "url": "https://www.youtube.com/watch?v=x3Cl-UMmLxk",
+    "groupId": "https://www.youtube.com/watch?v=x3Cl-UMmLxk",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "e400c08b7d0a27d540b82db061136949a98a7fbe54987c4756710a77e1369ed4",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "หุ่นยนต์ดินสอมินิถูกพัฒนาขึ้นเพื่อช่วยดูแลผู้สูงอายุหรือผู้ป่วยโดย เฉพาะกรณีขาดแคลนผู้ดูแลหรือพยาบาล ที่จะสามารถใช้เวลาพูดคุย ...",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 129
+      }
+    ],
+    "metadata": {
+      "author": "Dinsaw Elderly Companion",
+      "platform": "youtube",
+      "publishedAt": "2018-11-14",
+      "canonicalName": "YouTube video: เริ่มต้นใช้งาน"
+    }
+  },
+  {
+    "typedId": "source:seed-6599",
+    "kind": "source",
+    "title": "รายการเจาะใจ คุณเฉลิมพล นักพัฒนาหุ่นยนต์ดินสอ",
+    "body": "รายการเจาะใจ คุณเฉลิมพล ปุณโณทก วันที่ 8 กันยายน 2559.",
+    "retrievalText": "รายการเจาะใจ คุณเฉลิมพล นักพัฒนาหุ่นยนต์ดินสอ Dinsaw Elderly Companion youtube รายการเจาะใจ คุณเฉลิมพล ปุณโณทก วันที่ 8 กันยายน 2559.",
+    "url": "https://www.youtube.com/watch?v=craazODBoyI",
+    "groupId": "https://www.youtube.com/watch?v=craazODBoyI",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "5bc0f68e856dd7240b554b4c910b14a5b8d915a6a9fa5c7379dea51f30df2f27",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "รายการเจาะใจ คุณเฉลิมพล ปุณโณทก วันที่ 8 กันยายน 2559.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 54
+      }
+    ],
+    "metadata": {
+      "author": "Dinsaw Elderly Companion",
+      "platform": "youtube",
+      "publishedAt": "2016-09-09",
+      "canonicalName": "YouTube video: รายการเจาะใจ คุณเฉลิมพล นักพัฒนาหุ่นยนต์ดินสอ"
+    }
+  },
+  {
+    "typedId": "source:seed-6603",
+    "kind": "source",
+    "title": "หุ่นยนต์ดินสอ มินิ",
+    "body": "หุ่นยนต์ดินสอ มินิ หุ่นยนต์ดูแลผู้สูงอายุ.",
+    "retrievalText": "หุ่นยนต์ดินสอ มินิ Dinsaw Elderly Companion youtube หุ่นยนต์ดินสอ มินิ หุ่นยนต์ดูแลผู้สูงอายุ.",
+    "url": "https://www.youtube.com/watch?v=m1zCbxoxdcQ",
+    "groupId": "https://www.youtube.com/watch?v=m1zCbxoxdcQ",
+    "origin": "youtube",
+    "language": "th",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "88a981a31ab9f5e317b1706b622d5d36979d600714cfb5b31f3d8709322a2662",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "หุ่นยนต์ดินสอ มินิ หุ่นยนต์ดูแลผู้สูงอายุ.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 42
+      }
+    ],
+    "metadata": {
+      "author": "Dinsaw Elderly Companion",
+      "platform": "youtube",
+      "publishedAt": "2018-11-29",
+      "canonicalName": "YouTube video: หุ่นยนต์ดินสอ มินิ"
+    }
+  },
+  {
+    "typedId": "source:seed-7",
+    "kind": "source",
+    "title": "Dinsaw Mini Home AI",
+    "body": "Home AI Assistance ... can move in residences and connect care directly with hospitals.",
+    "retrievalText": "Dinsaw Mini Home AI National Innovation Agency government_agency_website Home AI Assistance ... can move in residences and connect care directly with hospitals.",
+    "url": "https://www.nia.or.th/DinsawMiniHomeAI",
+    "groupId": "https://www.nia.or.th/DinsawMiniHomeAI",
+    "origin": "web",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "5ce4b76c7541011e72b9e4585e53601934d5ed3d2c98262979cc52fb6719b60f",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Home AI Assistance ... can move in residences and connect care directly with hospitals.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 87
+      }
+    ],
+    "metadata": {
+      "author": "National Innovation Agency",
+      "platform": "government_agency_website",
+      "publishedAt": "2025-04-13",
+      "canonicalName": "NIA Dinsaw Mini Home AI"
+    }
+  },
+  {
+    "typedId": "source:seed-9",
+    "kind": "source",
+    "title": "Chula Engineers Deliver Pinto Robots to COVID-19 Hotspots Across Thailand",
+    "body": "Delivered 200 Pinto robots and over 1,000 Mirror systems to over 140 hospitals.",
+    "retrievalText": "Chula Engineers Deliver Pinto Robots to COVID-19 Hotspots Across Thailand Chulalongkorn University university_news Delivered 200 Pinto robots and over 1,000 Mirror systems to over 140 hospitals.",
+    "url": "https://www.chula.ac.th/en/news/42184/",
+    "groupId": "https://www.chula.ac.th/en/news/42184/",
+    "origin": "web",
+    "language": "en",
+    "isTitleOnly": false,
+    "isPartial": false,
+    "parentTypedId": null,
+    "contentHash": "0ce1956079d729d50a7cfa39897bc337e4ab9bdf7ee61dd9db57ae2c4f204737",
+    "dependencyHash": "573b789cbdcc0102a4a246614e6dee760bfde1d7d1fe7985c5233a0524db102d",
+    "vectorRow": null,
+    "evidence": [
+      {
+        "fieldName": "evidence_excerpt",
+        "originalText": "Delivered 200 Pinto robots and over 1,000 Mirror systems to over 140 hospitals.",
+        "label": "Source Excerpt",
+        "coverage": "full",
+        "startOffset": 0,
+        "endOffset": 79
+      }
+    ],
+    "metadata": {
+      "author": "Chulalongkorn University",
+      "platform": "university_news",
+      "publishedAt": "2021-01-19",
+      "canonicalName": "Chula Pinto robots COVID-19 deployment"
+    }
+  }
+]

@@ -21,7 +21,6 @@ export async function revalidateSearchDocument(
     return { isValid: false, reason: "DELETED", currentDoc: null };
   }
 
-  try {
     switch (doc.kind) {
       case "source": {
         const record = await prisma.sourceRecord.findUnique({
@@ -47,7 +46,7 @@ export async function revalidateSearchDocument(
           }
         });
 
-        if (currentHash !== doc.contentHash) {
+        if (currentHash !== doc.contentHash || doc.evidence.some((e) => ["excerpt", "evidence_excerpt"].includes(e.fieldName) && e.originalText !== (record.excerpt ?? ""))) {
           return {
             isValid: false,
             reason: "CONTENT_CHANGED",
@@ -87,7 +86,7 @@ export async function revalidateSearchDocument(
           }
         });
 
-        if (currentHash !== doc.contentHash) {
+        if (currentHash !== doc.contentHash || doc.evidence.some((e) => e.fieldName === "description" && e.originalText !== (robot.description ?? ""))) {
           return {
             isValid: false,
             reason: "CONTENT_CHANGED",
@@ -129,7 +128,7 @@ export async function revalidateSearchDocument(
           }
         });
 
-        if (currentHash !== doc.contentHash) {
+        if (currentHash !== doc.contentHash || doc.evidence.some((e) => e.fieldName === "description" && e.originalText !== (item.description ?? ""))) {
           return {
             isValid: false,
             reason: "CONTENT_CHANGED",
@@ -183,7 +182,7 @@ export async function revalidateSearchDocument(
           }
         });
 
-        if (currentHash !== doc.contentHash) {
+        if (currentHash !== doc.contentHash || doc.evidence.some((e) => ["evidenceExcerpt", "evidence_excerpt"].includes(e.fieldName) && e.originalText !== (item.evidenceExcerpt ?? ""))) {
           return {
             isValid: false,
             reason: "CONTENT_CHANGED",
@@ -323,10 +322,6 @@ export async function revalidateSearchDocument(
       default:
         return { isValid: false, reason: "STATUS_INELIGIBLE", currentDoc: null };
     }
-  } catch {
-    // If query fails, suppress to avoid leaking stale/unverified data
-    return { isValid: false, reason: "DELETED", currentDoc: null };
-  }
 }
 
 /**

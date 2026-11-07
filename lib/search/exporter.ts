@@ -630,8 +630,10 @@ export function exportSearchCorpusFromSeed(
 export async function exportSearchCorpusFromDb(
   prisma: any,
   datasetId: string = "thailand-humanoid-atlas-db",
-  releaseId: string = "search-v1-keyword"
+  releaseId: string = "search-v1-keyword",
+  signal?: AbortSignal
 ): Promise<ExportResult> {
+  signal?.throwIfAborted();
   const documents: SearchDocument[] = [];
   let excludedCount = 0;
 
@@ -663,6 +665,7 @@ export async function exportSearchCorpusFromDb(
       cursor: lastSourceId ? { id: lastSourceId } : undefined,
       orderBy: { id: "asc" }
     });
+    signal?.throwIfAborted();
 
     if (page.length === 0) break;
     lastSourceId = page[page.length - 1].id;
@@ -741,6 +744,7 @@ export async function exportSearchCorpusFromDb(
   const robots = await prisma.robotModel.findMany({
     orderBy: { id: "asc" }
   });
+  signal?.throwIfAborted();
 
   for (const robot of robots) {
     if (!isEligiblePublicRobot(robot.canonicalName)) {
@@ -832,6 +836,7 @@ export async function exportSearchCorpusFromDb(
     include: { relatedRobotModel: true },
     orderBy: { id: "asc" }
   });
+  signal?.throwIfAborted();
 
   for (const contrib of contributions) {
     if (!isEligiblePublicContribution(contrib)) {
@@ -926,6 +931,7 @@ export async function exportSearchCorpusFromDb(
     include: { source: true },
     orderBy: { id: "asc" }
   });
+  signal?.throwIfAborted();
 
   for (const pers of perspectives) {
     if (!pers.source || pers.source.relevanceStatus !== "ACCEPTED") {
@@ -1017,6 +1023,7 @@ export async function exportSearchCorpusFromDb(
     include: { robotModel: true },
     orderBy: { id: "asc" }
   });
+  signal?.throwIfAborted();
 
   for (const item of inventoryItems) {
     if (item.robotModel && !isEligiblePublicRobot(item.robotModel.canonicalName)) {
@@ -1095,6 +1102,7 @@ export async function exportSearchCorpusFromDb(
     include: { source: true },
     orderBy: { id: "asc" }
   });
+  signal?.throwIfAborted();
 
   for (const trip of triplets) {
     const title = `${trip.subject} ${trip.relation} ${trip.object}`;
@@ -1168,6 +1176,7 @@ export async function exportSearchCorpusFromDb(
   const entities = await prisma.entity.findMany({
     orderBy: { id: "asc" }
   });
+  signal?.throwIfAborted();
 
   for (const ent of entities) {
     const title = ent.name;

@@ -7,9 +7,9 @@
     "realSeedCount": 16,
     "syntheticFixtureCount": 16,
     "languages": {
-      "en": 15,
-      "th": 13,
-      "bilingual": 4
+      "en": 18,
+      "th": 12,
+      "bilingual": 2
     },
     "auditReferences": ["D05"]
   },
@@ -17,10 +17,13 @@
     {
       "id": "bench-real-01",
       "source": "real_seed",
+      "seedIndex": 0,
+      "url": "https://www.dinsaw.com/en/home-english/",
+      "adaptationNotes": "Seed record index 0 (line 23 in raw seed file). Preserved primary source evidence excerpt.",
       "language": "en",
       "category": "thai_embodied_robot",
       "title": "Home - English - Dinsaw Robot",
-      "excerpt": "Dinsaw Robot is an artificial intelligence or AI that can listen and respond to gestures or spoken words, developed by CT Asia Robotics in Thailand.",
+      "excerpt": "Dinsaw Robot is an artificial intelligence or AI that can listen and respond to commands.",
       "groundTruth": {
         "relevanceStatus": "ACCEPTED",
         "isRelevant": true,

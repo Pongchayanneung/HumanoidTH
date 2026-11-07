@@ -1,12 +1,12 @@
 {
-  "evaluatedAt": "2026-11-07T10:54:48.258Z",
+  "evaluatedAt": "2026-11-07T11:33:49.237Z",
   "benchmarkVersion": "1.0.0",
   "totalCases": 32,
   "summary": {
     "baseline": {
       "totalCases": 32,
-      "correctRelevanceCount": 14,
-      "relevanceAccuracy": 0.4375,
+      "correctRelevanceCount": 13,
+      "relevanceAccuracy": 0.4063,
       "syntheticTrapsCount": 8,
       "syntheticTrapsFalsePositives": 4,
       "syntheticTrapsFalsePositiveRate": 0.5,
@@ -22,8 +22,8 @@
       "byLanguage": {
         "en": {
           "total": 18,
-          "correct": 8,
-          "accuracy": 0.4444
+          "correct": 7,
+          "accuracy": 0.3889
         },
         "th": {
           "total": 12,
@@ -39,8 +39,8 @@
       "bySource": {
         "real_seed": {
           "total": 16,
-          "correct": 10,
-          "accuracy": 0.625
+          "correct": 9,
+          "accuracy": 0.5625
         },
         "synthetic_fixture": {
           "total": 16,
@@ -51,8 +51,8 @@
     },
     "calibrated": {
       "totalCases": 32,
-      "correctRelevanceCount": 31,
-      "relevanceAccuracy": 0.9688,
+      "correctRelevanceCount": 30,
+      "relevanceAccuracy": 0.9375,
       "syntheticTrapsCount": 8,
       "syntheticTrapsFalsePositives": 0,
       "syntheticTrapsFalsePositiveRate": 0,
@@ -68,8 +68,8 @@
       "byLanguage": {
         "en": {
           "total": 18,
-          "correct": 18,
-          "accuracy": 1
+          "correct": 17,
+          "accuracy": 0.9444
         },
         "th": {
           "total": 12,
@@ -85,8 +85,8 @@
       "bySource": {
         "real_seed": {
           "total": 16,
-          "correct": 15,
-          "accuracy": 0.9375
+          "correct": 14,
+          "accuracy": 0.875
         },
         "synthetic_fixture": {
           "total": 16,
@@ -96,7 +96,7 @@
       }
     },
     "improvements": {
-      "accuracyDelta": 0.5313,
+      "accuracyDelta": 0.5312,
       "trapFalsePositiveReduction": 4,
       "uncertaintyDetectionDelta": 0.8,
       "privacyStanceDelta": 0.5,
@@ -124,29 +124,29 @@
         "reason": "Authentic Thai commercial humanoid/service robot from CT Asia Robotics."
       },
       "baseline": {
-        "relevanceStatus": "ACCEPTED",
-        "relevanceConfidence": 0.82,
-        "relevanceReason": "Robot/embodied-AI relevance with Thailand connection.",
+        "relevanceStatus": "UNCERTAIN",
+        "relevanceConfidence": 0.46,
+        "relevanceReason": "Thin evidence; needs human review.",
         "stance": "neutral",
         "sentiment": "neutral",
         "perspectiveTheme": "unclear",
-        "isCorrectStatus": true,
+        "isCorrectStatus": false,
         "isTrapFalsePositive": false,
         "autoPublishRisk": false
       },
       "calibrated": {
-        "relevanceStatus": "ACCEPTED",
-        "calibratedConfidence": 0.94,
-        "relevanceReason": "Embodied humanoid or service robotics research/deployment with verified Thailand connection.",
+        "relevanceStatus": "REJECTED",
+        "calibratedConfidence": 0.89,
+        "relevanceReason": "Embodied robotics record without verified Thailand institutional or geographic connection.",
         "evidenceSufficiency": "sufficient",
         "topicalRelevance": "embodied_robot",
-        "thailandConnection": true,
+        "thailandConnection": false,
         "requiresHumanReview": false,
-        "autoPublishEligible": true,
+        "autoPublishEligible": false,
         "stance": "neutral",
         "sentiment": "neutral",
         "perspectiveTheme": "unclear",
-        "isCorrectStatus": true,
+        "isCorrectStatus": false,
         "isTrapFalsePositive": false,
         "autoPublishRisk": false
       }

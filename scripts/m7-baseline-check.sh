@@ -55,10 +55,20 @@ DB_PARSED="$(node -e '
   try {
     const u = new URL(process.argv[1]);
     const override = ["host", "hostaddr"].find((k) => u.searchParams.has(k)) || "";
-    process.stdout.write([u.protocol, u.hostname, u.port || "5432", decodeURIComponent(u.pathname.replace(/^\//, "")), override].join("\t"));
+    process.stdout.write([u.protocol, u.hostname, u.port || "5432", decodeURIComponent(u.pathname.replace(/^\//, "")), override].join("\x1f"));
   } catch (e) { process.exit(3); }
 ' "$DATABASE_URL" 2>/dev/null)" || { echo "REFUSED: DATABASE_URL is not a parseable URL." >&2; exit 2; }
-IFS=$'\t' read -r DB_PROTO DB_HOST DB_PORT DB_NAME DB_HOST_OVERRIDE <<<"$DB_PARSED"
+# Split on \x1f, not tab: tab is IFS whitespace, so `read` collapses consecutive tabs and an empty
+# field (empty path) would shift the host override into the database-name slot.
+if [ "$(printf '%s' "$DB_PARSED" | tr -cd '\037' | wc -c | tr -d ' ')" != "4" ]; then
+  echo "REFUSED: DATABASE_URL did not parse into five fields." >&2
+  exit 2
+fi
+IFS=$'\x1f' read -r DB_PROTO DB_HOST DB_PORT DB_NAME DB_HOST_OVERRIDE <<<"$DB_PARSED"
+if [ -z "$DB_NAME" ]; then
+  echo "REFUSED: DATABASE_URL has no database name." >&2
+  exit 2
+fi
 case "$DB_PROTO" in
   postgres:|postgresql:) ;;
   *) echo "REFUSED: DATABASE_URL protocol '$DB_PROTO' is not postgres/postgresql." >&2; exit 2 ;;

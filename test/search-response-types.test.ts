@@ -14,7 +14,7 @@ type ContractChecks = [
   Assert<Equal<SearchPublicationPolicy, { permittedOrigins: string[]; publicFieldsByKind: Record<SearchReference["kind"], string[]>; excludedFields: string[]; excludedReferences: SearchReference[]; exceptions: string[] }>>,
   Assert<Equal<SearchRelease, { id: string; generatedAt: string; coverage: SearchCoverage; model: SearchModelProfile | null; publication: SearchPublicationPolicy; ranking: SearchRankingPolicy }>>,
   Assert<Equal<SearchError, { error: { code: "invalid_request"; message: string } }>>,
-  Assert<Equal<keyof SearchBrowseResult, "reference" | "contentType" | "title" | "url" | "evidence" | "match">>,
+  Assert<Equal<keyof SearchBrowseResult, "reference" | "contentType" | "language" | "title" | "url" | "evidence" | "match">>,
   Assert<Equal<Pick<SearchBrowseResult, "reference" | "contentType" | "title" | "url" | "evidence">, { reference: SearchReference; contentType: SearchContentType; title: string; url: string | null; evidence: SearchResultEvidence[] }>>,
   Assert<Equal<SearchContentType, "paper" | "repository" | "video" | "news_web" | "source" | "robot" | "contribution" | "perspective" | "inventory" | "relationship" | "entity">>,
   Assert<Equal<keyof SearchResultGroup, "groupKey" | "results">>,

@@ -92,7 +92,7 @@ export function createSearchPost(loadIndex: SearchIndexLoader) {
           const found = pattern.exec(matchedEvidence.originalText)!;
           match = { methods: ["keyword"], evidence: matchedEvidence, ranges: [{ start: found.index, end: found.index + found[0].length }] };
         }
-        const result: SearchBrowseResult = { reference: { kind: doc.kind, id: doc.typedId }, contentType: contentTypeFor(doc), title: doc.title, url: doc.url, evidence };
+        const result: SearchBrowseResult = { reference: { kind: doc.kind, id: doc.typedId }, contentType: contentTypeFor(doc), language: doc.language, title: doc.title, url: doc.url, evidence };
         const key = groupKeyFor(doc, byId);
         if (match) addToGroup(matchedGroups, input.limit, key, { ...result, match });
         else addToGroup(browseGroups, input.limit, key, result);

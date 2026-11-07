@@ -146,7 +146,8 @@ const localT = {
     graphFailedLoad: "Network graph failed to load.",
     noRelationships: "No network relationships have been generated yet.",
     depth: "Depth",
-    sourceWarning: "Showing the local JSON cache because the database is unavailable"
+    sourceWarning: "Showing the local JSON cache because the database is unavailable",
+    noSourceWarning: "No graph data: the database is unavailable and the local import file is missing"
   },
   th: {
     searchPlaceholder: "ค้นหาโหนด...",
@@ -200,7 +201,8 @@ const localT = {
     graphFailedLoad: "ไม่สามารถโหลดกราฟความสัมพันธ์ได้",
     noRelationships: "ยังไม่มีการสร้างความสัมพันธ์ในระบบ",
     depth: "ความลึกระดับ",
-    sourceWarning: "กำลังใช้งานไฟล์แคชสำรองในเครื่อง"
+    sourceWarning: "กำลังใช้งานไฟล์แคชสำรองในเครื่อง",
+    noSourceWarning: "ไม่มีข้อมูลกราฟ: ฐานข้อมูลไม่พร้อมใช้งานและไม่พบไฟล์นำเข้าในเครื่อง"
   }
 };
 
@@ -772,7 +774,7 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
 
       {graph && (
         <div className={`${styles.sourceStatus} ${graph.meta.resolved_source === "fallback_file" ? styles.sourceWarning : ""}`}>
-          <span>{localT[lang].dataSource} {graph.meta.resolved_source === "fallback_file" ? localT[lang].sourceWarning : sourceLabel}</span>
+          <span>{localT[lang].dataSource} {graph.meta.resolved_source === "fallback_file" ? (graph.meta.file_available ? localT[lang].sourceWarning : localT[lang].noSourceWarning) : sourceLabel}</span>
           <span>{graph.meta.node_count} {lang === "th" ? "โหนด" : "nodes"} / {graph.meta.edge_count} {lang === "th" ? "เส้นเชื่อม" : "edges"}</span>
           {graph.meta.warnings.map((warning) => (
             <span key={warning}>{warning}</span>

@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { canonicalizeUrl } from "../url";
 
 export type CheckedRecordKind =
   | "robot_model"
@@ -13,7 +14,8 @@ export type ExclusionCategory =
   | "unverified_claim"
   | "duplicate"
   | "pending_review"
-  | "insufficient_evidence";
+  | "insufficient_evidence"
+  | "out_of_scope";
 
 export interface CheckedRecord {
   typedId: string;
@@ -95,7 +97,7 @@ export function loadCheckedDemoManifest(customPath?: string): CheckedManifest {
       manifest.records.filter((r) => r.publicEligibility).map((r) => r.typedId)
     );
     publicCanonicalUrlSet = new Set(
-      manifest.records.filter((r) => r.publicEligibility).map((r) => r.canonicalUrl)
+      manifest.records.filter((r) => r.publicEligibility).map((r) => canonicalizeUrl(r.canonicalUrl))
     );
     excludedIdSet = new Set(manifest.excludedRecords.map((e) => e.identifier));
   }
@@ -119,6 +121,7 @@ export function isPublicCheckedRecord(typedId: string): boolean {
 
 /**
  * Checks whether a URL is cited by any public record in the checked manifest.
+ * Normalizes input via canonicalizeUrl so trailing slashes and tracking query params match.
  * Used for provenance lookups, NOT for identity or access-control gating.
  */
 export function isPublicCheckedUrl(url: string): boolean {
@@ -126,7 +129,7 @@ export function isPublicCheckedUrl(url: string): boolean {
     loadCheckedDemoManifest();
   }
 
-  return publicCanonicalUrlSet?.has(url) ?? false;
+  return publicCanonicalUrlSet?.has(canonicalizeUrl(url)) ?? false;
 }
 
 /**
@@ -204,7 +207,8 @@ export function validateCheckedDemoManifest(manifest: CheckedManifest): void {
     "unverified_claim",
     "duplicate",
     "pending_review",
-    "insufficient_evidence"
+    "insufficient_evidence",
+    "out_of_scope"
   ];
 
   const typedIdSet = new Set<string>();
@@ -270,7 +274,24 @@ export function validateCheckedDemoManifest(manifest: CheckedManifest): void {
     }
 
     if (!record.reviewedDate || !/^\d{4}-\d{2}-\d{2}$/.test(record.reviewedDate)) {
-      throw new Error(`Record ${record.typedId} has invalid reviewedDate (expected YYYY-MM-DD).`);
+      throw new Error(`Record ${record.typedId} has invalid reviewedDate format (expected YYYY-MM-DD).`);
+    }
+
+    const [yearStr, monthStr, dayStr] = record.reviewedDate.split("-");
+    const year = Number(yearStr);
+    const month = Number(monthStr);
+    const day = Number(dayStr);
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+      throw new Error(`Record ${record.typedId} has impossible calendar date: '${record.reviewedDate}'.`);
+    }
+    const parsedDate = new Date(`${record.reviewedDate}T00:00:00Z`);
+    if (
+      Number.isNaN(parsedDate.getTime()) ||
+      parsedDate.getUTCFullYear() !== year ||
+      parsedDate.getUTCMonth() + 1 !== month ||
+      parsedDate.getUTCDate() !== day
+    ) {
+      throw new Error(`Record ${record.typedId} has impossible calendar date: '${record.reviewedDate}'.`);
     }
 
     if (
@@ -316,17 +337,51 @@ export function validateCheckedDemoManifest(manifest: CheckedManifest): void {
     }
   }
 
-  // Validate manifest counts match actual record arrays
-  if (manifest.counts) {
-    if (manifest.counts.checkedPublicRecords !== manifest.records.length) {
-      throw new Error(
-        `Counts mismatch: checkedPublicRecords is ${manifest.counts.checkedPublicRecords} but records.length is ${manifest.records.length}.`
-      );
-    }
-    if (manifest.counts.excludedDocumentedRecords !== manifest.excludedRecords.length) {
-      throw new Error(
-        `Counts mismatch: excludedDocumentedRecords is ${manifest.counts.excludedDocumentedRecords} but excludedRecords.length is ${manifest.excludedRecords.length}.`
-      );
-    }
+  // Validate manifest counts strictly match actual record arrays
+  if (!manifest.counts || typeof manifest.counts !== "object") {
+    throw new Error("Manifest is missing required counts object.");
+  }
+
+  const robotModelCount = manifest.records.filter((r) => r.recordType === "robot_model").length;
+  const contributionCount = manifest.records.filter((r) => r.recordType === "contribution").length;
+  const sourceRecordCount = manifest.records.filter((r) => r.recordType === "source_record").length;
+  const tripletCount = manifest.records.filter((r) => r.recordType === "triplet").length;
+  const perspectiveCount = manifest.records.filter((r) => r.recordType === "perspective_annotation").length;
+  const publicEligibleCount = manifest.records.filter((r) => r.publicEligibility).length;
+
+  if (manifest.counts.checkedPublicRecords !== publicEligibleCount) {
+    throw new Error(
+      `Counts mismatch: checkedPublicRecords is ${manifest.counts.checkedPublicRecords} but public records length is ${publicEligibleCount}.`
+    );
+  }
+  if (manifest.counts.robotModels !== robotModelCount) {
+    throw new Error(
+      `Counts mismatch: robotModels is ${manifest.counts.robotModels} but actual count is ${robotModelCount}.`
+    );
+  }
+  if (manifest.counts.contributions !== contributionCount) {
+    throw new Error(
+      `Counts mismatch: contributions is ${manifest.counts.contributions} but actual count is ${contributionCount}.`
+    );
+  }
+  if (manifest.counts.sourceRecords !== sourceRecordCount) {
+    throw new Error(
+      `Counts mismatch: sourceRecords is ${manifest.counts.sourceRecords} but actual count is ${sourceRecordCount}.`
+    );
+  }
+  if (manifest.counts.tripletRelations !== tripletCount) {
+    throw new Error(
+      `Counts mismatch: tripletRelations is ${manifest.counts.tripletRelations} but actual count is ${tripletCount}.`
+    );
+  }
+  if (manifest.counts.perspectiveAnnotations !== perspectiveCount) {
+    throw new Error(
+      `Counts mismatch: perspectiveAnnotations is ${manifest.counts.perspectiveAnnotations} but actual count is ${perspectiveCount}.`
+    );
+  }
+  if (manifest.counts.excludedDocumentedRecords !== manifest.excludedRecords.length) {
+    throw new Error(
+      `Counts mismatch: excludedDocumentedRecords is ${manifest.counts.excludedDocumentedRecords} but excludedRecords.length is ${manifest.excludedRecords.length}.`
+    );
   }
 }

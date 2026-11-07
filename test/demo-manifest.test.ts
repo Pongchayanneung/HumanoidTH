@@ -25,9 +25,9 @@ test("demo manifest loads and passes structural validation", () => {
   assert.equal(manifest.counts.sourceRecords, 8);
   assert.equal(manifest.counts.tripletRelations, 5);
   assert.equal(manifest.counts.perspectiveAnnotations, 2);
-  assert.equal(manifest.counts.excludedDocumentedRecords, 7);
+  assert.equal(manifest.counts.excludedDocumentedRecords, 8);
   assert.equal(manifest.records.length, 29);
-  assert.equal(manifest.excludedRecords.length, 7);
+  assert.equal(manifest.excludedRecords.length, 8);
 });
 
 test("demonstration dataset contains useful source-backed public records", () => {
@@ -105,6 +105,10 @@ test("explicitly excludes placeholders, duplicates, and unverified claims", () =
   assert.equal(isExcludedDemoRecord("robot_model:hospital-delivery-service-robot"), true);
   assert.equal(isPublicCheckedRecord("robot_model:hospital-delivery-service-robot"), false);
 
+  // Redundant crawl duplicates must be excluded
+  assert.equal(isExcludedDemoRecord("seed:source_record:dinsaw-mini-video-duplicate"), true);
+  assert.equal(isPublicCheckedRecord("seed:source_record:dinsaw-mini-video-duplicate"), false);
+
   // Pending submissions requiring admin review must not be auto-published
   assert.equal(isExcludedDemoRecord("submission:robo-buddy"), true);
   assert.equal(isPublicCheckedRecord("submission:robo-buddy"), false);
@@ -141,8 +145,10 @@ test("query helpers return expected records and reject unknown identifiers", () 
   // URL lookups do NOT grant membership to isPublicCheckedRecord
   assert.equal(isPublicCheckedRecord("https://www.ctasia.com/about-us/"), false);
 
-  // Separate isPublicCheckedUrl provides URL citation check
+  // Separate isPublicCheckedUrl provides URL citation check with canonicalization on both sides
+  assert.equal(isPublicCheckedUrl("https://www.ctasia.com/about-us"), true);
   assert.equal(isPublicCheckedUrl("https://www.ctasia.com/about-us/"), true);
+  assert.equal(isPublicCheckedUrl("https://www.ctasia.com/about-us/?utm_source=twitter"), true);
   assert.equal(isPublicCheckedUrl("https://fake-url-not-in-manifest.com"), false);
 
   // Excluded records sharing URL with a public record cannot bypass membership
@@ -186,10 +192,18 @@ test("validateCheckedDemoManifest: strict schema validation and negative cases",
   xssUrlManifest.records[0].canonicalUrl = "javascript:alert(1)";
   assert.throws(() => validateCheckedDemoManifest(xssUrlManifest), /invalid canonicalUrl/);
 
-  // 5. Reject invalid reviewedDate
+  // 5. Reject invalid reviewedDate format and impossible calendar dates
   const badDateManifest: CheckedManifest = structuredClone(validManifest);
   badDateManifest.records[0].reviewedDate = "yesterday";
   assert.throws(() => validateCheckedDemoManifest(badDateManifest), /invalid reviewedDate/);
+
+  const impossibleDateManifest: CheckedManifest = structuredClone(validManifest);
+  impossibleDateManifest.records[0].reviewedDate = "2026-13-45";
+  assert.throws(() => validateCheckedDemoManifest(impossibleDateManifest), /impossible calendar date/);
+
+  const leapYearDateManifest: CheckedManifest = structuredClone(validManifest);
+  leapYearDateManifest.records[0].reviewedDate = "2026-02-30";
+  assert.throws(() => validateCheckedDemoManifest(leapYearDateManifest), /impossible calendar date/);
 
   // 6. Reject non-string claim
   const nonStringClaimManifest: CheckedManifest = structuredClone(validManifest);
@@ -201,13 +215,33 @@ test("validateCheckedDemoManifest: strict schema validation and negative cases",
   emptyEvidenceManifest.records[0].evidence = "";
   assert.throws(() => validateCheckedDemoManifest(emptyEvidenceManifest), /non-empty evidence/);
 
-  // 8. Reject count mismatch
+  // 8. Reject missing counts object
+  const missingCountsManifest: CheckedManifest = structuredClone(validManifest);
+  delete (missingCountsManifest as any).counts;
+  assert.throws(() => validateCheckedDemoManifest(missingCountsManifest), /missing required counts/);
+
+  // 9. Reject count mismatch
   const wrongCountManifest: CheckedManifest = structuredClone(validManifest);
   wrongCountManifest.counts.checkedPublicRecords = 999;
   assert.throws(() => validateCheckedDemoManifest(wrongCountManifest), /Counts mismatch/);
 
-  // 9. Reject wrong corpus hash
+  const wrongRobotModelsManifest: CheckedManifest = structuredClone(validManifest);
+  wrongRobotModelsManifest.counts.robotModels = 99;
+  assert.throws(() => validateCheckedDemoManifest(wrongRobotModelsManifest), /robotModels is 99 but actual count is 11/);
+
+  const wrongExcludedManifest: CheckedManifest = structuredClone(validManifest);
+  wrongExcludedManifest.counts.excludedDocumentedRecords = 99;
+  assert.throws(() => validateCheckedDemoManifest(wrongExcludedManifest), /excludedDocumentedRecords is 99 but excludedRecords.length is 8/);
+
+  // 10. Reject wrong corpus hash
   const wrongHashManifest: CheckedManifest = structuredClone(validManifest);
   wrongHashManifest.originalCorpus.sha256 = "deadbeef1234";
   assert.throws(() => validateCheckedDemoManifest(wrongHashManifest), /sha256 mismatch/);
+
+  // 11. Verify exclusion category updates
+  const bumiRecord = validManifest.excludedRecords.find((e) => e.identifier === "robot_model:bumi-humanoid-robot");
+  assert.equal(bumiRecord?.exclusionCategory, "out_of_scope");
+
+  const duplicateRecord = validManifest.excludedRecords.find((e) => e.identifier === "seed:source_record:dinsaw-mini-video-duplicate");
+  assert.equal(duplicateRecord?.exclusionCategory, "duplicate");
 });

@@ -31,7 +31,7 @@ The **Checked Demonstration Manifest** (`data/checked-demonstration-manifest.v1.
 | **Original Corpus Canonical SHA-256 (LF)** | `29c634dc20af30bca15726d4e253c0688ec86bd6cb6246965a136d2e78597879` |
 | **Total Records in Corpus** | 6,749 |
 | **Checked Public Records** | 29 |
-| **Documented Exclusions** | 7 |
+| **Documented Exclusions** | 8 |
 
 ---
 
@@ -48,7 +48,7 @@ export interface CheckedRecord {
   checkedClaims: string[];   // Verified factual claims
   reviewer: string;          // Human reviewer ("Suk-Nsr")
   reviewedDate: string;      // ISO 8601 Date ("2026-11-07")
-  uncertainty: number;       // Calibrated uncertainty score (0.00 – 1.00) derived from 1 - confidence
+  uncertainty: number;       // Calibrated uncertainty score (0.00 – 1.00) derived strictly as (1 - seedConfidence) from the underlying seed record
   publicEligibility: boolean;// true for public presentation
   sourceType: string;        // E.g. "WEB", "OPENALEX", "GDELT"
   origin: string;            // E.g. "Thailand"
@@ -76,7 +76,7 @@ export interface CheckedRecord {
 ### 4.2 Community & Academic Contributions (3 records)
 - **`contribution:cu-robocovid-deployment`**: CU-RoboCOVID Pinto & Mirror deployment (Chulalongkorn University)
 - **`contribution:kmutt-robotics-for-all`**: Robotics for All outreach and training (KMUTT FIBO)
-- **`contribution:robo-buddy-education`**: Robo-Buddy educational coding companion (Faculty of Education, Chulalongkorn University)
+- **`contribution:robo-buddy-education`**: Robo-Buddy educational coding companion (Chulalongkorn University)
 
 ### 4.3 Authoritative Source Records (8 records)
 - **`source_record:ct-asia-official`**: Dinsaw official corporate website
@@ -101,12 +101,13 @@ export interface CheckedRecord {
 
 ---
 
-## 5. Explicitly Excluded Records (7 records)
+## 5. Explicitly Excluded Records (8 records)
 
 1. `seed:contribution:thai-hri-research`: Legacy placeholder contribution.
 2. `seed:contribution:hospital-field-observation`: Legacy placeholder field observation without empirical verification.
-3. `robot_model:bumi-humanoid-robot`: Out of scope foreign robot (Noetix Robotics, China) exhibited temporarily at a conference.
+3. `robot_model:bumi-humanoid-robot`: Out of scope foreign humanoid robot (Noetix Robotics, China) exhibited temporarily at a conference in Bangkok without ongoing Thai laboratory research or deployment.
 4. `robot_model:ubtech-walker`: Unverified foreign robot without verified primary Thai deployment.
 5. `robot_model:hospital-delivery-service-robot`: Generic placeholder bucket.
 6. `robot_model:thai-university-social-robot-prototype`: Generic prototype placeholder.
 7. `submission:robo-buddy`: Pending submission requiring manual administrative enrichment before publication.
+8. `seed:source_record:dinsaw-mini-video-duplicate`: Duplicate video record in raw seed corpus excluded as redundant crawl duplicate.

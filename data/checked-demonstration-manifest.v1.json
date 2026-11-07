@@ -18,12 +18,12 @@
     "sourceRecords": 8,
     "tripletRelations": 5,
     "perspectiveAnnotations": 2,
-    "excludedDocumentedRecords": 7
+    "excludedDocumentedRecords": 8
   },
   "records": [
     {
       "typedId": "robot_model:dinsaw-robot",
-      "canonicalUrl": "https://www.ctasia.com/about-us/",
+      "canonicalUrl": "https://www.ctasia.com/about-us",
       "recordType": "robot_model",
       "title": "Dinsaw Robot",
       "checkedClaims": [
@@ -35,11 +35,11 @@
       ],
       "reviewer": "Suk-Nsr",
       "reviewedDate": "2026-11-07",
-      "uncertainty": 0.05,
+      "uncertainty": 0.04,
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Official company website https://www.dinsaw.com/en/home-english/."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.dinsaw.com/en/home-english and corporate portal at https://www.ctasia.com/about-us."
     },
     {
       "typedId": "robot_model:dinsaw-mini-home-ai",
@@ -54,15 +54,15 @@
       ],
       "reviewer": "Suk-Nsr",
       "reviewedDate": "2026-11-07",
-      "uncertainty": 0.08,
+      "uncertainty": 0.15,
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "National Innovation Agency project summary and official Thai government innovation portal."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.nia.or.th/DinsawMiniHomeAI (National Innovation Agency project summary)."
     },
     {
       "typedId": "robot_model:pinto-robot",
-      "canonicalUrl": "https://www.chula.ac.th/en/news/29278/",
+      "canonicalUrl": "https://www.chula.ac.th/en/news/29278",
       "recordType": "robot_model",
       "title": "Pinto Robot",
       "checkedClaims": [
@@ -77,11 +77,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Chulalongkorn University official announcement and CU-RoboCOVID technical deployment documentation."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.chula.ac.th/en/news/29278 (Chulalongkorn University official announcement and CU-RoboCOVID technical deployment documentation)."
     },
     {
       "typedId": "robot_model:mirror-telepresence",
-      "canonicalUrl": "https://csii.chula.ac.th/robots-and-the-covid-strip-test-innovations-by-chulalongkorn-university-to-combat-the-covid-pandemic/",
+      "canonicalUrl": "https://csii.chula.ac.th/robots-and-the-covid-strip-test-innovations-by-chulalongkorn-university-to-combat-the-covid-pandemic",
       "recordType": "robot_model",
       "title": "Mirror Telepresence System",
       "checkedClaims": [
@@ -95,7 +95,7 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Chulalongkorn School of Integrated Innovation (CSII) official innovation showcase."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://csii.chula.ac.th/robots-and-the-covid-strip-test-innovations-by-chulalongkorn-university-to-combat-the-covid-pandemic (Chulalongkorn School of Integrated Innovation showcase)."
     },
     {
       "typedId": "robot_model:ninja-robot",
@@ -113,11 +113,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Nation Thailand tech coverage and Chulalongkorn Engineering press releases."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.nationthailand.com/tech/30385613 (Nation Thailand tech coverage and Chulalongkorn Engineering press releases)."
     },
     {
       "typedId": "robot_model:kaitomm-robot",
-      "canonicalUrl": "https://www.obodroid.com/about-us/",
+      "canonicalUrl": "https://www.obodroid.com/about-us",
       "recordType": "robot_model",
       "title": "Kaitomm Robot",
       "checkedClaims": [
@@ -131,11 +131,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Obodroid corporate disclosures and product launch announcements."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.obodroid.com/about-us (Obodroid corporate disclosures and product launch announcements)."
     },
     {
       "typedId": "robot_model:sr1-security-robot",
-      "canonicalUrl": "https://www.obodroid.com/about-us/",
+      "canonicalUrl": "https://www.obodroid.com/about-us",
       "recordType": "robot_model",
       "title": "SR1 Security Robot",
       "checkedClaims": [
@@ -149,7 +149,7 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Obodroid official product documentation and property development deployment news."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.obodroid.com/about-us (Obodroid official product documentation and property development deployment news)."
     },
     {
       "typedId": "robot_model:mr-sam-service-robot",
@@ -167,11 +167,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "VietnamPlus regional coverage of Bangkok hospital robotic deployments at King Chulalongkorn Memorial Hospital."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://en.vietnamplus.vn/thailand-introduces-robot-assistants-at-hospital-post276507.vnp (VietnamPlus regional coverage of King Chulalongkorn Memorial Hospital robotic deployments)."
     },
     {
       "typedId": "robot_model:corgi-healthcare-robot",
-      "canonicalUrl": "https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E/",
+      "canonicalUrl": "https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E",
       "recordType": "robot_model",
       "title": "CORGI Healthcare and Physical Therapy Assistant Robot",
       "checkedClaims": [
@@ -181,15 +181,15 @@
       ],
       "reviewer": "Suk-Nsr",
       "reviewedDate": "2026-11-07",
-      "uncertainty": 0.10,
+      "uncertainty": 0.1,
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "True Digital Group and King Chulalongkorn Memorial Hospital collaborative press release."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.truedigital.com/en/tdg-story/%E0%B8%97%E0%B8%A3%E0%B8%B9-%E0%B8%94%E0%B8%B4%E0%B8%88%E0%B8%B4%E0%B8%97%E0%B8%B1%E0%B8%A5-%E0%B8%9C%E0%B8%99%E0%B8%B6%E0%B8%81%E0%B8%81%E0%B8%B3%E0%B8%A5%E0%B8%B1%E0%B8%87-%E0%B8%A3%E0%B8%9E (True Digital Group and King Chulalongkorn Memorial Hospital collaborative press release)."
     },
     {
       "typedId": "robot_model:chula-rehab-stroke-robot",
-      "canonicalUrl": "https://sustainability.chula.ac.th/report/2683/",
+      "canonicalUrl": "https://sustainability.chula.ac.th/report/2683",
       "recordType": "robot_model",
       "title": "Chula Rehabilitation Robots for Stroke Patients",
       "checkedClaims": [
@@ -203,11 +203,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Chulalongkorn University Sustainability Report 2023 on healthcare innovation."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://sustainability.chula.ac.th/report/2683 (Chulalongkorn University Sustainability Report 2023 on healthcare innovation)."
     },
     {
       "typedId": "robot_model:ai-police-cyborg",
-      "canonicalUrl": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+      "canonicalUrl": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg",
       "recordType": "robot_model",
       "title": "AI Police Cyborg 1.0",
       "checkedClaims": [
@@ -222,11 +222,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "AWS Thailand Blog case study on cloud-connected smart policing in Nakhon Pathom."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg (AWS Thailand Blog case study on cloud-connected smart policing in Nakhon Pathom)."
     },
     {
       "typedId": "contribution:cu-robocovid-deployment",
-      "canonicalUrl": "https://www.chula.ac.th/en/news/42184/",
+      "canonicalUrl": "https://www.chula.ac.th/en/news/42184",
       "recordType": "contribution",
       "title": "CU-RoboCOVID Pinto and Mirror deployment",
       "checkedClaims": [
@@ -241,11 +241,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Chulalongkorn University public news release #42184."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.chula.ac.th/en/news/42184 (Chulalongkorn University public news release #42184)."
     },
     {
       "typedId": "contribution:kmutt-robotics-for-all",
-      "canonicalUrl": "https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall/",
+      "canonicalUrl": "https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall",
       "recordType": "contribution",
       "title": "Robotics for All - KMUTT FIBO",
       "checkedClaims": [
@@ -255,21 +255,21 @@
       ],
       "reviewer": "Suk-Nsr",
       "reviewedDate": "2026-11-07",
-      "uncertainty": 0.10,
+      "uncertainty": 0.1,
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "King Mongkut's University of Technology Thonburi Research Innovation and Partnerships Office highlight."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall (KMUTT FIBO Robotics for All program record)."
     },
     {
       "typedId": "contribution:robo-buddy-education",
-      "canonicalUrl": "https://sustainability.chula.ac.th/report/3802/",
+      "canonicalUrl": "https://sustainability.chula.ac.th/report/3802",
       "recordType": "contribution",
       "title": "Robo-Buddy: Educational Coding Companion for Schools",
       "checkedClaims": [
-        "Contributor: Faculty of Education, Chulalongkorn University",
-        "Contribution Type: Educational robotics platform",
-        "Verification: Active outreach program teaching computational thinking to Thai elementary school students (distinct from unreviewed raw submission)"
+        "Contributor: Chulalongkorn University",
+        "Contribution Type: Educational robotics project",
+        "Claim: A coding education project in Thailand teaching coding concepts to elementary school students through a small robot and command-card interaction"
       ],
       "reviewer": "Suk-Nsr",
       "reviewedDate": "2026-11-07",
@@ -277,11 +277,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Chulalongkorn University Sustainability Report #3802."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://sustainability.chula.ac.th/report/3802 (Chulalongkorn University Sustainability Report #3802)."
     },
     {
       "typedId": "source_record:ct-asia-official",
-      "canonicalUrl": "https://www.dinsaw.com/en/home-english/",
+      "canonicalUrl": "https://www.dinsaw.com/en/home-english",
       "recordType": "source_record",
       "title": "Home - English - Dinsaw Robot",
       "checkedClaims": [
@@ -295,11 +295,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Official company domain https://www.dinsaw.com/"
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.dinsaw.com/en/home-english (Official CT Asia Robotics corporate domain)."
     },
     {
       "typedId": "source_record:chula-pinto-covid",
-      "canonicalUrl": "https://www.chula.ac.th/en/news/42184/",
+      "canonicalUrl": "https://www.chula.ac.th/en/news/42184",
       "recordType": "source_record",
       "title": "Chula Engineers Deliver Pinto Robots to COVID-19 Hotspots Across Thailand",
       "checkedClaims": [
@@ -313,7 +313,7 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Chula news archives #42184."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.chula.ac.th/en/news/42184 (Chula news archives #42184)."
     },
     {
       "typedId": "source_record:thailand-gov-dinsaw-mini",
@@ -327,15 +327,15 @@
       ],
       "reviewer": "Suk-Nsr",
       "reviewedDate": "2026-11-07",
-      "uncertainty": 0.05,
+      "uncertainty": 0.1,
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Official thailand.go.th portal."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://thailand.go.th/public/issue-focus-detail/thai-innovation-goes-global-dinsaw-mini-robot-takes-care-of-the-elderly (Official thailand.go.th government portal)."
     },
     {
       "typedId": "source_record:true-chula-medical-robot",
-      "canonicalUrl": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+      "canonicalUrl": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t",
       "recordType": "source_record",
       "title": "First Time in Thailand, Introducing a Medical Assistant Robot That Supports Nuclear Medicine",
       "checkedClaims": [
@@ -345,11 +345,11 @@
       ],
       "reviewer": "Suk-Nsr",
       "reviewedDate": "2026-11-07",
-      "uncertainty": 0.06,
+      "uncertainty": 0.09,
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "True Corporation corporate technology blog."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t (True Corporation corporate technology blog)."
     },
     {
       "typedId": "source_record:bangkok-post-chula-robots",
@@ -363,15 +363,15 @@
       ],
       "reviewer": "Suk-Nsr",
       "reviewedDate": "2026-11-07",
-      "uncertainty": 0.08,
+      "uncertainty": 0.22,
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Bangkok Post general news archive, article 2726860."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.bangkokpost.com/thailand/general/2726860/robots-to-speed-up-service-at-chulalongkorn-hospital (Bangkok Post general news archive, article 2726860)."
     },
     {
       "typedId": "source_record:aws-ai-police-cyborg",
-      "canonicalUrl": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+      "canonicalUrl": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg",
       "recordType": "source_record",
       "title": "Public safety in Thailand: piloting AI Police Cyborg with AWS",
       "checkedClaims": [
@@ -381,15 +381,15 @@
       ],
       "reviewer": "Suk-Nsr",
       "reviewedDate": "2026-11-07",
-      "uncertainty": 0.08,
+      "uncertainty": 0.16,
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "AWS Thailand Blog."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg (AWS Thailand Blog)."
     },
     {
       "typedId": "source_record:kmutt-fibo-robotics-for-all",
-      "canonicalUrl": "https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall/",
+      "canonicalUrl": "https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall",
       "recordType": "source_record",
       "title": "KMUTT FIBO Robotics for All Program Record",
       "checkedClaims": [
@@ -399,11 +399,11 @@
       ],
       "reviewer": "Suk-Nsr",
       "reviewedDate": "2026-11-07",
-      "uncertainty": 0.07,
+      "uncertainty": 0.1,
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "KMUTT RIPO research highlight database."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall (KMUTT RIPO research highlight database)."
     },
     {
       "typedId": "source_record:openalex-mitsantisuk-ku-robotics",
@@ -418,15 +418,15 @@
       ],
       "reviewer": "Suk-Nsr",
       "reviewedDate": "2026-11-07",
-      "uncertainty": 0.06,
+      "uncertainty": 0.15,
       "publicEligibility": true,
       "sourceType": "OPENALEX",
       "origin": "Thailand",
-      "evidence": "OpenAlex work entry W1678091165 and DOI 10.1541/ieejias.135.nl4_5 with verified institutional affiliation."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://openalex.org/W1678091165 (OpenAlex work entry W1678091165 and DOI 10.1541/ieejias.135.nl4_5 with verified institutional affiliation)."
     },
     {
       "typedId": "triplet:dinsaw-developed-by-ctasia",
-      "canonicalUrl": "https://www.ctasia.com/about-us/",
+      "canonicalUrl": "https://www.ctasia.com/about-us",
       "recordType": "triplet",
       "title": "Dinsaw Robot developed_by CT Asia Robotics",
       "checkedClaims": [
@@ -441,11 +441,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "CT Asia Robotics corporate about-us documentation citing Dinsaw development."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.ctasia.com/about-us (CT Asia Robotics corporate about-us documentation citing Dinsaw development)."
     },
     {
       "typedId": "triplet:pinto-deployed-in-hospitals",
-      "canonicalUrl": "https://www.chula.ac.th/en/news/42184/",
+      "canonicalUrl": "https://www.chula.ac.th/en/news/42184",
       "recordType": "triplet",
       "title": "Pinto Robot deployed_in hospitals across Thailand",
       "checkedClaims": [
@@ -460,11 +460,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Chulalongkorn University announcement #42184 documenting hospital deployment across Thailand."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.chula.ac.th/en/news/42184 (Chulalongkorn University announcement #42184 documenting hospital deployment across Thailand)."
     },
     {
       "typedId": "triplet:kaitomm-developed-by-obodroid",
-      "canonicalUrl": "https://www.obodroid.com/about-us/",
+      "canonicalUrl": "https://www.obodroid.com/about-us",
       "recordType": "triplet",
       "title": "Kaitomm Robot developed_by Obodroid",
       "checkedClaims": [
@@ -479,11 +479,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Obodroid corporate disclosures."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.obodroid.com/about-us (Obodroid corporate disclosures)."
     },
     {
       "typedId": "triplet:true-digital-collab-kcmh",
-      "canonicalUrl": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t/",
+      "canonicalUrl": "https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t",
       "recordType": "triplet",
       "title": "True Digital Group collaborated_with King Chulalongkorn Memorial Hospital",
       "checkedClaims": [
@@ -498,11 +498,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Joint press release by True Digital Group and King Chulalongkorn Memorial Hospital."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.true.th/blog/en/first-time-in-thailand-introducing-a-medical-assistant-robot-that-supports-nuclear-medicine-king-chulalongkorn-memorial-hospital-in-collaboration-with-true-digital-group-brought-a-state-of-the-art-t (Joint press release by True Digital Group and King Chulalongkorn Memorial Hospital)."
     },
     {
       "typedId": "triplet:ai-police-developed-by-security-pitch",
-      "canonicalUrl": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+      "canonicalUrl": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg",
       "recordType": "triplet",
       "title": "AI Police Cyborg 1.0 developed_by Security Pitch",
       "checkedClaims": [
@@ -517,11 +517,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "AWS case study and Security Pitch developer technical post."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg (AWS case study and Security Pitch developer technical post)."
     },
     {
       "typedId": "perspective:elderly-care-safety",
-      "canonicalUrl": "https://www.chula.ac.th/en/highlight/198924/",
+      "canonicalUrl": "https://www.chula.ac.th/en/highlight/198924",
       "recordType": "perspective_annotation",
       "title": "Perspective: elderly_care_safety in Thai healthcare robotics",
       "checkedClaims": [
@@ -537,11 +537,11 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Chulalongkorn University feature #198924 on Dinsaw Mini Home AI Assistance."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.chula.ac.th/en/highlight/198924 (Chulalongkorn University feature #198924 on Dinsaw Mini Home AI Assistance)."
     },
     {
       "typedId": "perspective:public-safety-surveillance",
-      "canonicalUrl": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg/",
+      "canonicalUrl": "https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg",
       "recordType": "perspective_annotation",
       "title": "Perspective: public_safety_and_surveillance in Thai robotics",
       "checkedClaims": [
@@ -557,7 +557,7 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "AWS Thailand blog publication."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://aws.amazon.com/th/blogs/thailand/aws-thai-ai-police-cyborg (AWS Thailand blog publication)."
     }
   ],
   "excludedRecords": [
@@ -573,8 +573,8 @@
     },
     {
       "identifier": "robot_model:bumi-humanoid-robot",
-      "exclusionCategory": "unverified_claim",
-      "reason": "Foreign humanoid model (Noetix Robotics, China) exhibited temporarily at a conference in Bangkok; no ongoing Thailand development, deployment, or laboratory research."
+      "exclusionCategory": "out_of_scope",
+      "reason": "Foreign humanoid model (Noetix Robotics, China) exhibited temporarily at a conference in Bangkok; out of scope as there is no ongoing Thailand development, deployment, or laboratory research."
     },
     {
       "identifier": "robot_model:ubtech-walker",
@@ -595,6 +595,11 @@
       "identifier": "submission:robo-buddy",
       "exclusionCategory": "pending_review",
       "reason": "Submitter notes explicitly require manual administrative enrichment before publication; must not be auto-published as APPROVED."
+    },
+    {
+      "identifier": "seed:source_record:dinsaw-mini-video-duplicate",
+      "exclusionCategory": "duplicate",
+      "reason": "Duplicate video record in raw seed corpus ('การใช้หุ่นยนต์ Dinsaw Mini ดูแลผู้สูงอายุ'); excluded as redundant crawl duplicate of primary Dinsaw Mini documentation."
     }
   ]
 }

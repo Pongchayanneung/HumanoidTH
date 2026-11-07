@@ -92,6 +92,14 @@ export class DeterministicMockEmbeddingGenerator implements EmbeddingGenerator {
   }
 }
 
+/** Headers for the embedding service. Sends a bearer key from EMBEDDING_SERVICE_KEY when set. */
+function embeddingHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const key = process.env.EMBEDDING_SERVICE_KEY;
+  if (key) headers.Authorization = `Bearer ${key}`;
+  return headers;
+}
+
 /**
  * Production TEI / Remote Embedding Generator for live model serving.
  */
@@ -115,7 +123,7 @@ export class TeiEmbeddingGenerator implements EmbeddingGenerator {
       const chunk = texts.slice(i, i + batchSize);
       const res = await fetch(`${this.endpoint}/embed`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: embeddingHeaders(),
         body: JSON.stringify({ inputs: chunk, normalize: true, truncate: true })
       });
       if (!res.ok) {

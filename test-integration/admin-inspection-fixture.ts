@@ -67,11 +67,14 @@ async function seedInspectionRecords(sql: SqlClient) {
   }
 }
 
-export async function createInspectionFixture(name?: string) {
+export async function createInspectionFixture(name?: string, productionOrigin?: string) {
   const fixture = await createAcceptanceDatabase(name);
   const prisma = new PrismaClient({ datasourceUrl: fixture.url, log: [] });
   try {
-    const environment = inspectionEnvironment(fixture.url, await hashOperatorPassword(operatorPassword));
+    const synthetic = inspectionEnvironment(fixture.url, await hashOperatorPassword(operatorPassword));
+    const environment = productionOrigin
+      ? { ...synthetic, NODE_ENV: "production" as const, OPERATOR_APP_ORIGIN: productionOrigin }
+      : synthetic;
     const config = readOperatorConfig(environment);
     assert.ok(config, "Synthetic inspection config must be valid");
     assert.equal(await createPostgresAuthStore(prisma).initialize(config), true);

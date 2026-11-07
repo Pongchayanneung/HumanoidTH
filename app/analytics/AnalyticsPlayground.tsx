@@ -4,10 +4,7 @@ import { useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
   CartesianGrid,
-  Cell,
   Legend,
   ResponsiveContainer,
   Scatter,
@@ -17,37 +14,18 @@ import {
   YAxis,
   ZAxis
 } from "recharts";
-
-type Scope = "all" | "sources" | "robots" | "contributions" | "perspectives" | "submissions";
-type TimeBucket = "month" | "year";
-
-type AnalyticsEvent = {
-  scope: Scope;
-  date: string | null;
-  year: number | null;
-  monthKey: string | null;
-  label: string;
-  confidence: number | null;
-  eventType: string;
-  sourceType: string;
-  relevanceStatus: string;
-  platform: string;
-  robotType: string;
-  thailandStatus: string;
-  contributionType: string;
-  verificationStatus: string;
-  perspectiveTheme: string;
-  stance: string;
-  sentiment: string;
-  submissionType: string;
-  status: string;
-  visibility: string;
-  countryOfOrigin: string;
-  ownerOrg: string;
-};
+import type {
+  CorpusAggregateSummary,
+  CorpusAnalyticsEvent,
+  DateDimension,
+  Scope,
+  TimeBucket
+} from "@/lib/analytics/types";
+import { formatTimeBucketKey } from "@/lib/analytics/date-semantics";
 
 interface AnalyticsPlaygroundProps {
-  events: AnalyticsEvent[];
+  events: CorpusAnalyticsEvent[];
+  summary?: CorpusAggregateSummary;
 }
 
 const scopeLabels: Record<Scope, string> = {
@@ -116,18 +94,7 @@ function seriesLabel(value: string) {
   return value === "unknown" || value === "n/a" ? value : humanize(value);
 }
 
-function normalizeDateKey(value: string | null, bucket: TimeBucket) {
-  if (!value) return "unknown";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "unknown";
-  if (bucket === "year") {
-    return String(date.getFullYear());
-  }
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  return `${date.getFullYear()}-${month}`;
-}
-
-function getFieldValue(event: AnalyticsEvent, field: string) {
+function getFieldValue(event: CorpusAnalyticsEvent, field: string) {
   switch (field) {
     case "eventType":
       return event.eventType;
@@ -166,7 +133,7 @@ function getFieldValue(event: AnalyticsEvent, field: string) {
   }
 }
 
-function topValues(events: AnalyticsEvent[], field: string, limit = 6) {
+function topValues(events: CorpusAnalyticsEvent[], field: string, limit = 6) {
   const counts = new Map<string, number>();
   for (const event of events) {
     const value = getFieldValue(event, field) || "unknown";
@@ -178,8 +145,9 @@ function topValues(events: AnalyticsEvent[], field: string, limit = 6) {
     .map(([value]) => value);
 }
 
-function toScatterPoint(event: AnalyticsEvent) {
-  const date = event.date ? new Date(event.date) : null;
+function toScatterPoint(event: CorpusAnalyticsEvent, dimension: DateDimension) {
+  const rawDate = dimension === "ingestion" ? event.ingestionDate : event.eventDate;
+  const date = rawDate ? new Date(rawDate) : null;
   return {
     x: date && !Number.isNaN(date.getTime()) ? date.getTime() : null,
     y: event.confidence,
@@ -188,9 +156,10 @@ function toScatterPoint(event: AnalyticsEvent) {
   };
 }
 
-export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps) {
+export default function AnalyticsPlayground({ events, summary: corpusSummary }: AnalyticsPlaygroundProps) {
   const [scope, setScope] = useState<Scope>("sources");
   const [timeBucket, setTimeBucket] = useState<TimeBucket>("month");
+  const [dateDimension, setDateDimension] = useState<DateDimension>("publication");
   const [seriesField, setSeriesField] = useState("relevanceStatus");
   const [rowField, setRowField] = useState("sourceType");
   const [columnField, setColumnField] = useState("relevanceStatus");
@@ -227,7 +196,7 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
     const byBucket = new Map<string, Record<string, number>>();
 
     for (const event of scopeEvents) {
-      const timeKey = normalizeDateKey(event.date, timeBucket);
+      const timeKey = formatTimeBucketKey(event, timeBucket, dateDimension);
       const seriesValue = getFieldValue(event, trendSeriesField) || "unknown";
       const normalizedSeries = trendTopValues.includes(seriesValue) ? seriesValue : remainderLabel;
 
@@ -244,7 +213,7 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
         timeKey,
         ...values
       }));
-  }, [scopeEvents, timeBucket, trendSeriesField, trendTopValues]);
+  }, [scopeEvents, timeBucket, dateDimension, trendSeriesField, trendTopValues]);
 
   const trendKeys = useMemo(() => {
     const keys = new Set<string>();
@@ -286,15 +255,24 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
     return scopeEvents
       .filter((event) => typeof event.confidence === "number")
       .map((event) => ({
-        ...toScatterPoint(event),
+        ...toScatterPoint(event, dateDimension),
         y: event.confidence ?? 0
       }))
       .filter((point) => point.x !== null);
-  }, [scopeEvents]);
+  }, [scopeEvents, dateDimension]);
 
   const summary = useMemo(() => {
-    const withDates = scopeEvents.filter((event) => event.date && !Number.isNaN(new Date(event.date).getTime()));
-    const confidenceValues = scopeEvents.map((event) => event.confidence).filter((value): value is number => typeof value === "number");
+    const withDates = scopeEvents.filter((event) => {
+      const d = dateDimension === "ingestion" ? event.ingestionDate : event.eventDate;
+      return d && !Number.isNaN(new Date(d).getTime());
+    });
+    const yearOnlyCount = scopeEvents.filter((e) => dateDimension === "publication" && e.datePrecision === "year_only").length;
+    const missingDateCount = scopeEvents.length - withDates.length;
+
+    const confidenceValues = scopeEvents
+      .map((event) => event.confidence)
+      .filter((value): value is number => typeof value === "number");
+
     const avgConfidence = confidenceValues.length
       ? confidenceValues.reduce((sum, value) => sum + value, 0) / confidenceValues.length
       : null;
@@ -302,6 +280,8 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
     return {
       total: scopeEvents.length,
       dated: withDates.length,
+      yearOnlyCount,
+      missingDateCount,
       avgConfidence,
       topSeries: trendSeriesTotals[0]?.[0] || "No live records",
       topRow: [...matrix.rowLabels].sort((a, b) => {
@@ -310,7 +290,7 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
         return totalB - totalA;
       })[0] || "No live records"
     };
-  }, [matrix, scopeEvents, trendSeriesTotals]);
+  }, [matrix, scopeEvents, trendSeriesTotals, dateDimension]);
 
   return (
     <div style={{ display: "grid", gap: "16px" }}>
@@ -322,6 +302,17 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
               {scopeOrder.map((value) => (
                 <option key={value} value={value}>{scopeLabels[value]}</option>
               ))}
+            </select>
+          </div>
+          <div>
+            <div className="muted">Date dimension</div>
+            <select
+              value={dateDimension}
+              onChange={(e) => setDateDimension(e.target.value as DateDimension)}
+              style={{ width: "100%" }}
+            >
+              <option value="publication">Publication / Event Date</option>
+              <option value="ingestion">Ingestion / System Date</option>
             </select>
           </div>
           <div>
@@ -341,7 +332,7 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
           </div>
           <div>
             <div className="muted">Matrix row</div>
-            <select value={matrixRowField} onChange={(e) => setRowField(e.target.value)} style={{ width: "100%" }}>
+            <select value={rowField} onChange={(e) => setRowField(e.target.value)} style={{ width: "100%" }}>
               {availableFields.map((field) => (
                 <option key={field.value} value={field.value}>{field.label}</option>
               ))}
@@ -349,7 +340,7 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
           </div>
           <div>
             <div className="muted">Matrix column</div>
-            <select value={matrixColumnField} onChange={(e) => setColumnField(e.target.value)} style={{ width: "100%" }}>
+            <select value={columnField} onChange={(e) => setColumnField(e.target.value)} style={{ width: "100%" }}>
               {availableFields.map((field) => (
                 <option key={field.value} value={field.value}>{field.label}</option>
               ))}
@@ -364,20 +355,24 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
 
       <div className="grid">
         <div className="panel motion-panel motion-pop">
-          <div className="muted">Records in scope</div>
+          <div className="muted">Analyzed in scope</div>
           <div className="stat">{summary.total}</div>
         </div>
         <div className="panel motion-panel motion-pop" style={{ animationDelay: "60ms" }}>
-          <div className="muted">With usable dates</div>
+          <div className="muted">{dateDimension === "publication" ? "With publication date" : "With ingestion date"}</div>
           <div className="stat">{summary.dated}</div>
         </div>
         <div className="panel motion-panel motion-pop" style={{ animationDelay: "120ms" }}>
-          <div className="muted">Average confidence</div>
-          <div className="stat">{summary.avgConfidence === null ? "No live confidence" : summary.avgConfidence.toFixed(2)}</div>
+          <div className="muted">
+            {dateDimension === "publication" ? "Year-only / Undated" : "System timestamps"}
+          </div>
+          <div className="stat">
+            {dateDimension === "publication" ? `${summary.yearOnlyCount} yr / ${summary.missingDateCount} undated` : `${summary.dated} valid`}
+          </div>
         </div>
         <div className="panel motion-panel motion-pop" style={{ animationDelay: "180ms" }}>
-          <div className="muted">Top trend factor</div>
-          <div className="stat" style={{ fontSize: "18px" }}>{seriesLabel(summary.topSeries)}</div>
+          <div className="muted">Average confidence</div>
+          <div className="stat">{summary.avgConfidence === null ? "No live confidence" : summary.avgConfidence.toFixed(2)}</div>
         </div>
       </div>
 
@@ -385,9 +380,11 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
         <section className="panel motion-panel motion-pop">
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "baseline" }}>
             <div>
-              <h2>Appearance Trend</h2>
+              <h2>Appearance Trend ({dateDimension === "publication" ? "Event Time" : "System Ingestion Time"})</h2>
               <div className="muted" style={{ fontSize: "12px" }}>
-                Monthly or yearly record appearance across the selected scope.
+                {dateDimension === "publication"
+                  ? "Publication and observation timeline. Year-only records are segregated in month view to prevent artificial January spikes."
+                  : "Database entry timeline tracking import batches and ingestion operations across the atlas."}
               </div>
             </div>
             <div className="badge">{scopeLabels[scope]}</div>
@@ -433,6 +430,9 @@ export default function AnalyticsPlayground({ events }: AnalyticsPlaygroundProps
                 )}
               </AreaChart>
             </ResponsiveContainer>
+          </div>
+          <div className="muted" style={{ fontSize: "11px", marginTop: "10px", fontStyle: "italic" }}>
+            Note: Trend and sentiment metrics reflect the verified public corpus and do not imply generalized public polling or clinical health outcomes.
           </div>
         </section>
 

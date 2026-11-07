@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { getTranslation } from "@/lib/translations";
+import { getTranslation, parseLanguage } from "@/lib/translations";
 import { PUBLIC_DATASET_SCOPE_LABEL } from "@/lib/public-projection";
 import AnalyticsPlayground from "./AnalyticsPlayground";
 import AnalyticsBpmn from "./AnalyticsBpmn";
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   }
 };export default async function AnalyticsPage() {
   const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  const lang = parseLanguage(cookieStore.get("lang")?.value);
   const t = getTranslation(lang);
 
   let events: Array<any> = [];

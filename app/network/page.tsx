@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import type { Metadata } from "next";
-import { getTranslation } from "@/lib/translations";
+import { getTranslation, parseLanguage } from "@/lib/translations";
 import NetworkGraphClient from "./NetworkGraphClient";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   }
 };export default async function NetworkPage() {
   const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  const lang = parseLanguage(cookieStore.get("lang")?.value);
   const t = getTranslation(lang);
 
   return (

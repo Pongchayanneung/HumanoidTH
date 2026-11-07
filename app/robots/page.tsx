@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { getTranslation } from "@/lib/translations";
+import { getTranslation, parseLanguage } from "@/lib/translations";
 import { isEligiblePublicRobot } from "@/lib/public-projection";
 
 export const dynamic = "force-dynamic";
@@ -129,7 +129,7 @@ function getRobotSourceImage(robot: RobotLike, sources: SourceLike[]) {
 
 export default async function RobotsPage() {
   const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  const lang = parseLanguage(cookieStore.get("lang")?.value);
   const t = getTranslation(lang);
 
   let robots: Array<{

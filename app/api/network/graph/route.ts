@@ -1,47 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildNetworkGraph, type NetworkSourceMode } from "@/lib/network-graph";
+import { buildNetworkGraph } from "@/lib/network-graph";
+import { invalidNetworkRequest, networkUnavailable, parseNetworkGraphQuery } from "@/lib/network-query";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const maxNodes = Number(searchParams.get("limitNodes") ?? searchParams.get("maxNodes") ?? 300);
-  const maxEdges = Number(searchParams.get("limitEdges") ?? searchParams.get("maxEdges") ?? 800);
-  const minConfidence = searchParams.get("minConfidence");
-  const source = searchParams.get("source") as NetworkSourceMode | null;
+  const query = parseNetworkGraphQuery(new URL(req.url).searchParams);
+  if (!query.ok) return invalidNetworkRequest(query.param);
 
   try {
     const graph = await buildNetworkGraph({
-      sourceMode: source ?? undefined,
-      cluster: searchParams.get("cluster"),
-      nodeType: searchParams.get("nodeType"),
-      relation: searchParams.get("relation"),
-      minConfidence: minConfidence ? Number(minConfidence) : null,
-      includeLowConfidence: searchParams.get("includeLowConfidence") === null ? undefined : searchParams.get("includeLowConfidence") === "true",
+      ...query.value,
       // Public API protection (M3 / T03): Public calls can never bypass confidentiality controls
-      includePrivate: false,
-      maxNodes: Number.isFinite(maxNodes) ? Math.min(Math.max(maxNodes, 25), 1000) : 300,
-      maxEdges: Number.isFinite(maxEdges) ? Math.min(Math.max(maxEdges, 50), 2500) : 800
+      includePrivate: false
     });
     return NextResponse.json(graph);
   } catch (error) {
+    // Detail stays in server logs; the response never carries Prisma, path or stack text.
     console.error("Network graph API failed:", error);
-    return NextResponse.json({
-      nodes: [],
-      edges: [],
-      clusters: [],
-      meta: {
-        source_mode: source ?? "auto",
-        resolved_source: source === "database" ? "database" : "file",
-        database_available: false,
-        file_available: false,
-        warnings: [error instanceof Error ? error.message : "Network graph generation failed"],
-        node_count: 0,
-        edge_count: 0,
-        cluster_count: 0,
-        generated_at: new Date().toISOString(),
-        truncated: false
-      }
-    }, { status: source === "database" || source === "file" ? 503 : 200 });
+    return networkUnavailable();
   }
 }

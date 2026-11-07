@@ -198,7 +198,7 @@ test("hostile stored text and URLs stay inert on the English and Thai mobile ins
   // then verify the Thai inspection at the original mobile width.
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.locator(".splash-screen").waitFor({ state: "detached" });
-  await page.getByRole("button", { name: "ภาษาไทย", exact: true }).click();
+  await page.getByRole("button", { name: "TH ภาษาไทย", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole("heading", { name: "ตรวจดูระเบียนแบบอ่านอย่างเดียว", exact: true })).toBeVisible();

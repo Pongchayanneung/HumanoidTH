@@ -194,17 +194,19 @@ test("unavailable pages and language switching work publicly at desktop and mobi
     for (const route of ["/profile", "/submit-data", "/data-pulls", "/map"]) {
       const response = await page.goto(route);
       expect(response?.status()).toBe(200);
-      await expect(page.getByRole("heading", { name: "Workflow unavailable", exact: true })).toBeVisible();
+      // /map shows its own unavailable notice since M3 (#40); the other routes keep the shared stub heading.
+      const heading = route === "/map" ? "Map analysis is unavailable in this release." : "Workflow unavailable";
+      await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
       await expect(page.locator("input, table, form")).toHaveCount(0);
       expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)).toBe(false);
     }
   }
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/profile");
-  await page.getByRole("button", { name: "ภาษาไทย", exact: true }).click();
+  await page.getByRole("button", { name: "TH ภาษาไทย", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
   await expect(page.getByRole("heading", { name: "ยังไม่เปิดให้ใช้งาน", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "English", exact: true }).click();
+  await page.getByRole("button", { name: "EN English", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.getByRole("heading", { name: "Workflow unavailable", exact: true })).toBeVisible();
 });

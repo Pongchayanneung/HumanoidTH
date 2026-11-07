@@ -7,7 +7,12 @@ import { DEFAULT_MODEL_PROFILE, type ModelProfile } from "./vector-types";
 export interface SemanticRetrievalPolicy {
   policyVersion: string;
   boundProfileHash: string;
-  semanticCutoffThreshold: number; // Minimum cosine similarity for semantic admission
+  semanticCutoffThreshold: number; // Minimum cosine similarity for semantic admission (see calibrationStatus)
+  /**
+   * "provisional_uncalibrated": the cutoff has no measured support. It must be re-derived
+   * on the dev split against the real embedding model before it is relied on.
+   */
+  calibrationStatus: "provisional_uncalibrated" | "calibrated_on_dev_split";
   rrfConstantK: number;            // Constant k for Reciprocal Rank Fusion: 1 / (k + rank)
   lexicalWeights: {
     title: number;
@@ -27,14 +32,18 @@ export interface SemanticRetrievalPolicy {
 }
 
 /**
- * The frozen Atlas Search policy agreed for Hackathon delivery.
- * Calibrated using the 12-query development pilot slice.
+ * The pinned Atlas Search policy parameters for Hackathon delivery.
+ * "Frozen" means the values are pinned so F5 and F6 agree on them. It does NOT mean
+ * they were calibrated: no real embedding model has been evaluated against this pilot.
  */
 export const FROZEN_SEMANTIC_POLICY: SemanticRetrievalPolicy = {
   policyVersion: "1.0-frozen",
   boundProfileHash: DEFAULT_MODEL_PROFILE.profileHash,
-  // 0.62 cutoff admits strong cross-lingual semantics while cleanly suppressing unrelated queries
+  // PROVISIONAL, UNCALIBRATED placeholder. No measurement supports 0.62: the only run used
+  // deterministic mock vectors (semantic MRR and P@3 were 0). Re-derive it on the dev split
+  // against the real embedding model (the profile bound above) before relying on it.
   semanticCutoffThreshold: 0.62,
+  calibrationStatus: "provisional_uncalibrated",
   rrfConstantK: 60,
   lexicalWeights: {
     title: 4.0,

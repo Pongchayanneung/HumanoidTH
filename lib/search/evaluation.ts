@@ -2,6 +2,35 @@ import type { SearchDocument, LanguageTag } from "./types";
 import { FROZEN_SEMANTIC_POLICY, type SemanticRetrievalPolicy } from "./semantic-policy";
 import { cosineSimilarity } from "./vector-io";
 
+export type EvaluationMode = "mock_fixture" | "production_semantic" | "lexical_only";
+export type SemanticStatus = "evaluated" | "mock" | "unavailable";
+
+export interface EvaluationModeInputs {
+  /** User explicitly asked for the deterministic mock fixture (--mock-fixture). */
+  mockFixtureRequested: boolean;
+  /** A real embedding service (EMBEDDING_SERVICE_URL or TEI_ENDPOINT) is configured. */
+  realQueryProviderConfigured: boolean;
+  /** Document vectors exist on disk: provider from the manifest profile, or null if absent. */
+  onDiskVectorProvider: "tei" | "mock" | "remote" | null;
+  /** On-disk profile hash matches the policy bound profile hash. */
+  onDiskProfileCompatible: boolean;
+}
+
+/**
+ * Decides the evaluation mode from what is actually available. production_semantic requires BOTH
+ * real document vectors bound to the policy profile AND a real query embedding provider.
+ * Mock vectors are used only when explicitly requested or when on-disk vectors are themselves mock.
+ */
+export function resolveEvaluationMode(i: EvaluationModeInputs): EvaluationMode {
+  if (i.onDiskVectorProvider !== null && i.onDiskVectorProvider !== "mock") {
+    return i.realQueryProviderConfigured && i.onDiskProfileCompatible
+      ? "production_semantic"
+      : "lexical_only";
+  }
+  if (i.onDiskVectorProvider === "mock" || i.mockFixtureRequested) return "mock_fixture";
+  return "lexical_only";
+}
+
 export interface PilotQuery {
   queryId: string;
   lang: LanguageTag;
@@ -47,10 +76,15 @@ export interface QueryEvaluationReport {
   split: "dev" | "reserved";
   lang: LanguageTag;
   queryText: string;
+  /**
+   * Offline in-process retrieval timing. Query embedding time is NOT included (it happens
+   * outside the timer), so this is not end-to-end latency. hybrid covers keyword scan,
+   * semantic scan, fusion and grouping.
+   */
   latencyMs: {
     keyword: number;
     semantic: number;
-    hybrid: number; // Measures full end-to-end hybrid path
+    hybrid: number;
   };
   top3Results: {
     keyword: GroupedResult[];
@@ -67,8 +101,13 @@ export interface QueryEvaluationReport {
 }
 
 export interface PilotEvaluationSummary {
-  evaluationMode: "mock_fixture" | "production_semantic" | "lexical_only";
-  semanticStatus: "evaluated" | "unavailable";
+  evaluationMode: EvaluationMode;
+  /** "evaluated" only for a real embedding model; "mock" for fixture vectors; else "unavailable". */
+  semanticStatus: SemanticStatus;
+  /** Plain statements of what this run does and does not support. */
+  caveats: string[];
+  /** Mean per-query offline retrieval timing in ms, embedding excluded. */
+  meanLatencyMs: { keyword: number; semantic: number; hybrid: number };
   totalQueries: number;
   devQueries: number;
   reservedQueries: number;
@@ -84,7 +123,14 @@ export interface PilotEvaluationSummary {
     };
     unsupported_condition: {
       count: number;
-      inspectableGapPreserved: number;
+      /** Queries where hybrid returned nothing. */
+      zeroResult: number;
+      /** Queries where hybrid returned results and every primary result has a non-empty excerpt. */
+      returnedWithExcerpt: number;
+      /** Queries where hybrid returned results and at least one primary result has no excerpt. */
+      returnedWithoutExcerpt: number;
+      /** Always false: whether an excerpt actually reveals the condition gap is not assessed. */
+      excerptContentAssessed: false;
     };
   };
   byLanguage: Record<LanguageTag, { count: number; avgHybridP3: number }>;
@@ -182,13 +228,13 @@ export class RetrievalEvaluator {
   private documents: SearchDocument[];
   private vectorMap: Map<number, Float32Array>;
   private policy: SemanticRetrievalPolicy;
-  private evaluationMode: "mock_fixture" | "production_semantic" | "lexical_only";
+  private evaluationMode: EvaluationMode;
 
   constructor(
     documents: SearchDocument[],
     vectorMap: Map<number, Float32Array> = new Map(),
     policy: SemanticRetrievalPolicy = FROZEN_SEMANTIC_POLICY,
-    evaluationMode: "mock_fixture" | "production_semantic" | "lexical_only" = "mock_fixture"
+    evaluationMode: EvaluationMode = "mock_fixture"
   ) {
     this.documents = documents;
     this.vectorMap = vectorMap;
@@ -198,7 +244,8 @@ export class RetrievalEvaluator {
 
   /**
    * Evaluates a single pilot query across Keyword, Semantic, and Hybrid retrieval.
-   * Full hybrid path latency is measured from start of query execution to grouped results.
+   * Hybrid latency is measured from start of retrieval to grouped results. Query embedding
+   * happens before this call and is not timed.
    */
   evaluateQuery(
     query: PilotQuery,
@@ -224,9 +271,10 @@ export class RetrievalEvaluator {
     // 2. Semantic Retrieval
     const startSem = performance.now();
     const semCandidates: { document: SearchDocument; score: number }[] = [];
-    const hasVectors = queryVector && this.vectorMap.size > 0;
+    const hasVectors =
+      this.evaluationMode !== "lexical_only" && !!queryVector && this.vectorMap.size > 0;
 
-    if (hasVectors) {
+    if (hasVectors && queryVector) {
       for (const doc of this.documents) {
         if (doc.vectorRow !== null && doc.vectorRow !== undefined) {
           const docVec = this.vectorMap.get(doc.vectorRow);
@@ -303,7 +351,7 @@ export class RetrievalEvaluator {
       notes.push("Semantic vectors unavailable; evaluated lexical branch only");
     }
     if (isUnrelated && unrelatedSuppressed) {
-      notes.push("Cleanly suppressed below cutoff without false match claim");
+      notes.push("No results returned for an unrelated query");
     }
 
     // Top 3 groups for display
@@ -350,7 +398,14 @@ export class RetrievalEvaluator {
     summary: PilotEvaluationSummary;
   } {
     const reports: QueryEvaluationReport[] = [];
-    const hasVectors = this.vectorMap.size > 0 && queryVectorMap && queryVectorMap.size > 0;
+    const hasVectors =
+      this.evaluationMode !== "lexical_only" &&
+      this.vectorMap.size > 0 &&
+      !!queryVectorMap &&
+      queryVectorMap.size > 0;
+    // Semantic aggregates are reported only for a real embedding model. Mock vectors cannot
+    // support any claim about semantic quality, so they surface as null (n/a).
+    const semanticReportable = hasVectors && this.evaluationMode === "production_semantic";
 
     const intentsToRun = dataset.intents.filter(
       (intent) => !filterSplit || intent.split === filterSplit
@@ -376,38 +431,38 @@ export class RetrievalEvaluator {
       if (r.split === "reserved") resCount++;
     }
 
-    // Inspectable gap preservation verification:
-    let inspectableGapPreserved = 0;
+    // Evidence-gap handling: count zero-result and returned-with-excerpt separately.
+    // Whether an excerpt actually reveals the condition gap is NOT assessed here.
+    let zeroResult = 0;
+    let returnedWithExcerpt = 0;
+    let returnedWithoutExcerpt = 0;
     for (const r of partialReports) {
       const hyb = r.top3Results.hybrid;
       if (hyb.length === 0) {
-        // Zero-result regression case: cleanly rejected, preserving gap
-        inspectableGapPreserved++;
-        r.notes.push("Condition gap preserved via complete rejection (0 false claims)");
+        zeroResult++;
+        r.notes.push("No results returned for the unsupported condition");
+        continue;
+      }
+      const allHaveExcerpt = hyb.every((g) => {
+        const doc = g.primaryDocument;
+        return (
+          Array.isArray(doc.evidence) &&
+          doc.evidence.length > 0 &&
+          doc.evidence.some((e) => e.originalText && e.originalText.length > 0)
+        );
+      });
+      if (allHaveExcerpt) {
+        returnedWithExcerpt++;
+        r.notes.push("Results returned with non-empty excerpts; excerpt content not assessed against the condition");
       } else {
-        // Check if returned primary documents have inspectable evidence text
-        const allHaveEvidence = hyb.every((g) => {
-          const doc = g.primaryDocument;
-          return (
-            Array.isArray(doc.evidence) &&
-            doc.evidence.length > 0 &&
-            doc.evidence.some((e) => e.originalText && e.originalText.length > 0)
-          );
-        });
-        if (allHaveEvidence) {
-          inspectableGapPreserved++;
-          r.notes.push(
-            "Partial match preserved: original evidence text reveals condition gap for user inspection"
-          );
-        } else {
-          r.notes.push("Evidence gap violation: candidate lacks verifiable source evidence");
-        }
+        returnedWithoutExcerpt++;
+        r.notes.push("Results returned and at least one primary result has no excerpt");
       }
     }
 
     // MRR calculation over full retrieval depth
     const calcMRR = (mode: "keyword" | "semantic" | "hybrid") => {
-      if (mode === "semantic" && !hasVectors) return null;
+      if (mode === "semantic" && !semanticReportable) return null;
       if (supportedReports.length === 0) return 0;
       let rrSum = 0;
       for (const r of supportedReports) {
@@ -418,14 +473,14 @@ export class RetrievalEvaluator {
     };
 
     const calcAvgP3 = (mode: "keyword" | "semantic" | "hybrid") => {
-      if (mode === "semantic" && !hasVectors) return null;
+      if (mode === "semantic" && !semanticReportable) return null;
       if (supportedReports.length === 0) return 0;
       const sum = supportedReports.reduce((acc, r) => acc + r.metrics[mode].precisionAt3, 0);
       return Number((sum / supportedReports.length).toFixed(3));
     };
 
     const calcSuppression = (mode: "keyword" | "semantic" | "hybrid") => {
-      if (mode === "semantic" && !hasVectors) return null;
+      if (mode === "semantic" && !semanticReportable) return null;
       if (unrelatedReports.length === 0) return 1.0;
       const suppressed = unrelatedReports.filter((r) => r.top3Results[mode].length === 0).length;
       return Number((suppressed / unrelatedReports.length).toFixed(3));
@@ -450,9 +505,39 @@ export class RetrievalEvaluator {
       }
     }
 
+    const meanLatency = (mode: "keyword" | "semantic" | "hybrid") =>
+      reports.length === 0
+        ? 0
+        : Number((reports.reduce((a, r) => a + r.latencyMs[mode], 0) / reports.length).toFixed(2));
+
+    const semanticStatus: SemanticStatus = !hasVectors
+      ? "unavailable"
+      : this.evaluationMode === "production_semantic"
+        ? "evaluated"
+        : "mock";
+
+    const caveats: string[] = [
+      "Latency is offline in-process retrieval timing; query embedding time is excluded.",
+      "Unsupported-condition handling counts zero results and returned excerpts only; excerpt content is not assessed.",
+      `Semantic cutoff ${this.policy.semanticCutoffThreshold} is ${this.policy.calibrationStatus}.`
+    ];
+    if (semanticStatus === "unavailable") {
+      caveats.push("No semantic vectors were used. Hybrid is RRF over the keyword branch alone. Semantic quality was not measured.");
+    } else if (semanticStatus === "mock") {
+      caveats.push(
+        "Semantic branch used deterministic mock vectors. Semantic metrics are reported as n/a and hybrid includes the mock branch. No real embedding model was evaluated."
+      );
+    }
+
     const summary: PilotEvaluationSummary = {
       evaluationMode: this.evaluationMode,
-      semanticStatus: hasVectors ? "evaluated" : "unavailable",
+      semanticStatus,
+      caveats,
+      meanLatencyMs: {
+        keyword: meanLatency("keyword"),
+        semantic: meanLatency("semantic"),
+        hybrid: meanLatency("hybrid")
+      },
       totalQueries: reports.length,
       devQueries: devCount,
       reservedQueries: resCount,
@@ -480,7 +565,10 @@ export class RetrievalEvaluator {
         },
         unsupported_condition: {
           count: partialReports.length,
-          inspectableGapPreserved
+          zeroResult,
+          returnedWithExcerpt,
+          returnedWithoutExcerpt,
+          excerptContentAssessed: false
         }
       },
       byLanguage: byLang,

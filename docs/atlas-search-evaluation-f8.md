@@ -1,16 +1,16 @@
-# Atlas Search Pilot Evaluation and Frozen Semantic Policy Specification (F8)
+# Atlas Search Pilot Evaluation and Provisional Semantic Policy Specification (F8)
 
 **Package:** Feature Package F8 — Issue #20  
 **Assignee:** Suk-Nsr  
 **Milestone:** Atlas Search — 6 hours  
-**Status:** Completed  
+**Status:** Lexical (keyword) baseline measured. **Semantic retrieval was NOT evaluated**: no real embedding model was run, so the semantic cutoff is provisional and uncalibrated.  
 **Artifacts Generated:**
 - `data/search/pilot-queries.json`: 20-query pilot covering 10 independent intents in paired Thai and English with verified corpus-grounded expected IDs
-- `lib/search/semantic-policy.ts`: Frozen semantic retrieval policy specification and profile compatibility checks
-- `lib/search/evaluation.ts`: Evaluation engine for Keyword, Semantic, and Hybrid (RRF) retrieval, full-depth MRR, full-path latency, and inspectable evidence gap checking
-- `scripts/evaluate-retrieval.ts`: Automated CLI evaluation runner (`pnpm run search:eval`) with explicit evaluation mode reporting
+- `lib/search/semantic-policy.ts`: Pinned (not calibrated) semantic retrieval policy parameters and profile compatibility checks
+- `lib/search/evaluation.ts`: Evaluation engine for Keyword, Semantic, and Hybrid (RRF) retrieval, full-depth MRR, offline retrieval timing, and zero-result / returned-excerpt counting
+- `scripts/evaluate-retrieval.ts`: CLI evaluation runner (`pnpm run search:eval`) that reports its evaluation mode truthfully (see section 3)
 - `data/search/evaluation-pilot.json`: Full case-level evaluation output and aggregate metric summary
-- `test/search-evaluation.test.ts`: Complete unit test suite verifying query distribution, lexical weights, RRF ranking, threshold cutoff, full-depth MRR, and evidence gap preservation
+- `test/search-evaluation.test.ts`: Complete unit test suite verifying query distribution, lexical weights, RRF ranking, threshold cutoff, exact full-depth MRR, evaluation-mode resolution, and zero-result / excerpt counting
 
 ---
 
@@ -42,43 +42,53 @@ Relevance expectations in `data/search/pilot-queries.json` are aligned directly 
 
 ---
 
-## 2. Frozen Semantic Policy Specification
+## 2. Semantic Policy Specification (Pinned, Provisional, Uncalibrated)
 
-Calibrated using the development query slice and frozen to ensure deterministic agreement across F5 (Ranking) and F6 (API):
+These values are pinned so F5 (Ranking) and F6 (API) read the same numbers. "Frozen" in the code identifiers (`FROZEN_SEMANTIC_POLICY`, `1.0-frozen`) means the values are pinned, **not** that they were calibrated. `calibrationStatus` is `provisional_uncalibrated`.
 
 | Policy Setting | Value | Rationale |
 | :--- | :--- | :--- |
-| **Policy Version** | `1.0-frozen` | Immutable production policy |
-| **Bound Model Profile** | `qwen2-gte-1024-f32-l2-e085e72-v1` | Binds embedding runtime to `Alibaba-NLP/gte-Qwen2-1.5B-instruct` (1,024 dims, L2 normalized, commit pinned) |
-| **Semantic Cutoff Threshold** | **`0.62`** | Admits relevant cross-lingual semantic matches while cleanly suppressing unrelated queries |
-| **RRF Constant ($k$)** | **`60`** | Standard reciprocal rank fusion ($1 / (60 + \text{rank})$) balancing keyword and semantic branches |
-| **Lexical Weights** | Title: `4.0`, Body: `1.0` | Prioritizes title and canonical name matches over broad substantive excerpts |
+| **Policy Version** | `1.0-frozen` | Pinned parameter set, not a calibrated production policy |
+| **Bound Model Profile** | `qwen2-gte-1024-f32-l2-e085e72-v1` | Binds embedding runtime to `Alibaba-NLP/gte-Qwen2-1.5B-instruct` (1,024 dims, L2 normalized, commit pinned). Not run in this evaluation |
+| **Semantic Cutoff Threshold** | **`0.62`** (provisional, uncalibrated) | Placeholder with no measured support: the only semantic run used deterministic mock vectors, and it returned 1 result in 20 queries with semantic MRR and P@3 of 0. Must be re-derived on the dev split against the real embedding model before use |
+| **RRF Constant ($k$)** | **`60`** | Common default for reciprocal rank fusion ($1 / (60 + \text{rank})$); not tuned on this pilot |
+| **Lexical Weights** | Title: `4.0`, Body: `1.0` | Prioritizes title and canonical name matches over broad substantive excerpts; not tuned on this pilot |
 | **Candidate Limits** | 50 candidates / branch | Bounded latency budget (max 200 current-record revalidation checks) |
-| **Result Limits** | Default 10, Max 20 | Clean UX without padded or irrelevant entries |
+| **Result Limits** | Default 10, Max 20 | Bounded result size |
 | **Task Instruction** | `"Given a Thai or English robotics information request, retrieve relevant public atlas records."` | Pinned query prefix for Qwen embedding instruction tuning |
 
 ---
 
 ## 3. Evaluation Metrics and Mode Comparison
 
-Evaluated across all 20 pilot queries against the 6,746 eligible public atlas documents (`data/search/documents.json`) in mock fixture evaluation mode (`evaluationMode: "mock_fixture"`):
+The committed report (`data/search/evaluation-pilot.json`) was produced by `./node_modules/.bin/tsx scripts/evaluate-retrieval.ts` (equivalently `pnpm run search:eval`) with no embedding service configured. It ran **`lexical_only`**: 20 pilot queries against the 6,746 eligible public atlas documents (`data/search/documents.json`). `semanticStatus` is `unavailable`. **No semantic or real-embedding result exists in this report.** Hybrid is RRF over the keyword branch alone, so it is not evidence that fusion helps.
 
-| Evaluation Dimension | Keyword Retrieval | Semantic Retrieval (Mock Fixture) | Hybrid Retrieval (RRF) |
+| Evaluation Dimension | Keyword Retrieval | Semantic Retrieval | Hybrid (RRF over keyword only) |
 | :--- | :--- | :--- | :--- |
-| **Supported MRR (Full-Depth)** | **`0.378`** | *(Mock Fixture)* | **`0.377`** |
-| **Supported Precision@3** | **`0.167`** | *(Mock Fixture)* | **`0.167`** |
-| **Unrelated Query Suppression Rate** | `50.0%` | **`100.0%`** | **`50.0%`** |
-| **Unsupported / Negation Evidence Gaps** | Preserved | Preserved | **Preserved (4/4 cases)** |
-| **Full End-to-End Latency** | ~2.5 ms | ~8.0 ms | **~10.5 ms** |
+| **Supported MRR (Full-Depth, 12 queries)** | `0.378` | n/a (not evaluated) | `0.377` |
+| **Supported Precision@3** | `0.167` | n/a (not evaluated) | `0.167` |
+| **Unrelated Query Suppression (zero results, 4 queries)** | `50.0%` (2 of 4) | n/a (not evaluated; a mock run returns nothing, which is vacuous) | `50.0%` (2 of 4) |
+| **Mean offline retrieval timing, embedding excluded** | `3.29 ms` | n/a (not run) | `3.84 ms` |
+
+Unsupported / negation queries (4 queries), counted separately. **Whether the returned excerpts reveal the missing condition was not assessed.**
+
+| Outcome (hybrid) | Count |
+| :--- | :--- |
+| Zero results returned | 2 of 4 |
+| Results returned, every primary result has a non-empty excerpt | 2 of 4 |
+| Results returned, at least one primary result has no excerpt | 0 of 4 |
+
+The timing figures are means from one run on one machine and vary between runs. They measure in-process keyword scan, fusion and grouping only; query embedding time is outside the timer, so they are **not end-to-end latency** and say nothing about the production embedding endpoint.
 
 > [!NOTE]
-> - **Evaluation Mode Labeling:** `scripts/evaluate-retrieval.ts` explicitly marks its evaluation mode (`mock_fixture` vs `production_semantic` vs `lexical_only`). When running without live production Qwen vectors, the report records `mock_fixture` and evaluates deterministic mock vectors to test cutoff behavior without falsely attributing synthetic numbers to Qwen.
+> - **Evaluation Mode Labeling:** `scripts/evaluate-retrieval.ts` resolves its mode from what is actually available. `production_semantic` requires BOTH on-disk document vectors bound to the policy profile AND a real query embedding provider (`EMBEDDING_SERVICE_URL` or `TEI_ENDPOINT`). With neither, the run is `lexical_only`. `mock_fixture` is used only when `--mock-fixture` is passed explicitly (or the on-disk vectors are themselves mock); it reports `semanticStatus: "mock"` and semantic metrics as n/a. Mock vectors are never described as Qwen results.
 > - **Full-Depth MRR:** Mean Reciprocal Rank calculates the first useful rank across the full candidate list rather than truncating at rank 3. Precision@3 strictly measures the fraction of relevant documents in the top 3 results.
-> - **Evidence Gap Preservation:** Assessed by confirming that unsupported condition queries either cleanly return 0 results (refusing to claim ungrounded satisfaction) or return candidates with verifiable, non-empty source evidence text for human inspection.
+> - **Pilot size:** 12 supported queries over 6 intents. These are descriptive case-level numbers, not statistically powered.
 
 ---
 
 ## 4. Limitations and Boundaries
 
 - **Pilot Evidence Scope:** This evaluation establishes case-level retrieval behavior across 10 representative intents; it does not claim corpus-wide statistical accuracy or health/medical certification.
-- **Offline Fixtures:** In offline execution without a live GPU server, mock embeddings verify structural ranking pipelines; production inference utilizes the authenticated GPU endpoint established in F2.
+- **Semantic retrieval is unmeasured:** No real embedding model was run against the pilot. The 0.62 cutoff, the RRF constant and the lexical weights are not validated for semantic or hybrid quality. Before the semantic branch is enabled, build real vectors for the bound profile, run `search:eval` with the embedding endpoint configured, re-derive the cutoff on the dev split only, and confirm on the reserved split.
+- **Offline Fixtures:** Mock embeddings (`--mock-fixture`) only exercise the ranking pipeline structurally. They carry no information about semantic quality.

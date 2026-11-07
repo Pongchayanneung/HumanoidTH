@@ -3,19 +3,26 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import type { SearchDocument } from "../lib/search/types";
 import {
   RetrievalEvaluator,
+  resolveEvaluationMode,
+  type EvaluationMode,
   type PilotDataset,
   type PilotQuery
 } from "../lib/search/evaluation";
-import { FROZEN_SEMANTIC_POLICY } from "../lib/search/semantic-policy";
+import { FROZEN_SEMANTIC_POLICY, isProfileCompatibleWithPolicy } from "../lib/search/semantic-policy";
 import { readVectorAtRow, BYTES_PER_FLOAT32 } from "../lib/search/vector-io";
-import { DeterministicMockEmbeddingGenerator } from "../lib/search/vector-builder";
-import { MOCK_MODEL_PROFILE } from "../lib/search/vector-types";
+import {
+  DeterministicMockEmbeddingGenerator,
+  TeiEmbeddingGenerator
+} from "../lib/search/vector-builder";
+import type { EmbeddingGenerator } from "../lib/search/vector-types";
 
 async function main() {
   const args = process.argv.slice(2);
   const isDevOnly = args.includes("--dev-only");
   const isReservedOnly = args.includes("--reserved");
-  const isMockFixture = args.includes("--mock-fixture") || true; // Default to mock fixture for local evaluation
+  // Mock vectors are used only when explicitly requested. Without a real embedding provider
+  // and real document vectors, the default run is lexical_only and makes no semantic claim.
+  const isMockFixture = args.includes("--mock-fixture");
   const splitFilter = isDevOnly ? "dev" : isReservedOnly ? "reserved" : undefined;
 
   console.log("=== Atlas Search Retrieval Evaluation (F8) ===");
@@ -40,23 +47,38 @@ async function main() {
   const vectorMap = new Map<number, Float32Array>();
   const dimensions = 1024;
   const mockGen = new DeterministicMockEmbeddingGenerator(dimensions);
+  const embeddingEndpoint = process.env.EMBEDDING_SERVICE_URL || process.env.TEI_ENDPOINT || "";
 
-  let evaluationMode: "mock_fixture" | "production_semantic" | "lexical_only" = "lexical_only";
-
-  // Check on-disk vectors and manifest
+  // Inspect on-disk vectors and manifest (if any) before deciding the mode.
+  let onDiskVectorProvider: "tei" | "mock" | "remote" | null = null;
+  let onDiskProfileCompatible = false;
+  let vectorBuffer: Buffer | null = null;
   if (existsSync(vectorsPath) && existsSync(manifestPath)) {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-    const vectorBuffer = readFileSync(vectorsPath);
+    if (manifest.modelProfile?.provider) {
+      onDiskVectorProvider = manifest.modelProfile.provider;
+      onDiskProfileCompatible = isProfileCompatibleWithPolicy(manifest.modelProfile);
+      vectorBuffer = readFileSync(vectorsPath);
+      console.log(`Found vectors.f32 (Profile: ${manifest.modelProfile.modelId ?? "unknown"}, provider: ${onDiskVectorProvider}).`);
+    }
+  }
+
+  const evaluationMode: EvaluationMode = resolveEvaluationMode({
+    mockFixtureRequested: isMockFixture,
+    realQueryProviderConfigured: embeddingEndpoint !== "",
+    onDiskVectorProvider,
+    onDiskProfileCompatible
+  });
+
+  if (vectorBuffer && (evaluationMode === "production_semantic" || evaluationMode === "mock_fixture")) {
     const rowBytes = dimensions * BYTES_PER_FLOAT32;
     const count = Math.floor(vectorBuffer.length / rowBytes);
-    console.log(`Loading ${count} binary vectors from vectors.f32 (Profile: ${manifest.modelProfile?.modelId ?? "unknown"})...`);
+    console.log(`Loading ${count} binary vectors from vectors.f32...`);
     for (let r = 0; r < count; r++) {
       vectorMap.set(r, readVectorAtRow(vectorBuffer, r, dimensions));
     }
-    evaluationMode = manifest.modelProfile?.provider === "mock" ? "mock_fixture" : "production_semantic";
-  } else if (isMockFixture) {
-    console.log("Mock fixture mode: generating deterministic mock vectors for documents to evaluate semantic similarity...");
-    // Vectorize non-source documents and a representative sample of sources
+  } else if (evaluationMode === "mock_fixture") {
+    console.log("Mock fixture mode (explicit): generating deterministic mock vectors for the first 200 documents.");
     const docsToVectorize = documents.slice(0, 200);
     const texts = docsToVectorize.map((d) => d.retrievalText || d.title);
     const generated = await mockGen.generateBatches(texts);
@@ -64,11 +86,22 @@ async function main() {
       docsToVectorize[i].vectorRow = i;
       vectorMap.set(i, generated[i]);
     }
-    evaluationMode = "mock_fixture";
+  } else if (evaluationMode === "lexical_only") {
+    console.log(
+      "No usable real semantic setup (need on-disk vectors for the policy profile AND EMBEDDING_SERVICE_URL/TEI_ENDPOINT). Running lexical_only; semantic quality is NOT measured."
+    );
   }
 
+  // Query embeddings come from the real provider only in production_semantic mode.
+  const queryGen: EmbeddingGenerator | null =
+    evaluationMode === "production_semantic"
+      ? new TeiEmbeddingGenerator(embeddingEndpoint, dimensions)
+      : evaluationMode === "mock_fixture"
+        ? mockGen
+        : null;
+
   // Generate query embeddings
-  console.log("Generating query embeddings using task instruction...");
+  console.log(queryGen ? "Generating query embeddings using task instruction..." : "Skipping query embeddings (lexical_only).");
   const queryVectorMap = new Map<string, Float32Array>();
   const allQueries: PilotQuery[] = [];
   for (const intent of pilotDataset.intents) {
@@ -79,9 +112,11 @@ async function main() {
 
   const instruction = FROZEN_SEMANTIC_POLICY.queryInstructionTask;
   const queryTexts = allQueries.map((q) => `${instruction} ${q.queryText}`);
-  const queryVectors = await mockGen.generateBatches(queryTexts);
-  for (let i = 0; i < allQueries.length; i++) {
-    queryVectorMap.set(allQueries[i].queryId, queryVectors[i]);
+  if (queryGen) {
+    const queryVectors = await queryGen.generateBatches(queryTexts);
+    for (let i = 0; i < allQueries.length; i++) {
+      queryVectorMap.set(allQueries[i].queryId, queryVectors[i]);
+    }
   }
 
   // Run evaluator
@@ -101,10 +136,13 @@ async function main() {
   console.log("\n=== Pilot Retrieval Evaluation Summary ===");
   console.log(`Evaluation Mode: ${result.summary.evaluationMode}`);
   console.log(`Semantic Status: ${result.summary.semanticStatus.toUpperCase()}`);
+  for (const caveat of result.summary.caveats) console.log(`  Caveat: ${caveat}`);
   console.log(
     `Total Queries Evaluated: ${result.summary.totalQueries} (Dev: ${result.summary.devQueries}, Reserved: ${result.summary.reservedQueries})`
   );
-  console.log(`Semantic Cutoff Threshold: ${result.summary.policy.semanticCutoffThreshold}`);
+  console.log(
+    `Semantic Cutoff Threshold: ${result.summary.policy.semanticCutoffThreshold} (${result.summary.policy.calibrationStatus})`
+  );
   console.log(`RRF Constant (k): ${result.summary.policy.rrfConstantK}`);
   console.log("\nSupported Discovery Queries (MRR / Precision@3):");
   console.log(
@@ -116,16 +154,19 @@ async function main() {
   console.log(
     `  Hybrid (RRF): MRR = ${result.summary.byCategory.supported.mrr.hybrid}, P@3 = ${result.summary.byCategory.supported.avgP3.hybrid}`
   );
-  console.log("\nUnrelated Queries Suppression Rate (Zero false matches):");
+  console.log("\nUnrelated Queries Suppression Rate (zero results returned; n/a means not measured):");
   console.log(`  Keyword: ${(result.summary.byCategory.unrelated.suppressionRate.keyword * 100).toFixed(1)}%`);
   console.log(
-    `  Semantic: ${result.summary.byCategory.unrelated.suppressionRate.semantic !== null ? `${(result.summary.byCategory.unrelated.suppressionRate.semantic * 100).toFixed(1)}%` : "N/A"}`
+    `  Semantic: ${result.summary.byCategory.unrelated.suppressionRate.semantic !== null ? `${(result.summary.byCategory.unrelated.suppressionRate.semantic * 100).toFixed(1)}%` : "n/a (not measured with a real model)"}`
   );
   console.log(`  Hybrid: ${(result.summary.byCategory.unrelated.suppressionRate.hybrid * 100).toFixed(1)}%`);
-  console.log("\nUnsupported/Negation Condition Handling:");
-  console.log(
-    `  Inspectable evidence gap preserved: ${result.summary.byCategory.unsupported_condition.inspectableGapPreserved} / ${result.summary.byCategory.unsupported_condition.count}`
-  );
+  const gap = result.summary.byCategory.unsupported_condition;
+  console.log("\nUnsupported/Negation Condition Handling (excerpt content is not assessed):");
+  console.log(`  Zero results: ${gap.zeroResult} / ${gap.count}`);
+  console.log(`  Returned with non-empty excerpts: ${gap.returnedWithExcerpt} / ${gap.count}`);
+  console.log(`  Returned without an excerpt: ${gap.returnedWithoutExcerpt} / ${gap.count}`);
+  const lat = result.summary.meanLatencyMs;
+  console.log(`\nMean offline retrieval timing, embedding excluded (ms): keyword ${lat.keyword}, semantic ${lat.semantic}, hybrid ${lat.hybrid}`);
   console.log("\nLanguage Breakdown (Avg Hybrid P@3):");
   console.log(`  Thai (th): ${result.summary.byLanguage.th.avgHybridP3}`);
   console.log(`  English (en): ${result.summary.byLanguage.en.avgHybridP3}`);

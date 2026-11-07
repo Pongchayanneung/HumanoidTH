@@ -7,6 +7,7 @@ import {
   computeKeywordScore,
   groupCandidates,
   RetrievalEvaluator,
+  resolveEvaluationMode,
   type PilotDataset
 } from "../lib/search/evaluation";
 import {
@@ -137,6 +138,11 @@ test("F8 Frozen Semantic Policy: validates profile compatibility and cutoff thre
   assert.equal(FROZEN_SEMANTIC_POLICY.isFrozen, true);
   assert.equal(FROZEN_SEMANTIC_POLICY.semanticCutoffThreshold, 0.62);
   assert.equal(FROZEN_SEMANTIC_POLICY.rrfConstantK, 60);
+  assert.equal(
+    FROZEN_SEMANTIC_POLICY.calibrationStatus,
+    "provisional_uncalibrated",
+    "0.62 has no measured support and must stay labelled provisional"
+  );
 
   // Compatible profile
   const isCompat = isProfileCompatibleWithPolicy(DEFAULT_MODEL_PROFILE, FROZEN_SEMANTIC_POLICY);
@@ -204,17 +210,22 @@ test("F8 Evaluator: evaluates single query and suppresses unrelated requests bel
   assert.equal(reportUnrelated.unrelatedSuppressed, true, "Unrelated query must be suppressed");
 });
 
-test("F8 MRR Evaluation Depth: evaluates first useful rank beyond top 3 (e.g. rank 4)", () => {
-  // 5 docs where only doc 4 is relevant
+test("F8 MRR Evaluation Depth: first useful rank 4 gives exact rank and MRR of 0.25", () => {
+  // Query tokens: robot, delta, target. Scores (title weight 4, body weight 1, divided by 3):
+  //   doc1 title 3 + body 3 = 15/3 = 5.0
+  //   doc2 title 3          = 12/3 = 4.0
+  //   doc3 title 2          =  8/3 = 2.667
+  //   doc4 body 3 only      =  3/3 = 1.0   (the only relevant doc, must rank 4th)
+  //   doc5 body 1           =  1/3 = 0.333
   const docs = [
-    createDummyDoc("1", "robot alpha", "alpha body"),
-    createDummyDoc("2", "robot beta", "beta body"),
-    createDummyDoc("3", "robot gamma", "gamma body"),
-    createDummyDoc("4", "robot delta target", "delta body target"),
-    createDummyDoc("5", "robot epsilon", "epsilon body")
+    createDummyDoc("1", "robot delta target one", "robot delta target"),
+    createDummyDoc("2", "robot delta target two", "unrelated words"),
+    createDummyDoc("3", "robot delta three", "unrelated words"),
+    createDummyDoc("4", "general heading", "robot delta target"),
+    createDummyDoc("5", "general heading five", "robot only")
   ];
 
-  const evaluator = new RetrievalEvaluator(docs, new Map(), FROZEN_SEMANTIC_POLICY);
+  const evaluator = new RetrievalEvaluator(docs, new Map(), FROZEN_SEMANTIC_POLICY, "lexical_only");
 
   const query = {
     queryId: "depth-test-01",
@@ -223,19 +234,27 @@ test("F8 MRR Evaluation Depth: evaluates first useful rank beyond top 3 (e.g. ra
     targetKeywords: ["robot", "delta", "target"],
     expectedRelevantIds: ["doc:4"]
   };
-
-  // Adjust scores so doc:4 is at rank 4
-  const report = evaluator.evaluateQuery(query, {
+  const intent = {
     intentId: "depth-test",
-    category: "supported",
-    split: "dev",
+    category: "supported" as const,
+    split: "dev" as const,
     description: "depth test",
     queries: [query]
-  });
+  };
 
-  // Check that all 5 groups were scored
-  assert.ok(report.metrics.keyword.firstUsefulRank !== null);
-  assert.ok(report.metrics.keyword.firstUsefulRank >= 1);
+  const report = evaluator.evaluateQuery(query, intent);
+  assert.equal(report.metrics.keyword.firstUsefulRank, 4);
+  assert.equal(report.metrics.keyword.precisionAt3, 0, "relevant doc is outside the top 3");
+
+  const dataset: PilotDataset = {
+    pilotVersion: "1.0",
+    generatedAt: "2026-11-07T00:00:00.000Z",
+    description: "test",
+    intents: [intent]
+  };
+  const { summary } = evaluator.evaluatePilot(dataset);
+  assert.equal(summary.byCategory.supported.mrr.keyword, 0.25);
+  assert.equal(summary.byCategory.supported.avgP3.keyword, 0);
 });
 
 test("F8 Inspectable Evidence Gap: verifies evidence presence and zero-result preservation", () => {
@@ -272,5 +291,112 @@ test("F8 Inspectable Evidence Gap: verifies evidence presence and zero-result pr
 
   const evalResult = evaluator.evaluatePilot(dataset);
   assert.equal(evalResult.summary.byCategory.unsupported_condition.count, 1);
-  assert.equal(evalResult.summary.byCategory.unsupported_condition.inspectableGapPreserved, 1);
+  const gap = evalResult.summary.byCategory.unsupported_condition;
+  assert.equal(gap.zeroResult, 0);
+  assert.equal(gap.returnedWithExcerpt, 1, "returned result has a non-empty excerpt");
+  assert.equal(gap.returnedWithoutExcerpt, 0);
+  assert.equal(gap.excerptContentAssessed, false, "excerpt content is never assessed");
+
+  // Zero-result and missing-excerpt cases are counted separately, never as 'preserved'.
+  const noMatchEvaluator = new RetrievalEvaluator([docWithEvidence], new Map(), FROZEN_SEMANTIC_POLICY);
+  const noMatch = noMatchEvaluator.evaluatePilot({
+    ...dataset,
+    intents: [{ ...dataset.intents[0], queries: [{ ...dataset.intents[0].queries[0], queryText: "zzzz qqqq" }] }]
+  });
+  assert.equal(noMatch.summary.byCategory.unsupported_condition.zeroResult, 1);
+  assert.equal(noMatch.summary.byCategory.unsupported_condition.returnedWithExcerpt, 0);
+
+  const noExcerptEvaluator = new RetrievalEvaluator([docWithoutEvidence], new Map(), FROZEN_SEMANTIC_POLICY);
+  const noExcerpt = noExcerptEvaluator.evaluatePilot({
+    ...dataset,
+    intents: [{ ...dataset.intents[0], queries: [{ ...dataset.intents[0].queries[0], queryText: "camera-less robot" }] }]
+  });
+  assert.equal(noExcerpt.summary.byCategory.unsupported_condition.returnedWithoutExcerpt, 1);
+});
+
+test("F8 Evaluation mode: never claims production_semantic without a real provider and real vectors", () => {
+  const base = {
+    mockFixtureRequested: false,
+    realQueryProviderConfigured: false,
+    onDiskVectorProvider: null,
+    onDiskProfileCompatible: false
+  } as const;
+  assert.equal(resolveEvaluationMode(base), "lexical_only", "nothing configured");
+  assert.equal(resolveEvaluationMode({ ...base, mockFixtureRequested: true }), "mock_fixture");
+  assert.equal(resolveEvaluationMode({ ...base, onDiskVectorProvider: "mock" }), "mock_fixture");
+  // Real on-disk vectors but no real query provider: queries cannot be embedded honestly.
+  assert.equal(
+    resolveEvaluationMode({ ...base, onDiskVectorProvider: "tei", onDiskProfileCompatible: true }),
+    "lexical_only"
+  );
+  // Real provider but no real document vectors: still not production.
+  assert.equal(resolveEvaluationMode({ ...base, realQueryProviderConfigured: true }), "lexical_only");
+  // Real vectors for a different profile than the policy: not production.
+  assert.equal(
+    resolveEvaluationMode({ ...base, realQueryProviderConfigured: true, onDiskVectorProvider: "tei" }),
+    "lexical_only"
+  );
+  assert.equal(
+    resolveEvaluationMode({
+      mockFixtureRequested: false,
+      realQueryProviderConfigured: true,
+      onDiskVectorProvider: "tei",
+      onDiskProfileCompatible: true
+    }),
+    "production_semantic"
+  );
+});
+
+test("F8 Semantic status: mock vectors report 'mock' and n/a semantic metrics, lexical_only reports 'unavailable'", () => {
+  const doc = createDummyDoc("1", "Dinsaw robot", "Hospital assistant");
+  doc.vectorRow = 0;
+  const vectorMap = new Map<number, Float32Array>([[0, l2Normalize(new Float32Array([1, 0, 0, 0]))]]);
+  const query = {
+    queryId: "q1",
+    lang: "en" as const,
+    queryText: "quantum cryptography",
+    targetKeywords: [],
+    expectedRelevantIds: []
+  };
+  const dataset: PilotDataset = {
+    pilotVersion: "1.0",
+    generatedAt: "2026-11-07T00:00:00.000Z",
+    description: "test",
+    intents: [
+      { intentId: "u", category: "unrelated", split: "dev", description: "u", queries: [query] },
+      { intentId: "s", category: "supported", split: "dev", description: "s", queries: [{ ...query, queryId: "q2", expectedRelevantIds: ["doc:1"] }] }
+    ]
+  };
+  const qv = new Map<string, Float32Array>([
+    ["q1", l2Normalize(new Float32Array([0, 1, 0, 0]))],
+    ["q2", l2Normalize(new Float32Array([0, 1, 0, 0]))]
+  ]);
+
+  const mock = new RetrievalEvaluator([doc], vectorMap, FROZEN_SEMANTIC_POLICY, "mock_fixture").evaluatePilot(dataset, qv);
+  assert.equal(mock.summary.semanticStatus, "mock");
+  assert.equal(mock.summary.byCategory.supported.mrr.semantic, null);
+  assert.equal(mock.summary.byCategory.unrelated.suppressionRate.semantic, null);
+  assert.ok(mock.summary.caveats.some((c) => c.includes("No real embedding model was evaluated")));
+
+  const lex = new RetrievalEvaluator([doc], vectorMap, FROZEN_SEMANTIC_POLICY, "lexical_only").evaluatePilot(dataset, qv);
+  assert.equal(lex.summary.semanticStatus, "unavailable");
+  assert.equal(lex.summary.byCategory.supported.mrr.semantic, null);
+
+  const real = new RetrievalEvaluator([doc], vectorMap, FROZEN_SEMANTIC_POLICY, "production_semantic").evaluatePilot(dataset, qv);
+  assert.equal(real.summary.semanticStatus, "evaluated");
+  assert.equal(real.summary.byCategory.unrelated.suppressionRate.semantic, 1);
+});
+
+test("F8 Latency: summary reports mean offline retrieval timing without embedding", () => {
+  const doc = createDummyDoc("1", "Dinsaw robot", "Hospital assistant");
+  const query = { queryId: "q1", lang: "en" as const, queryText: "dinsaw", targetKeywords: [], expectedRelevantIds: ["doc:1"] };
+  const dataset: PilotDataset = {
+    pilotVersion: "1.0",
+    generatedAt: "2026-11-07T00:00:00.000Z",
+    description: "test",
+    intents: [{ intentId: "s", category: "supported", split: "dev", description: "s", queries: [query] }]
+  };
+  const { summary, reports } = new RetrievalEvaluator([doc], new Map(), FROZEN_SEMANTIC_POLICY, "lexical_only").evaluatePilot(dataset);
+  assert.equal(summary.meanLatencyMs.hybrid, reports[0].latencyMs.hybrid);
+  assert.ok(summary.caveats.some((c) => c.includes("embedding time is excluded")));
 });

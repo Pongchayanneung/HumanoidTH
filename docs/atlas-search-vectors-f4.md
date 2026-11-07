@@ -37,14 +37,14 @@ Model configurations are explicitly pinned and bound to their generator implemen
 
 | Property | Production Qwen Profile | Deterministic Mock Profile |
 | :--- | :--- | :--- |
-| **Model ID** | `Alibaba-NLP/gte-Qwen2-1.5B-instruct` | `mock/deterministic-hash-128` |
-| **Revision** | `e085e72a818c399b19e0813958fbc8d8e58dfd27` (pinned commit) | `mock-v1` |
+| **Model ID** | `Qwen/Qwen3-Embedding-0.6B` | `mock/deterministic-hash-128` |
+| **Revision** | `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3` (pinned commit) | `mock-v1` |
 | **Dimensions** | `1024` | `1024` |
 | **Precision** | `float32` | `float32` |
 | **Pooling** | `last_token` | `last_token` |
 | **Normalization** | `L2 (Euclidean)` | `L2 (Euclidean)` |
 | **Provider** | `tei` | `mock` |
-| **Profile Hash** | `qwen2-gte-1024-f32-l2-e085e72-v1` | `mock-deterministic-hash-1024-v1` |
+| **Profile Hash** | `qwen3-embedding-0.6b-1024-f32-l2-97b0c61-v1` | `mock-deterministic-hash-1024-v1` |
 
 > [!IMPORTANT]
 > `VectorReleaseBuilder` strictly enforces model profile integrity. Attempting to use `DeterministicMockEmbeddingGenerator` with a production model profile (`DEFAULT_MODEL_PROFILE`) fails with a runtime error. Mock checkpoints cannot be reused by a production Qwen run because checkpoint cache matching requires an exact `modelProfileHash` match.

@@ -146,7 +146,7 @@ Explore the main app modules:
 - `🟡 /robots` — 🤖 Registry of robot models deployed, researched, or observed in Thailand.
 - `🟢 /perspectives` — 📣 Media coverage database, platform sentiment, and safety metrics.
 - `🟡 /contributions` — 📂 Directory of open-source repositories, makers, and papers.
-- `🟢 /map` — 🗺️ AI-powered ecosystem contribution map geolocating Thai robotics research and inventory.
+- `⚪ /map` — 🗺️ Ecosystem contribution map: unavailable in this release (no validated public map result is shown).
 - `🟢 /network` — 🔗 Dynamic Cytoscape network graph mapping connections between institutions, developers, and robots.
 - `🟡 /analytics` — 📈 Statistics, sentiment graphs, and attention metrics over time.
 - `🟢 /data-pulls` — 🔌 Control room to trigger data ingestion pipelines.

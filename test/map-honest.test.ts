@@ -15,10 +15,12 @@ test("map action denies requests without network access or a database", async ()
   };
   try {
     const actions = await import("../app/map/actions");
-    assert.deepEqual(Object.keys(actions), ["reanalyzeClustersWithGemini"]);
-    assert.deepEqual(await actions.reanalyzeClustersWithGemini(), { status: "disabled" });
+    assert.deepEqual(Object.keys(actions).sort(), ["analyzeClustersWithGemini", "fetchContributionClusters", "reanalyzeClustersWithGemini"]);
+    assert.deepEqual(await actions.analyzeClustersWithGemini(), { ok: false, code: "WORKFLOW_UNAVAILABLE" });
+    assert.deepEqual(await actions.fetchContributionClusters(), []);
+    assert.deepEqual(await actions.reanalyzeClustersWithGemini(), { ok: false, code: "WORKFLOW_UNAVAILABLE" });
     const forged = actions.reanalyzeClustersWithGemini as (...args: unknown[]) => Promise<unknown>;
-    assert.deepEqual(await forged("admin", { role: "ADMIN" }), { status: "disabled" });
+    assert.deepEqual(await forged("admin", { role: "ADMIN" }), { ok: false, code: "WORKFLOW_UNAVAILABLE" });
     assert.equal(calls, 0);
   } finally {
     globalThis.fetch = originalFetch;

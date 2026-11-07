@@ -1,63 +1,31 @@
-# Vercel Deployment
+# Vercel deployment notes
 
-## Required Vercel Environment Variables
+**Status: unverified.** These notes describe constraints to resolve before a hosted deployment. Local implementation work does not establish Vercel readiness, and no deployment or production database operation is authorized by this document.
 
-Set these in Vercel Project Settings -> Environment Variables:
+## Configuration to resolve
 
-```env
-DATABASE_URL=postgresql://user:password@host:5432/dbname?schema=public
-NEXT_PUBLIC_APP_URL=https://your-project.vercel.app
-ADMIN_BASIC_USER=creativelab.co.th@gmail.com
-ADMIN_BASIC_PASSWORD=<strong unique password>
-YOUTUBE_API_KEY=
-GITHUB_TOKEN=
-```
+The app uses the PostgreSQL driver adapter and expects a direct PostgreSQL `DATABASE_URL`; the previous Prisma Accelerate example did not match the runtime adapter. Confirm the selected hosted PostgreSQL provider's direct connection string and Vercel connectivity before configuring it. Also set `OPERATOR_APP_ORIGIN` to the exact HTTPS origin for the deployment. Do not use the local `.env.example` operator placeholders as active credentials.
 
-`DATABASE_URL` must be a direct PostgreSQL connection string (use the provider's non-pooling URL if it offers both). This app's Prisma client uses `@prisma/adapter-pg`, which does not support Prisma Accelerate proxy URLs.
+Operator configuration requires `OPERATOR_EMAIL`, `OPERATOR_PASSWORD_HASH`, `OPERATOR_AUTH_EPOCH` and `OPERATOR_APP_ORIGIN`. Create a hash in an interactive terminal with `node --import tsx scripts/operator-auth.ts hash`; enter a passphrase of at least 20 characters at the hidden prompts. The output is escaped for Next.js `.env` parsing. For a provider dashboard, use the raw `scrypt$...` hash value with the backslashes removed and without `.env` quotes. Next.js explains `$` expansion and escaping in its [environment-variable guide](https://nextjs.org/docs/15/app/guides/environment-variables#referencing-other-variables). Never put the passphrase in a command argument, source file, build output or shared document.
 
-## Deploy Flow
+The CLI uses Next.js's `@next/env` loader with process environment precedence. With `NODE_ENV` unset it loads development values; set `NODE_ENV=production` when using production-style local env files. Provider values must be available to both the running app and CLI when computing fingerprints or activating a configuration; activation against the wrong environment/database must not be attempted.
 
-1. Connect this GitHub repo to Vercel.
-2. Add the environment variables above.
-3. Deploy.
-4. Apply the migrations once from your local machine or Vercel CLI, with `DATABASE_URL` exported for the target database:
+## Database and build constraints
 
-```bash
-npx prisma migrate deploy
-```
+Apply the additive auth migration to the intended database before activating operator configuration. Review migration history and schema parity first. Use `pnpm exec prisma migrate deploy` with the target `DATABASE_URL` supplied in the process environment or `.env`; the Prisma config does not use `.env.local`. Do not reset, seed or run `db:push` against a hosted/production database. Do not add schema mutation to the Vercel build. The build should generate Prisma Client and compile the app only.
 
-Do not run migrations automatically during every Vercel build. Builds should generate Prisma Client and build Next.js only.
+Use `node --import tsx scripts/operator-auth.ts init` for the first explicit activation. For rotation, record the current public fingerprint using `node --import tsx scripts/operator-auth.ts fingerprint` before changing settings; set a fresh `OPERATOR_AUTH_EPOCH`, then run `node --import tsx scripts/operator-auth.ts activate --expected <CURRENT-ACTIVE-FINGERPRINT>`. `node --import tsx scripts/operator-auth.ts revoke-all` revokes all existing sessions. Do not replace these explicit operations with runtime startup or build hooks.
 
-`pnpm install` runs `prisma generate`, which does not need a database. If your pnpm version skips the Prisma build scripts, run `./node_modules/.bin/prisma generate` yourself after installing; it does not need `DATABASE_URL` either.
+## Legacy development seeding
 
-## Seeding
+Never seed a hosted or production database. The legacy seed is for disposable local development databases only. It requires `ATLAS_ALLOW_SEED=1` and a `DATABASE_URL` pointing to `localhost` or `127.0.0.1`. The flag is ignored in env files loaded by the repository, but not in files loaded into the process separately, such as with `node --env-file` or a `dotenv/config` preload. The guard checks only the hostname, so a tunnel to a remote database through localhost also passes.
 
-Never run the seed script against a hosted or production database. It is refused unless `ATLAS_ALLOW_SEED=1` is set and `DATABASE_URL` points at `localhost` or `127.0.0.1`, so there is no supported way to seed a hosted database from this repository. The flag is read only from the command line: a value in `.env` or any other env file the repository loads is ignored. This does not cover a file you load into the environment yourself, for example `node --env-file` or a `dotenv/config` preload. The guard checks the hostname string only, so a tunnel or port forward on `localhost` counts as local. Seeding:
+Seeding resets the review status of seeded source records, re-grants the seed admin role, overwrites perspective stance and sentiment, and appends duplicate pull-job and submission rows. For an isolated local database, use `ATLAS_ALLOW_SEED=1 pnpm db:seed`. A database reset is destructive before the seed guard runs.
 
-- resets `relevanceStatus` of seeded source records to the seed value,
-- re-grants the ADMIN role to the seed admin account,
-- overwrites perspective stance and sentiment, and
-- appends a duplicate `SourcePullJob` and `SubmittedData` row on every run.
+Ordinary startup does not seed. `pnpm dev` starts the legacy watcher only when both `WATCH_SEED=1` and `ATLAS_ALLOW_SEED=1` are set; `pnpm seed:watch` requires the seed flag and a local database.
 
-Use it only on a disposable or empty local database:
+## Access and readiness
 
-```bash
-ATLAS_ALLOW_SEED=1 pnpm db:seed
-# or, without pnpm (pnpm 11 cannot run `pnpm run` scripts here):
-ATLAS_ALLOW_SEED=1 node --import tsx prisma/seed.ts
-```
+There are no default credentials and no Basic Auth fallback. Legacy `User` rows, roles and email cookies do not grant operator access. Signing in is intended to provide session status only; business inspection and writes remain disabled, including ingestion and export. Public data projections (#5) and map behavior (#6) remain separately pending.
 
-Per Prisma's documented behaviour, `prisma migrate reset` and a `prisma migrate dev` that resets the database run the same seed command, and the guard refuses that seed step without the flag. `migrate reset` was observed once on macOS against a disposable local database (seed step refused, User=0); the `migrate dev` reset path follows Prisma's documented behaviour and was not run. They are destructive in their own right: `migrate reset` drops the target database before the seed runs, and the guard does not stop that. Run them only against a disposable database.
-
-Ordinary startup (`pnpm dev`, `next start`) does not seed. `pnpm dev` starts the dataset watcher only with both `WATCH_SEED=1` and `ATLAS_ALLOW_SEED=1`. Running `pnpm seed:watch` directly needs `ATLAS_ALLOW_SEED=1` inline and a local URL.
-
-## Protected Routes
-
-In production, these routes require Basic Auth:
-
-- `/admin/*`
-- `/data-pulls`
-- `/api/ingest/*`
-- `/api/export`
-
-If `ADMIN_BASIC_PASSWORD` is left as `change-this-before-deploy`, protected routes return `503`.
+Integrated unit/real-PostgreSQL (50 passed, none skipped), independent integration (9 passed), and dedicated Chromium (10 passed) checks completed locally. Production build, final post-merge typecheck and Prisma validation/migration/schema parity checks passed. Independent source/fix/acceptance review found no remaining local blocker; see the [verification record](verification/2026-11-05-issue-4.md). Hosted HTTPS login/logout and a production deployment are unverified. Before making a hosted-readiness claim, verify HTTPS login/logout, same-origin checks, cookie attributes, database session lifecycle, migration behavior, denied business actions and public browsing in the hosted environment. Until then, do not claim hosted authentication or deployment readiness. The legacy Python browser suite has not been run.

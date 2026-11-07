@@ -1,14 +1,14 @@
-import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { MapPin } from "lucide-react";
+import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: "Ecosystem Contribution Map | Thailand Humanoid Atlas",
   description: "Ecosystem contribution map for humanoid robotics in Thailand",
   alternates: { canonical: "/map" },
+  robots: { index: false, follow: false },
   openGraph: {
     title: "Ecosystem Contribution Map | Thailand Humanoid Atlas",
     description: "Ecosystem contribution map for humanoid robotics in Thailand",
@@ -33,12 +33,12 @@ const localT = {
     body: "No validated public map result is available, so nothing is shown here."
   },
   th: {
-    title: "การวิเคราะห์แผนที่ยังไม่เปิดใช้ในรุ่นนี้",
+    title: "การวิเคราะห์แผนที่ยังไม่เปิดให้ใช้งานในรุ่นนี้",
     body: "ยังไม่มีผลแผนที่สาธารณะที่ผ่านการตรวจสอบ จึงไม่แสดงข้อมูลบนหน้านี้"
   }
 };
 
-export default async function MapPage() {
+export default async function Page() {
   const cookieStore = await cookies();
   const lang = cookieStore.get("lang")?.value === "th" ? "th" : "en";
   const t = getTranslation(lang);

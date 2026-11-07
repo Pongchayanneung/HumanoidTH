@@ -4,6 +4,12 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 import { publicContributionWhere, isEligiblePublicRobot } from "@/lib/public-projection";
+import {
+  CONTRIBUTION_TYPES,
+  validateContributionFilters,
+  buildContributionWhere,
+  type ContributionFilterInput
+} from "@/lib/contribution-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -33,17 +39,12 @@ export const metadata: Metadata = {
     description: "Directory of open-source software, research publications, datasets, and hardware designs contributing to humanoid robotics in Thailand.",
     images: ["/logo.png"]
   }
-};type SearchParams = Promise<{
-  type?: string;
-  org?: string;
-  robot?: string;
-  status?: string;
-  q?: string;
-}>;
+};
+
+type SearchParams = Promise<ContributionFilterInput>;
 
 export default async function ContributionsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const { type, org, robot, status, q } = params;
 
   let lang: "en" | "th" = "en";
   try {
@@ -54,78 +55,83 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   }
   const t = getTranslation(lang);
 
-  // Build filter conditions enforcing public data projection (M3)
-  // Anonymous public access is strictly constrained to approved, public contributions.
-  // Query flags (e.g. ?status=...) cannot broaden access or reveal internal review states.
-  const where: any = {
-    ...publicContributionWhere
-  };
-  if (type) where.contributionType = type;
-  if (org) where.organization = org;
-  if (robot) where.relatedRobotModelId = robot;
-  if (q) {
-    where.AND = [
-      {
-        OR: [
-          { title: { contains: q, mode: "insensitive" } },
-          { contributorName: { contains: q, mode: "insensitive" } },
-          { description: { contains: q, mode: "insensitive" } }
-        ]
-      }
-    ];
-  }
+  // Validate and normalize filter inputs (M8-B)
+  const validatedFilters = validateContributionFilters(params);
+  const { type, org, robot, q, filterError } = validatedFilters;
+
+  // Build filter conditions enforcing M3/M5 public projection
+  const where = buildContributionWhere(validatedFilters);
 
   let dbItems: any[] = [];
   let dbRobots: any[] = [];
   let dbOrganizations: any[] = [];
+  let queryFailed = false;
 
   try {
-    const [resItems, resRobots, resOrgs] = await Promise.all([
-      prisma.contribution.findMany({
-        where,
-        include: { relatedRobotModel: true },
-        orderBy: { updatedAt: "desc" },
-        take: 200
-      }),
-      prisma.robotModel.findMany({
-        where: {
-          NOT: [
-            { canonicalName: { contains: "placeholder", mode: "insensitive" } },
-            { canonicalName: { contains: "pending", mode: "insensitive" } },
-            { canonicalName: { contains: "unverified", mode: "insensitive" } }
-          ]
-        },
-        select: { id: true, canonicalName: true }
-      }),
-      prisma.contribution.findMany({
-        select: { organization: true },
-        distinct: ["organization"],
-        where: {
-          organization: { not: null },
-          ...publicContributionWhere
-        }
-      })
-    ]);
-    dbItems = resItems;
-    dbRobots = resRobots;
-    dbOrganizations = resOrgs;
+    if (!filterError) {
+      const [resItems, resRobots, resOrgs] = await Promise.all([
+        prisma.contribution.findMany({
+          where,
+          include: { relatedRobotModel: true },
+          orderBy: { updatedAt: "desc" },
+          take: 200
+        }),
+        prisma.robotModel.findMany({
+          where: {
+            NOT: [
+              { canonicalName: { contains: "placeholder", mode: "insensitive" } },
+              { canonicalName: { contains: "pending", mode: "insensitive" } },
+              { canonicalName: { contains: "unverified", mode: "insensitive" } }
+            ]
+          },
+          select: { id: true, canonicalName: true }
+        }),
+        prisma.contribution.findMany({
+          select: { organization: true },
+          distinct: ["organization"],
+          where: {
+            organization: { not: null },
+            ...publicContributionWhere
+          }
+        })
+      ]);
+      dbItems = resItems;
+      dbRobots = resRobots;
+      dbOrganizations = resOrgs;
+    } else {
+      // For invalid filters, populate dropdowns from public data without querying invalid records
+      const [resRobots, resOrgs] = await Promise.all([
+        prisma.robotModel.findMany({
+          where: {
+            NOT: [
+              { canonicalName: { contains: "placeholder", mode: "insensitive" } },
+              { canonicalName: { contains: "pending", mode: "insensitive" } },
+              { canonicalName: { contains: "unverified", mode: "insensitive" } }
+            ]
+          },
+          select: { id: true, canonicalName: true }
+        }),
+        prisma.contribution.findMany({
+          select: { organization: true },
+          distinct: ["organization"],
+          where: {
+            organization: { not: null },
+            ...publicContributionWhere
+          }
+        })
+      ]);
+      dbRobots = resRobots;
+      dbOrganizations = resOrgs;
+    }
   } catch (error) {
+    // Log detailed technical error only to server logs, never leak raw Prisma traces to public HTML
     console.error("Failed to query contributions in contributions page:", error);
+    queryFailed = true;
   }
 
   const items = dbItems;
   const robots = dbRobots.filter((r) => isEligiblePublicRobot(r.canonicalName));
   const uniqueOrgs = dbOrganizations.map((o) => o.organization).filter(Boolean) as string[];
-
-  // Taxonomies
-  const contributionTypes = [
-    "research_paper",
-    "software_repository",
-    "hardware_design",
-    "dataset",
-    "educational_material",
-    "event_demo_record"
-  ];
 
   return (
     <>
@@ -136,12 +142,32 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         </div>
       </div>
 
+      {filterError && (
+        <div
+          role="alert"
+          aria-live="polite"
+          className="notice"
+          style={{ backgroundColor: "#fdf2f2", borderLeftColor: "var(--danger)", color: "#b91c1c", marginBottom: 16 }}
+        >
+          <strong>Invalid Filter Parameter:</strong> {filterError}
+        </div>
+      )}
 
+      {queryFailed && (
+        <div
+          role="alert"
+          aria-live="polite"
+          className="notice"
+          style={{ backgroundColor: "#fef2f2", borderLeftColor: "var(--danger)", color: "#b91c1c", marginBottom: 16 }}
+        >
+          <strong>Database Query Failure:</strong> Unable to load contribution records. Please try again later.
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{ __html: `
         .filter-form {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 100px;
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) 100px;
           gap: 10px;
           align-items: end;
           margin-bottom: 16px;
@@ -159,6 +185,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           .filter-form {
             grid-template-columns: 1fr;
           }
+        }
         .type-badge {
           border-radius: 4px !important;
           font-size: 11px;
@@ -178,8 +205,10 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           Type
           <select name="type" defaultValue={type || ""}>
             <option value="">All Types</option>
-            {contributionTypes.map(ct => (
-              <option key={ct} value={ct}>{ct.replace(/_/g, " ")}</option>
+            {CONTRIBUTION_TYPES.map((ct) => (
+              <option key={ct} value={ct}>
+                {ct.replace(/_/g, " ")}
+              </option>
             ))}
           </select>
         </label>
@@ -188,8 +217,10 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           Organization
           <select name="org" defaultValue={org || ""}>
             <option value="">All Organizations</option>
-            {uniqueOrgs.map(o => (
-              <option key={o} value={o}>{o}</option>
+            {uniqueOrgs.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
             ))}
           </select>
         </label>
@@ -198,19 +229,11 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           Target Robot
           <select name="robot" defaultValue={robot || ""}>
             <option value="">All Robots</option>
-            {robots.map(r => (
-              <option key={r.id} value={r.id}>{r.canonicalName}</option>
+            {robots.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.canonicalName}
+              </option>
             ))}
-          </select>
-        </label>
-
-        <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          Verification Status
-          <select name="status" defaultValue={status || ""}>
-            <option value="">All Statuses</option>
-            <option value="VERIFIED">Verified</option>
-            <option value="UNVERIFIED">Unverified</option>
-            <option value="FLAGGED">Flagged</option>
           </select>
         </label>
 
@@ -219,7 +242,9 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           <input name="q" defaultValue={q || ""} placeholder="e.g. SLAM, study" />
         </label>
 
-        <button type="submit" className="primary submit-btn" style={{ minHeight: "36px" }}>Apply</button>
+        <button type="submit" className="primary submit-btn" style={{ minHeight: "36px" }}>
+          Apply
+        </button>
       </form>
 
       {/* Contributions Table */}
@@ -243,7 +268,9 @@ export default async function ContributionsPage({ searchParams }: { searchParams
                 <td>
                   <strong>{item.title}</strong>
                   <br />
-                  <span className="muted" style={{ fontSize: "12px" }}>By {item.contributorName}</span>
+                  <span className="muted" style={{ fontSize: "12px" }}>
+                    By {item.contributorName}
+                  </span>
                 </td>
                 <td>
                   <span className="badge type-badge">
@@ -252,9 +279,11 @@ export default async function ContributionsPage({ searchParams }: { searchParams
                 </td>
                 <td>{item.organization || "N/A"}</td>
                 <td>{item.relatedRobotModel?.canonicalName || "General / None"}</td>
-                <td><code>{item.license || "N/A"}</code></td>
                 <td>
-                  <span className={`badge ${item.verificationStatus === "APPROVED" ? "ok" : item.verificationStatus === "REJECTED" ? "danger" : "warn"}`}>
+                  <code>{item.license || "N/A"}</code>
+                </td>
+                <td>
+                  <span className="badge ok">
                     {item.verificationStatus}
                   </span>
                 </td>
@@ -275,7 +304,13 @@ export default async function ContributionsPage({ searchParams }: { searchParams
             ))}
             {!items.length && (
               <tr>
-                <td className="empty" colSpan={8}>No contribution records match the current filter criteria.</td>
+                <td className="empty" colSpan={8}>
+                  {queryFailed
+                    ? "Unable to load contribution records. Please try again later."
+                    : filterError
+                    ? "No records shown due to invalid filter parameter."
+                    : "No contribution records match the current filter criteria."}
+                </td>
               </tr>
             )}
           </tbody>

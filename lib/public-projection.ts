@@ -18,9 +18,47 @@ export const PUBLIC_DATASET_SCOPE_LABEL = "Checked Public Subset (Audit Date: 20
 export const publicContributionWhere = {
   visibility: "public",
   verificationStatus: "APPROVED" as const,
+  OR: [
+    { sourceUrl: null },
+    {
+      NOT: [
+        { sourceUrl: { contains: "placeholder" } },
+        { sourceUrl: { contains: "seed:contribution:thai-hri-research" } },
+        { sourceUrl: { contains: "seed:contribution:hospital-field-observation" } }
+      ]
+    }
+  ]
+};
+
+/**
+ * Prisma WHERE filter for public robot models.
+ * Rejects generic placeholder names, unverified claims, and out-of-scope entries.
+ */
+export const publicRobotWhere = {
   NOT: [
-    { sourceUrl: { contains: "placeholder" } },
-    { sourceUrl: { contains: "seed:contribution:thai-hri-research" } }
+    { canonicalName: { contains: "placeholder" } },
+    { canonicalName: { contains: "Placeholder" } },
+    { canonicalName: { contains: "PLACEHOLDER" } },
+    { canonicalName: { contains: "prototype pending" } },
+    { canonicalName: { contains: "Prototype Pending" } },
+    { canonicalName: { contains: "PROTOTYPE PENDING" } },
+    { canonicalName: { contains: "rumored_unverified" } },
+    { canonicalName: { contains: "Rumored_Unverified" } },
+    { canonicalName: { contains: "RUMORED_UNVERIFIED" } },
+    {
+      canonicalName: {
+        in: [
+          "Bumi Humanoid Robot",
+          "bumi humanoid robot",
+          "UBTECH Walker",
+          "ubtech walker",
+          "Hospital Delivery Service Robot",
+          "hospital delivery service robot",
+          "Thai University Social Robot Prototype",
+          "thai university social robot prototype"
+        ]
+      }
+    }
   ]
 };
 

@@ -34,9 +34,15 @@ export async function ingestOpenAlex({ query, limit = 25, fromYear = 2015 }: Ada
     title: work.display_name ?? "Untitled OpenAlex work",
     url: work.doi ?? work.id,
     excerpt: work.abstract_inverted_index ? "OpenAlex abstract metadata available." : "",
-    publishedAt: work.publication_year ? new Date(`${work.publication_year}-01-01`) : null,
+    publishedAt: work.publication_date
+      ? new Date(work.publication_date)
+      : (work.publication_year ? new Date(`${work.publication_year}-01-01`) : null),
     platform: "openalex",
-    rawMeta: { openalexId: work.id, query }
+    rawMeta: {
+      openalexId: work.id,
+      query,
+      publicationDatePrecision: work.publication_date ? "day" : (work.publication_year ? "year" : "unknown")
+    }
   }));
 
   return finish("OPENALEX", query, records);

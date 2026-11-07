@@ -304,6 +304,8 @@ function sourceTypeToCategory(sourceType: string) {
   return "source_record";
 }
 
+export let lastPrismaGraphWarnings: string[] = [];
+
 export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
   const { prisma } = await import("@/lib/prisma");
   const records: AtlasRecord[] = [];
@@ -340,6 +342,14 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
       orderBy: { confidence: "desc" }
     })
   ]);
+
+  lastPrismaGraphWarnings = [];
+  if (robots.length >= 700) lastPrismaGraphWarnings.push("Robot models query reached loader cap (700); earlier records omitted.");
+  if (inventory.length >= 500) lastPrismaGraphWarnings.push("Inventory query reached loader cap (500); earlier records omitted.");
+  if (contributions.length >= 700) lastPrismaGraphWarnings.push("Contributions query reached loader cap (700); earlier records omitted.");
+  if (sources.length >= 1200) lastPrismaGraphWarnings.push("Source records query reached loader cap (1200); earlier records omitted.");
+  if (perspectives.length >= 800) lastPrismaGraphWarnings.push("Perspectives query reached loader cap (800); earlier records omitted.");
+  if (triplets.length >= 1400) lastPrismaGraphWarnings.push("Triplets query reached loader cap (1400); earlier records omitted.");
 
   for (const item of robots) {
     records.push({
@@ -631,7 +641,7 @@ export async function loadGraphRecordsHybrid(): Promise<SourceLoadResult> {
 export async function loadGraphRecordsAuto(): Promise<SourceLoadResult> {
   const fileAvailable = existsSync(getNetworkImportFilePath());
   try {
-    return { records: await loadGraphRecordsFromPrisma(), resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: [] };
+    return { records: await loadGraphRecordsFromPrisma(), resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: [...lastPrismaGraphWarnings] };
   } catch {
     if (!fileAvailable) {
       return { records: [], resolvedSource: "fallback_file", databaseAvailable: false, fileAvailable, warnings: [fallbackWarning, importFileWarning] };
@@ -654,7 +664,7 @@ export async function loadGraphRecords(mode: NetworkSourceMode): Promise<SourceL
 
   if (mode === "database") {
     try {
-      return { records: await loadGraphRecordsFromPrisma(), resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: [] };
+      return { records: await loadGraphRecordsFromPrisma(), resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: [...lastPrismaGraphWarnings] };
     } catch (error) {
       throw new Error(sanitizeError(error));
     }
@@ -1194,7 +1204,7 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
   const allNodes = [...nodes.values()];
   const allEdges = [...edges.values()].filter((edge) => nodes.has(edge.source) && nodes.has(edge.target));
   const filtered = filterBuiltGraph(allNodes, allEdges, options);
-  const truncated = filtered.nodes.length > maxNodes || filtered.edges.length > maxEdges;
+  const truncated = filtered.nodes.length > maxNodes || filtered.edges.length > maxEdges || source.warnings.length > 0;
   const limited = limitGraph(filtered.nodes, filtered.edges, maxNodes, maxEdges);
   applyDegrees(new Map(limited.nodes.map((node) => [node.id, node])), new Map(limited.edges.map((edge) => [edge.id, edge])));
 

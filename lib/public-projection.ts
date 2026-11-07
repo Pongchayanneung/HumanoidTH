@@ -18,9 +18,32 @@ export const PUBLIC_DATASET_SCOPE_LABEL = "Checked Public Subset (Audit Date: 20
 export const publicContributionWhere = {
   visibility: "public",
   verificationStatus: "APPROVED" as const,
+  OR: [
+    { sourceUrl: null },
+    {
+      NOT: [
+        { sourceUrl: { contains: "placeholder", mode: "insensitive" as const } },
+        { sourceUrl: { contains: "seed:contribution:thai-hri-research", mode: "insensitive" as const } },
+        { sourceUrl: { contains: "seed:contribution:hospital-field-observation", mode: "insensitive" as const } }
+      ]
+    }
+  ]
+};
+
+/**
+ * Prisma WHERE filter for public robot models.
+ * Rejects generic placeholder names, unverified claims, and out-of-scope entries.
+ * Enforces case-insensitive filtering across all mixed-case variations.
+ */
+export const publicRobotWhere = {
   NOT: [
-    { sourceUrl: { contains: "placeholder" } },
-    { sourceUrl: { contains: "seed:contribution:thai-hri-research" } }
+    { canonicalName: { contains: "placeholder", mode: "insensitive" as const } },
+    { canonicalName: { contains: "prototype pending", mode: "insensitive" as const } },
+    { canonicalName: { contains: "rumored_unverified", mode: "insensitive" as const } },
+    { canonicalName: { contains: "bumi humanoid robot", mode: "insensitive" as const } },
+    { canonicalName: { contains: "ubtech walker", mode: "insensitive" as const } },
+    { canonicalName: { contains: "hospital delivery service robot", mode: "insensitive" as const } },
+    { canonicalName: { contains: "thai university social robot prototype", mode: "insensitive" as const } }
   ]
 };
 
@@ -126,7 +149,9 @@ export function isEligiblePublicContribution(item: {
 }): boolean {
   if (item.visibility !== "public") return false;
   if (item.verificationStatus !== "APPROVED") return false;
-  if (item.sourceUrl?.includes("seed:contribution:thai-hri-research")) return false;
-  if (item.sourceUrl?.includes("placeholder")) return false;
+  const lowerUrl = item.sourceUrl?.toLowerCase();
+  if (lowerUrl?.includes("seed:contribution:thai-hri-research")) return false;
+  if (lowerUrl?.includes("seed:contribution:hospital-field-observation")) return false;
+  if (lowerUrl?.includes("placeholder")) return false;
   return true;
 }

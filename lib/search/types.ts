@@ -125,7 +125,7 @@ export type SearchMatch = { evidence: SearchResultEvidence } & (
   | { methods: ["keyword"] | ["keyword", "semantic"] | ["semantic", "keyword"]; ranges?: { start: number; end: number }[] }
 );
 interface SearchResultFields {
-  reference: SearchReference; contentType: SearchContentType; title: string; url: string | null; evidence: SearchResultEvidence[];
+  reference: SearchReference; contentType: SearchContentType; language?: LanguageTag; title: string; url: string | null; evidence: SearchResultEvidence[];
 }
 export type SearchBrowseResult = SearchResultFields & { match?: never };
 export type SearchMatchedResult = SearchResultFields & { match: SearchMatch };

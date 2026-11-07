@@ -4,7 +4,7 @@
 
 ## What operator access means
 
-There is one configured operator identity. A successful sign-in grants a verified session-status page only. It does not grant business-record inspection or writes. Registration, history, submissions, editing, review, publication, ingestion, export and model/cache mutations remain unavailable, including to the operator. Public-data projections (#5) and map behavior (#6) have separate pending acceptance.
+There is one configured operator identity. A successful sign-in grants a verified session-status page and read-only inspection of one record by exact ID in four collections (source records, robot models, contributions, submitted data), limited to a display name, summary, status, URL and timestamps (#8). It does not grant record listing or search, or any write. Registration, history, submissions, editing, review, publication, ingestion, export and model/cache mutations remain unavailable, including to the operator. Public-data projections (#5) and map behavior (#6) have separate pending acceptance.
 
 Legacy `User` records, role fields, email cookies and old Basic Auth variables never establish operator authority. There are no default credentials. Missing configuration, auth tables or database access must fail closed as unavailable.
 

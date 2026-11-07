@@ -140,7 +140,7 @@ Explore the main app modules:
 - `🟡 /analytics` — 📈 Statistics, sentiment graphs, and attention metrics over time.
 - `🟡 /data-pulls` — 🔌 Unavailable; web ingestion is disabled.
 - `🟡 /submit-data` — 📥 Unavailable; community submission is disabled.
-- `🟡 /admin` — 🔐 Session status only after operator sign-in; record inspection is pending #8.
+- `🟡 /admin` — 🔐 After operator sign-in: session status and read-only exact-ID record inspection (#8).
 - `🟡 /profile` — 👤 Unavailable; legacy user histories do not confer operator access.
 
 ---
@@ -273,7 +273,7 @@ The single configured-operator sign-in is implemented and locally verified. Unit
 
 Sessions last four hours, with up to five admitted login attempts in each shared 15-minute window; successful attempts count toward that limit. Sessions are independently revocable, while an attempt window can temporarily deny a legitimate login. See [the operator-authentication notes](docs/operator-auth.md) for operation and verification details.
 
-Signing in grants session status only. It does not enable inspection, registration, submission, editing, review, publication, ingestion, export or model/cache writes. Public data projections (#5) and map behavior (#6) have separate pending acceptance. Do not describe those areas as ready based on operator sign-in.
+Signing in grants session status and read-only inspection of one record by exact ID in four collections (source records, robot models, contributions, submitted data), limited to a display name, summary, status, URL and timestamps. It does not enable listing or search of records, registration, submission, editing, review, publication, ingestion, export or model/cache writes. Public data projections (#5) and map behavior (#6) have separate pending acceptance. Do not describe those areas as ready based on operator sign-in.
 
 ---
 

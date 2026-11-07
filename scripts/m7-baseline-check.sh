@@ -51,14 +51,35 @@ fi
 command -v node >/dev/null 2>&1 || { echo "REFUSED: node not found on PATH." >&2; exit 2; }
 
 # Parse with the WHATWG URL parser, not a regex, so user:pass@host and ?host= tricks are handled.
+DB_RC=0
 DB_PARSED="$(node -e '
   try {
     const u = new URL(process.argv[1]);
     const override = ["host", "hostaddr"].find((k) => u.searchParams.has(k)) || "";
-    process.stdout.write([u.protocol, u.hostname, u.port || "5432", decodeURIComponent(u.pathname.replace(/^\//, "")), override].join("\t"));
+    const fields = [u.protocol, u.hostname, u.port || "5432", decodeURIComponent(u.pathname.replace(/^\//, "")), override];
+    // A decoded newline (%0A) would end the field list early in bash `read`, hiding the override field.
+    if (fields.some((f) => /[\x00-\x1f\x7f]/.test(f))) process.exit(4);
+    process.stdout.write(fields.join("\x1f"));
   } catch (e) { process.exit(3); }
-' "$DATABASE_URL" 2>/dev/null)" || { echo "REFUSED: DATABASE_URL is not a parseable URL." >&2; exit 2; }
-IFS=$'\t' read -r DB_PROTO DB_HOST DB_PORT DB_NAME DB_HOST_OVERRIDE <<<"$DB_PARSED"
+' "$DATABASE_URL" 2>/dev/null)" || DB_RC=$?
+if [ "$DB_RC" -eq 4 ]; then
+  echo "REFUSED: DATABASE_URL contains a control character after decoding." >&2
+  exit 2
+elif [ "$DB_RC" -ne 0 ]; then
+  echo "REFUSED: DATABASE_URL is not a parseable URL." >&2
+  exit 2
+fi
+# Split on \x1f, not tab: tab is IFS whitespace, so `read` collapses consecutive tabs and an empty
+# field (empty path) would shift the host override into the database-name slot.
+if [ "$(printf '%s' "$DB_PARSED" | tr -cd '\037' | wc -c | tr -d ' ')" != "4" ]; then
+  echo "REFUSED: DATABASE_URL did not parse into five fields." >&2
+  exit 2
+fi
+IFS=$'\x1f' read -r DB_PROTO DB_HOST DB_PORT DB_NAME DB_HOST_OVERRIDE <<<"$DB_PARSED"
+if [ -z "$DB_NAME" ]; then
+  echo "REFUSED: DATABASE_URL has no database name." >&2
+  exit 2
+fi
 case "$DB_PROTO" in
   postgres:|postgresql:) ;;
   *) echo "REFUSED: DATABASE_URL protocol '$DB_PROTO' is not postgres/postgresql." >&2; exit 2 ;;
@@ -227,7 +248,8 @@ else
   if [ "$LAST_RC" -eq 0 ]; then MIGRATE_OK=1; fi
   if [ "$MIGRATE_OK" -eq 1 ]; then
     # Explicit tsx path. `prisma db seed` would call node_modules/.bin/tsx.CMD (Windows only on main).
-    check seed 600 ./node_modules/.bin/tsx prisma/seed.ts
+    # The seed refuses without the opt-in. Set it only here, after the database guard has passed.
+    check seed 600 env ATLAS_ALLOW_SEED=1 ./node_modules/.bin/tsx prisma/seed.ts
     check prisma-read 120 ./node_modules/.bin/tsx scripts/verify-prisma.ts
   else
     unrun seed "migrate-deploy did not succeed"

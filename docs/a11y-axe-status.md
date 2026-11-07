@@ -5,7 +5,7 @@ Scope: `tests-node/a11y.spec.ts` runs axe-core (WCAG 2.0/2.1 A and AA tags) on `
 serious or critical violations. Last verified 2026-11-07 against `next dev` with a migrated and seeded
 Postgres 16 (issue #11).
 
-Result: 14 of 14 cases pass. 0 remaining serious or critical violations.
+Result: 14 of 14 cases pass, meaning axe reports 0 serious or critical violations (WCAG 2.0/2.1 A and AA tags) in these routes and widths. This is not a claim that the pages are fully accessible.
 
 ## What was fixed (33 nodes in 11 failing cases)
 
@@ -21,8 +21,8 @@ data at either width.
 
 ## Not covered by this scan
 
-- axe reported "needs review" (incomplete) for text over gradients or pseudo elements. These are not
-  violations and the spec ignores them, but nobody has measured them by hand: `.splash-title`,
+- axe reported "needs review" (incomplete) for text over gradients or pseudo elements. These are unresolved,
+  not confirmed passes. The spec ignores them and nobody has assessed them by hand: `.splash-title`,
   `.splash-brand`, `.status-row` spans, `.source-thumbnail-empty` on `/robots`, and the label inside the
   language selector buttons (the active button was fixed by token, its contrast is computed, not measured).
 - Colour changes to states the seed data does not render were made by contrast calculation, not by axe:
@@ -30,6 +30,7 @@ data at either width.
 - The spec starts scanning once the first `h1` is visible, which on a first visit is the `h1` of the
   FirstTimeLoader splash overlay. A separate scan after the splash detached also found 0 serious or
   critical violations on all 14 cases, but the spec itself does not wait for it.
+- The `/network` graph is a Cytoscape canvas. `role="group"` only gives its container a valid accessible name; nodes and edges are not exposed to keyboard or screen-reader users there, so graph interaction needs an accessible alternative (open gap, not fixed here).
 - Screen reader behaviour, real devices, zoom and reflow, and authenticated or operator pages are not tested.
 - Keyboard: Tab order and a visible 2px gold focus outline were checked by script on the main nav, tab bar,
   header links and language selector at both widths. Focus indicator contrast against every background was

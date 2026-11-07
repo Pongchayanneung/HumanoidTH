@@ -366,13 +366,19 @@ export default async function OverviewPage() {
         .success-pill {
           background: rgba(40, 116, 75, 0.1);
           border: 1px solid rgba(40, 116, 75, 0.25);
-          color: var(--success);
+          color: var(--accent-strong);
           font-size: 12px;
           font-weight: 700;
           padding: 6px 13px;
           border-radius: 20px;
           align-self: flex-start;
           letter-spacing: 0.2px;
+        }
+
+        .success-pill.idle {
+          background: rgba(100, 116, 139, 0.1);
+          color: #475569;
+          border-color: #475569;
         }
 
         .glass-card h3 {
@@ -578,7 +584,7 @@ export default async function OverviewPage() {
           margin: 0;
           font-size: 14px;
           font-weight: 800;
-          color: var(--warning);
+          color: var(--gold-on-dark);
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
@@ -609,7 +615,7 @@ export default async function OverviewPage() {
           position: absolute;
           top: 12px;
           left: 16px;
-          background: var(--warning);
+          background: var(--gold-on-dark);
           color: #0b1a15;
           font-weight: 800;
           font-size: 10px;
@@ -870,7 +876,7 @@ export default async function OverviewPage() {
                 {latestPipelineRun.pipelineName}: {latestPipelineRun.status}
               </div>
             ) : (
-              <div className="success-pill" style={{ background: "rgba(100, 116, 139, 0.1)", color: "#94a3b8", borderColor: "#475569" }}>
+              <div className="success-pill idle">
                 No active runs
               </div>
             )}

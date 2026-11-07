@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { IBM_Plex_Sans_Thai, Inter } from "next/font/google";
+import { IBM_Plex_Sans, IBM_Plex_Sans_Thai } from "next/font/google";
 import SidebarNav from "./components/SidebarNav";
 import LanguageSelector from "./components/LanguageSelector";
 import MobileHeader from "./components/MobileHeader";
 import MobileTabNav from "./components/MobileTabNav";
-import DataPullFab from "./components/DataPullFab";
 import FirstTimeLoader from "./components/FirstTimeLoader";
 import { getTranslation } from "@/lib/translations";
 import { defaultSeoDescription, getSiteUrl, siteName } from "@/lib/seo";
 import "./globals.css";
 
-const inter = Inter({
+const ibmPlexSans = IBM_Plex_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-ibm-plex-sans",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -97,7 +97,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  const lang = cookieStore.get("lang")?.value === "th" ? "th" : "en";
   const t = getTranslation(lang);
   const siteUrl = getSiteUrl();
   const structuredData = {
@@ -129,7 +129,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   };
 
   return (
-    <html lang={lang} className={`${inter.variable} ${ibmPlexSansThai.variable}`}>
+    <html lang={lang} className={`${ibmPlexSans.variable} ${ibmPlexSansThai.variable}`}>
       <body>
         <script
           type="application/ld+json"
@@ -137,7 +137,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
         <FirstTimeLoader />
         <div className="app-shell">
-          <MobileHeader />
+          <MobileHeader currentLang={lang} />
           <aside className="sidebar">
             <div className="brand-logo-container">
               <img src="/logo.png" alt="Thailand Humanoid Atlas" className="brand-logo" />
@@ -150,7 +150,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           </aside>
           <main className="main motion-page">{children}</main>
-          <DataPullFab />
           <MobileTabNav currentLang={lang} />
         </div>
       </body>

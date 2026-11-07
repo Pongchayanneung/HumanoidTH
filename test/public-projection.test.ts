@@ -132,59 +132,15 @@ test("isEligiblePublicContribution rejects private, unapproved, or placeholder r
   );
 });
 
-test("Export API: fails closed with 503 if credentials are not configured", async () => {
-  const origUser = process.env.ADMIN_BASIC_USER;
-  const origPass = process.env.ADMIN_BASIC_PASSWORD;
-
-  delete process.env.ADMIN_BASIC_USER;
-  delete process.env.ADMIN_BASIC_PASSWORD;
-
-  try {
-    const req = new NextRequest("http://localhost:3000/api/export?table=submissions");
-    const res = await exportRoute(req);
-    assert.equal(res.status, 503, "Must fail closed with 503 when credentials are not configured");
-  } finally {
-    if (origUser) process.env.ADMIN_BASIC_USER = origUser;
-    if (origPass) process.env.ADMIN_BASIC_PASSWORD = origPass;
-  }
-});
-
-test("Export API: rejects unauthorized access with 401 and WWW-Authenticate", async () => {
-  process.env.ADMIN_BASIC_USER = "operator@test.local";
-  process.env.ADMIN_BASIC_PASSWORD = "super-secret-password-xyz";
-
-  try {
-    // 1. No Authorization header
-    const req1 = new NextRequest("http://localhost:3000/api/export?table=submissions");
-    const res1 = await exportRoute(req1);
-    assert.equal(res1.status, 401);
-    assert.ok(res1.headers.get("WWW-Authenticate")?.includes("Basic"));
-
-    // 2. Forged unsigned cookie cannot authorize
-    const req2 = new NextRequest("http://localhost:3000/api/export?table=submissions", {
-      headers: { cookie: "admin_session=true" }
-    });
-    const res2 = await exportRoute(req2);
-    assert.equal(res2.status, 401, "Forged admin_session cookie must be rejected with 401");
-
-    // 3. Wrong credentials
-    const badAuth = Buffer.from("wrong:credentials").toString("base64");
-    const req3 = new NextRequest("http://localhost:3000/api/export?table=submissions", {
-      headers: { authorization: `Basic ${badAuth}` }
-    });
-    const res3 = await exportRoute(req3);
-    assert.equal(res3.status, 401);
-
-    // 4. Unknown table returns 400 Bad Request
-    const authHeader = `Basic ${Buffer.from("operator@test.local:super-secret-password-xyz").toString("base64")}`;
-    const req4 = new NextRequest("http://localhost:3000/api/export?table=unsupported_table_xyz", {
-      headers: { authorization: authHeader }
-    });
-    const res4 = await exportRoute(req4);
-    assert.equal(res4.status, 400, "Unknown table must return 400 Bad Request");
-  } finally {
-    delete process.env.ADMIN_BASIC_USER;
-    delete process.env.ADMIN_BASIC_PASSWORD;
+test("Export API: stays unavailable (M2 policy), whatever credentials or cookies are sent", async () => {
+  // M2 (#36) disables the legacy export workflow. Neither Basic credentials nor forged unsigned
+  // cookies may reopen it; any change to this needs an authenticated operator path first.
+  const forged = Buffer.from("operator@test.local:super-secret-password-xyz").toString("base64");
+  const attempts: Record<string, string>[] = [{}, { cookie: "admin_session=true; user_role=ADMIN" }, { authorization: `Basic ${forged}` }];
+  for (const headers of attempts) {
+    const res = await exportRoute(new NextRequest("http://localhost:3000/api/export?table=submissions", { headers }));
+    assert.equal(res.status, 403);
+    assert.deepEqual(await res.json(), { ok: false, code: "WORKFLOW_UNAVAILABLE" });
   }
 });
 

@@ -2,6 +2,7 @@
   "name": "thailand-humanoid-atlas",
   "version": "0.2.0",
   "private": true,
+  "packageManager": "pnpm@9.15.9",
   "type": "module",
   "engines": {
     "node": ">=20.11"
@@ -30,6 +31,7 @@
     "test": "tsx --test test/*.test.ts"
   },
   "dependencies": {
+    "@next/env": "15.5.29",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^9.2.0",
@@ -39,15 +41,16 @@
     "cytoscape": "^3.34.0",
     "dotenv": "^17.4.2",
     "lucide-react": "^0.468.0",
-    "next": "^15.1.0",
+    "next": "^15.5.29",
     "pg": "^8.22.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^3.9.1",
-    "three": "^0.185.1",
-    "zod": "^3.24.1"
+    "server-only": "0.0.1",
+    "three": "^0.185.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.61.1",
     "@types/cytoscape": "^3.31.0",
     "@types/node": "^22.10.2",
@@ -55,10 +58,17 @@
     "@types/react-dom": "^19.0.2",
     "@types/three": "^0.185.0",
     "eslint": "^9.17.0",
-    "eslint-config-next": "^15.1.0",
+    "eslint-config-next": "^15.5.29",
     "playwright": "^1.61.1",
     "prisma": "^6.1.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "next>postcss": "^8.5.32",
+      "next>sharp": "^0.35.5",
+      "@prisma/config>deepmerge-ts": "^8.0.2"
+    }
   }
 }

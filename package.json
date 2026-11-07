@@ -29,7 +29,8 @@
     "ingest:youtube": "tsx scripts/ingest.ts youtube",
     "test": "tsx --test test/*.test.ts",
     "search:export": "tsx scripts/export-search-corpus.ts",
-    "search:vectors": "tsx scripts/build-vector-release.ts"
+    "search:vectors": "tsx scripts/build-vector-release.ts",
+    "search:eval": "tsx scripts/evaluate-retrieval.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -1,6 +1,8 @@
 import type { SearchDocument, LanguageTag } from "./types";
 import { FROZEN_SEMANTIC_POLICY, type SemanticRetrievalPolicy } from "./semantic-policy";
-import { cosineSimilarity } from "./vector-io";
+import { cosineSimilarity, l2Normalize } from "./vector-io";
+import { fuseRankings, keywordMatch, prepareQuery, rankKeyword } from "./ranking";
+import { groupKeyFor } from "./api";
 
 export type EvaluationMode = "mock_fixture" | "production_semantic" | "lexical_only";
 export type SemanticStatus = "evaluated" | "mock" | "unavailable";
@@ -137,54 +139,37 @@ export interface PilotEvaluationSummary {
   policy: SemanticRetrievalPolicy;
 }
 
-/**
- * Normalizes query string for lexical matching: trims, collapses whitespace, Latin lowercases.
- */
+/** Meaningful tokens used by the serving lexical matcher. */
 export function normalizeQueryTokens(query: string): string[] {
-  return query
-    .toLowerCase()
-    .trim()
-    .split(/[\s,.;:!?()[\]{}"'\\/]+/)
-    .filter((t) => t.length > 0);
+  return prepareQuery(query).tokens;
 }
 
-/**
- * Computes lexical keyword score for a search document.
- */
+/** Score the same title and visible evidence used by the serving path. */
 export function computeKeywordScore(
   tokens: string[],
   doc: SearchDocument,
   weights = FROZEN_SEMANTIC_POLICY.lexicalWeights
 ): number {
-  if (tokens.length === 0) return 0;
-
-  const titleLower = (doc.title || "").toLowerCase();
-  const bodyLower = (doc.body || "").toLowerCase();
-  const authorLower = String(doc.metadata?.author || "").toLowerCase();
-
-  let titleMatches = 0;
-  let bodyMatches = 0;
-
-  for (const token of tokens) {
-    if (titleLower.includes(token)) titleMatches++;
-    if (bodyLower.includes(token) || authorLower.includes(token)) bodyMatches++;
-  }
-
-  const rawScore = titleMatches * weights.title + bodyMatches * weights.body;
-  return rawScore / tokens.length;
+  const texts = doc.evidence.map((item) => item.originalText);
+  return keywordMatch(prepareQuery(tokens.join(" ")), {
+    id: doc.typedId, title: doc.title, texts: texts.includes(doc.title) ? texts : [doc.title, ...texts]
+  }, weights)?.score ?? 0;
 }
 
 /**
- * Groups scored candidates by exact groupId, retaining best score and all member evidence.
+ * Groups scored candidates by the canonical group key the search API uses (`groupKeyFor`),
+ * retaining best score and all member evidence. `byId` is the whole index (parent lookup);
+ * it defaults to the candidates' own documents.
  */
 export function groupCandidates(
   candidates: { document: SearchDocument; score: number }[],
-  expectedRelevantIds: string[]
+  expectedRelevantIds: string[],
+  byId: Map<string, SearchDocument> = new Map(candidates.map((cand) => [cand.document.typedId, cand.document]))
 ): GroupedResult[] {
   const groups = new Map<string, { bestScore: number; primary: SearchDocument; members: SearchDocument[] }>();
 
   for (const cand of candidates) {
-    const gid = cand.document.groupId || cand.document.typedId;
+    const gid = groupKeyFor(cand.document, byId);
     const existing = groups.get(gid);
     if (!existing) {
       groups.set(gid, {
@@ -254,71 +239,40 @@ export class RetrievalEvaluator {
   ): QueryEvaluationReport {
     const startFullHybrid = performance.now();
 
-    // 1. Keyword Retrieval
+    const byId = new Map(this.documents.map((doc) => [doc.typedId, doc]));
+    const groupOf = (id: string) => groupKeyFor(byId.get(id)!, byId);
+    // Use the same visible title/evidence fields and word matcher as the serving path.
     const startKw = performance.now();
-    const tokens = normalizeQueryTokens(query.queryText);
-    const kwCandidates: { document: SearchDocument; score: number }[] = [];
-    for (const doc of this.documents) {
-      const score = computeKeywordScore(tokens, doc, this.policy.lexicalWeights);
-      if (score > 0) {
-        kwCandidates.push({ document: doc, score });
-      }
-    }
-    kwCandidates.sort((a, b) => b.score - a.score);
-    const endKw = performance.now();
-    const kwLatency = Number((endKw - startKw).toFixed(2));
+    const keyword = rankKeyword(prepareQuery(query.queryText), this.documents.map((doc) => {
+      const texts = doc.evidence.map((item) => item.originalText);
+      return { id: doc.typedId, title: doc.title, texts: texts.includes(doc.title) ? texts : [doc.title, ...texts] };
+    }), this.policy.lexicalWeights);
+    const kwLatency = Number((performance.now() - startKw).toFixed(2));
 
-    // 2. Semantic Retrieval
     const startSem = performance.now();
-    const semCandidates: { document: SearchDocument; score: number }[] = [];
-    const hasVectors =
-      this.evaluationMode !== "lexical_only" && !!queryVector && this.vectorMap.size > 0;
-
+    const hasVectors = this.evaluationMode !== "lexical_only" && !!queryVector && this.vectorMap.size > 0;
+    const semCandidates: { id: string; score: number }[] = [];
     if (hasVectors && queryVector) {
-      for (const doc of this.documents) {
-        if (doc.vectorRow !== null && doc.vectorRow !== undefined) {
-          const docVec = this.vectorMap.get(doc.vectorRow);
-          if (docVec) {
-            const sim = cosineSimilarity(queryVector, docVec);
-            if (sim >= this.policy.semanticCutoffThreshold) {
-              semCandidates.push({ document: doc, score: sim });
-            }
-          }
-        }
+      let unitQuery: Float32Array | null = null;
+      try { unitQuery = l2Normalize(queryVector); } catch { /* invalid query vector yields no semantic hits */ }
+      if (unitQuery) for (const doc of this.documents) {
+        const vector = doc.vectorRow === null ? undefined : this.vectorMap.get(doc.vectorRow);
+        if (!vector || vector.length !== unitQuery.length) continue;
+        try {
+          const score = cosineSimilarity(unitQuery, l2Normalize(vector));
+          if (Number.isFinite(score) && score >= this.policy.semanticCutoffThreshold) semCandidates.push({ id: doc.typedId, score });
+        } catch { /* invalid document vector cannot be ranked */ }
       }
       semCandidates.sort((a, b) => b.score - a.score);
     }
-    const endSem = performance.now();
-    const semLatency = Number((endSem - startSem).toFixed(2));
+    const semLatency = Number((performance.now() - startSem).toFixed(2));
 
-    // 3. Hybrid Retrieval: Reciprocal Rank Fusion (RRF)
-    const rrfScores = new Map<string, { doc: SearchDocument; rrf: number }>();
-    const k = this.policy.rrfConstantK;
-
-    kwCandidates.slice(0, this.policy.limits.candidatesPerBranch).forEach((cand, idx) => {
-      const rank = idx + 1;
-      const tid = cand.document.typedId;
-      const curr = rrfScores.get(tid) || { doc: cand.document, rrf: 0 };
-      curr.rrf += 1 / (k + rank);
-      rrfScores.set(tid, curr);
-    });
-
-    semCandidates.slice(0, this.policy.limits.candidatesPerBranch).forEach((cand, idx) => {
-      const rank = idx + 1;
-      const tid = cand.document.typedId;
-      const curr = rrfScores.get(tid) || { doc: cand.document, rrf: 0 };
-      curr.rrf += 1 / (k + rank);
-      rrfScores.set(tid, curr);
-    });
-
-    const hybCandidates = Array.from(rrfScores.values())
-      .map((item) => ({ document: item.doc, score: item.rrf }))
-      .sort((a, b) => b.score - a.score);
-
-    // Group candidates across full retrieval depth
-    const allKwGroups = groupCandidates(kwCandidates, query.expectedRelevantIds);
-    const allSemGroups = groupCandidates(semCandidates, query.expectedRelevantIds);
-    const allHybGroups = groupCandidates(hybCandidates, query.expectedRelevantIds);
+    // Assign descending ranks as grouping scores so grouping preserves the exact serving order.
+    const groupsFor = (ids: string[]) => groupCandidates(ids.map((id, index) => ({ document: byId.get(id)!, score: -index })), query.expectedRelevantIds, byId);
+    const semanticIds = semCandidates.map((candidate) => candidate.id);
+    const allKwGroups = groupsFor(fuseRankings(keyword, [], this.policy, groupOf));
+    const allSemGroups = groupsFor(fuseRankings([], semanticIds, this.policy, groupOf));
+    const allHybGroups = groupsFor(fuseRankings(keyword, semanticIds, this.policy, groupOf));
 
     const endFullHybrid = performance.now();
     const fullHybridLatency = Number((endFullHybrid - startFullHybrid).toFixed(2));

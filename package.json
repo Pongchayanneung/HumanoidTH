@@ -48,6 +48,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.61.1",
     "@types/cytoscape": "^3.31.0",
     "@types/node": "^22.10.2",

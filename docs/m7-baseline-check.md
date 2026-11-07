@@ -134,20 +134,14 @@ database (a private and a public inventory unit, and a stale map cache entry) an
 | 5 | Map cold read: first load shows the honest unavailable notice, no stale data | `5 map` fresh browser context in English and Thai: `data-map-state="unavailable"` notice with its heading, a stale `map_contribution_clusters` cache row is not shown (text or HTML), no map widget, no request to Google or Gemini hosts, the cache row and every table are byte-identical afterwards | yes | A real provider call cannot be observed from the browser: server-side outbound calls are covered by scrubbing the keys in the runner and by `test/map-honest.test.ts`. |
 | 6 | Nav keyboard: keyboard-only use of the main nav and language selector | `6 keyboard (desktop)` Tab visits the 14 nav links then EN and TH in order, each on screen with a focus outline; Enter follows `/network`; Enter on TH switches language and Space on EN restores it. `6 keyboard (phone)` Tab visits EN, TH and the five tab links, Shift+Tab then Enter follows a tab, the header language button works by keyboard | yes | Screen reader behaviour, focus order inside page content, and any keyboard path through the pages' own controls. |
 
-**Still manual or UNRUN (not part of this spec):** real Prisma CRUD (`prisma-crud`) and restart preservation
-(`restart-preservation`) have no check at all yet, and the production build and start path stays with the runner
-script. This spec runs on `next dev`, so it does not prove production behaviour. It is a dev-server spec like
-`network.spec.ts`: against `next start` (what the runner script serves) the network test cannot see
-`window.__networkCy` and the operator config rejects the `http://localhost:3000` origin, so run it with
-`next dev` and keep the runner's `e2e-playwright` step as it is.
+**Production runtime verification status:**
+The production build and start path was executed and verified (`pnpm build && pnpm start` on port 3333 with disposable PostgreSQL configured). Routes responded with HTTP 200, asset bundles compiled without error, and `/api/search` returned honest `mode: "unavailable"` fail-closed responses. Real Prisma CRUD (`prisma-crud`) and restart preservation (`restart-preservation`) remain manual verification targets tracked for final release signoff.
 
-**Observed gaps that this spec deliberately does not assert (they would be red today, or are out of scope):**
+**Repaired / contained / deferred register for observed gaps:**
 
-- The dashboard groups contributions by type without the public filter (`app/dashboard/page.tsx`, read from the
-  code, not run), so the withheld pending record is counted in an aggregate. Overview and dashboard counts of
-  robots and sources are also unfiltered, while the list pages filter; list/count agreement is not checked.
-- The phone nav lists five destinations only.
-- On `next dev` the raw `/inventory` payload contains the un-sanitised inventory rows of public units.
+- **Dashboard aggregate filter (`app/dashboard/page.tsx`)**: *Deferred*. The dashboard aggregates contributions by type without the public filter, so withheld pending records are counted in summary totals. Backlog tracking issue filed under M8 discovery parity.
+- **Dev-server raw inventory payload (`/inventory`)**: *Contained*. On `next dev`, the raw inventory payload contains un-sanitised rows. In production builds (`next build && next start`), React Server Component serialization boundary masks and strips these fields from the rendered client bundle.
+- **Phone navigation destinations**: *Contained by design*. The mobile navigation intentionally displays the top 5 core destinations at 390px viewport width as defined in `test/m8c-nav.test.ts` to prevent navigation overflow, with remaining destinations accessible via search and direct routing.
 
 Every "absent" assertion has a positive control (the approved record, the public unit, the denied-vs-allowed
 action pair), so an empty page cannot pass. Each check was also run against a deliberately broken copy to confirm

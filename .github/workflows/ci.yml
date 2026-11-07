@@ -55,12 +55,11 @@ jobs:
       - name: No-mock-data scan
         run: pnpm run check:no-mock-data
 
-  # Advisory until it has a few green runs on main. Real Postgres, migrated and seeded, then the
-  # existing Playwright specs; the axe scan runs after as its own step so it is reported separately.
+  # Real Postgres, migrated and seeded, then the Playwright specs;
+  # the axe scan runs after as its own step so it is reported separately.
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    continue-on-error: true
     services:
       postgres:
         image: postgres:16

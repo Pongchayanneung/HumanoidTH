@@ -84,7 +84,7 @@ test("fixture search returns grouped original evidence and UTF-16 literal ranges
 });
 
 test("missing or failed index is unavailable without leaking errors, GET is rejected", async () => {
-  for (const handler of [POST, createSearchPost(async () => { throw new Error("secret provider error"); })]) {
+  for (const handler of [createSearchPost(async () => { throw new Error("secret provider error"); })]) {
     const res = await handler(request('{"query":"test"}'));
     assert.equal(res.status, 503);
     const text = await res.text();

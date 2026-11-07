@@ -164,5 +164,5 @@ export function fuseRankings(keyword: KeywordHit[], semanticIds: string[], polic
   const exact = new Set(keyword.filter((hit) => hit.exactTitle).map((hit) => hit.id));
   const fused = Array.from(rrf.keys()).sort((a, b) => Number(exact.has(b)) - Number(exact.has(a)) || rrf.get(b)! - rrf.get(a)!);
   const capped = [...keyword.map((hit) => hit.id), ...semanticIds].filter((id) => !rrf.has(id));
-  return [...fused, ...capped];
+  return [...fused, ...new Set(capped)];
 }

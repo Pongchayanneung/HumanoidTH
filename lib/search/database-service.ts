@@ -6,9 +6,10 @@ export function createDatabaseSearchService(loadDatabase: () => Promise<any>) {
   return (request: Request) => {
     let database: any;
     return createSearchService({
-      loadCorpus: async () => {
+      loadCorpus: async (signal) => {
         database = await loadDatabase();
-        const { documents, manifest } = await exportSearchCorpusFromDb(database);
+        signal?.throwIfAborted();
+        const { documents, manifest } = await exportSearchCorpusFromDb(database, undefined, undefined, signal);
         return { documents, release: { id: manifest.releaseId, generatedAt: manifest.generatedAt }, coverage: { indexed: 0, eligible: documents.length } };
       },
       revalidate: async (doc) => (await revalidateSearchDocument(doc, database)).isValid,

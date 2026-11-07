@@ -46,7 +46,7 @@ export async function revalidateSearchDocument(
           }
         });
 
-        if (currentHash !== doc.contentHash) {
+        if (currentHash !== doc.contentHash || doc.evidence.some((e) => ["excerpt", "evidence_excerpt"].includes(e.fieldName) && e.originalText !== (record.excerpt ?? ""))) {
           return {
             isValid: false,
             reason: "CONTENT_CHANGED",
@@ -86,7 +86,7 @@ export async function revalidateSearchDocument(
           }
         });
 
-        if (currentHash !== doc.contentHash) {
+        if (currentHash !== doc.contentHash || doc.evidence.some((e) => e.fieldName === "description" && e.originalText !== (robot.description ?? ""))) {
           return {
             isValid: false,
             reason: "CONTENT_CHANGED",
@@ -128,7 +128,7 @@ export async function revalidateSearchDocument(
           }
         });
 
-        if (currentHash !== doc.contentHash) {
+        if (currentHash !== doc.contentHash || doc.evidence.some((e) => e.fieldName === "description" && e.originalText !== (item.description ?? ""))) {
           return {
             isValid: false,
             reason: "CONTENT_CHANGED",
@@ -182,7 +182,7 @@ export async function revalidateSearchDocument(
           }
         });
 
-        if (currentHash !== doc.contentHash) {
+        if (currentHash !== doc.contentHash || doc.evidence.some((e) => ["evidenceExcerpt", "evidence_excerpt"].includes(e.fieldName) && e.originalText !== (item.evidenceExcerpt ?? ""))) {
           return {
             isValid: false,
             reason: "CONTENT_CHANGED",

@@ -110,10 +110,12 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
     const unavailable: SearchResponse = { mode: "unavailable", view, release: null, coverage: { indexed: 0, eligible: 0 }, warnings: ["unavailable"], groups: [] };
     try {
       const loaded = await loadIndex(controller.signal);
+      controller.signal.throwIfAborted();
       const index = loaded && { ...loaded };
       if (!index || !index.release?.id || !index.release?.generatedAt || !Array.isArray(index.documents)) return Response.json(unavailable, { status: 503 });
       const policyReady = !options.requirePolicy || Boolean(options.policy?.isFrozen && options.policy.calibrationStatus === "calibrated_on_dev_split" && Number.isFinite(options.policy.semanticCutoffThreshold));
       if (!prepared.isBrowse && policyReady && options.embedQuery && options.loadVectors) index.vectors = (await options.loadVectors(index, controller.signal)) ?? undefined;
+      controller.signal.throwIfAborted();
       const policy = options.policy ?? FROZEN_SEMANTIC_POLICY;
       const byId = new Map(index.documents.map((doc) => [doc.typedId, doc]));
       // Type and survival filters first: scoring, candidate caps and the group limit only ever see selected kinds.
@@ -126,9 +128,12 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
 
       let checks = 0;
       const survives = async (doc: SearchDocument) => {
+        controller.signal.throwIfAborted();
         if (!options.revalidate) return true;
         checks++;
-        return await options.revalidate(doc, controller.signal);
+        const valid = await options.revalidate(doc, controller.signal);
+        controller.signal.throwIfAborted();
+        return valid;
       };
       if (prepared.isBrowse) {
         const browseGroups = new Map<string, SearchBrowseResult[]>();
@@ -168,6 +173,7 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
             queryVector = await Promise.race([options.embedQuery(prepared.embeddingText, inferenceController.signal), new Promise<null>((resolve) => { timer = clock.setTimeout(() => { inferenceController.abort(); resolve(null); }, 2500); })]);
           } catch { queryVector = null; } finally { clock.clearTimeout(timer); controller.signal.removeEventListener("abort", abort); }
         }
+        controller.signal.throwIfAborted();
         const semantic = semanticRank({ queryVector, profile, policy, candidates: selected.map((doc) => ({ id: doc.typedId, vector: doc.vectorRow === null ? null : rows.get(doc.vectorRow) })) });
         if (semantic.status === "available") {
           hybrid = true;

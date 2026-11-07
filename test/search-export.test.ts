@@ -20,6 +20,7 @@ import {
 } from "../lib/search/policy";
 import {
   exportSearchCorpusFromSeed,
+  exportSearchCorpusFromDb,
   createProbeSample
 } from "../lib/search/exporter";
 import {
@@ -277,4 +278,39 @@ test("F3 Revalidation: suppresses deleted, hidden, or modified records", async (
   );
   assert.equal(batchResult.validDocs.length, 1);
   assert.equal(batchResult.suppressedDocs.length, 3);
+});
+
+test("revalidation rejects changed raw evidence even when cleaned text has the same hash", async () => {
+  const original = `${"a".repeat(2000)} old`;
+  const changed = `${"a".repeat(2000)} new`;
+  const { cleanedText } = cleanSearchText(original);
+  assert.equal(cleanedText, cleanSearchText(changed).cleanedText);
+  const doc: SearchDocument = {
+    typedId: "source:raw", kind: "source", title: "Title", body: cleanedText,
+    retrievalText: cleanedText, url: null, groupId: "source:raw", origin: "web", language: "en",
+    isTitleOnly: false, isPartial: true, parentTypedId: null,
+    contentHash: computeContentHash({ typedId: "source:raw", title: "Title", body: cleanedText, url: null, metadata: {} }),
+    dependencyHash: computeDependencyHash(null), vectorRow: null,
+    evidence: [createSearchEvidence({ fieldName: "excerpt", originalText: original, label: "Excerpt", isTitleOnly: false, isTruncated: true })], metadata: {}
+  };
+  const prisma = { sourceRecord: { findUnique: async () => ({ relevanceStatus: "ACCEPTED", title: "Title", excerpt: changed, url: null }) } };
+  assert.equal((await revalidateSearchDocument(doc, prisma)).reason, "CONTENT_CHANGED");
+  prisma.sourceRecord.findUnique = async () => ({ relevanceStatus: "ACCEPTED", title: "Title", excerpt: original, url: null });
+  assert.equal((await revalidateSearchDocument(doc, prisma)).isValid, true);
+});
+
+
+test("database export stops issuing queries when an in-flight page finishes after abort", async () => {
+  const controller = new AbortController();
+  let release!: (rows: unknown[]) => void;
+  let otherQueries = 0;
+  const prisma = {
+    sourceRecord: { findMany: () => new Promise((resolve) => { release = resolve; }) },
+    robotModel: { findMany: async () => { otherQueries++; return []; } }
+  };
+  const pending = exportSearchCorpusFromDb(prisma, undefined, undefined, controller.signal);
+  controller.abort();
+  release([]);
+  await assert.rejects(pending, { name: "AbortError" });
+  assert.equal(otherQueries, 0);
 });

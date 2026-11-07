@@ -132,3 +132,22 @@ test("fusion does not repeat candidates beyond the branch cap", async () => {
   const fused = fuseRankings(hits, hits.map((hit) => hit.id), policy);
   assert.equal(fused.length, 52); assert.equal(new Set(fused).size, 52);
 });
+
+test("total deadline prevents checks after a slow loader eventually resolves", async () => {
+  const jobs = new Map<number, () => void>();
+  const clock = { setTimeout: (fn: () => void, ms: number) => { jobs.set(ms, fn); return ms; }, clearTimeout: (id: unknown) => { jobs.delete(id as number); } };
+  let release!: (value: SearchFixtureIndex) => void;
+  let checks = 0;
+  let vectorsLoaded = 0;
+  let markStarted!: () => void;
+  const started = new Promise<void>((resolve) => { markStarted = resolve; });
+  const handler = setup({ clock, policy, loadCorpus: async () => { markStarted(); return new Promise((r) => { release = r; }); }, loadVectors: async () => { vectorsLoaded++; return vectors; }, embedQuery: async () => vector, revalidate: async () => { checks++; return true; } });
+  const pending = run(handler, { query: "robot" });
+  await started;
+  jobs.get(5000)!();
+  assert.equal((await pending).status, 503);
+  release(index());
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(vectorsLoaded, 0);
+  assert.equal(checks, 0);
+});

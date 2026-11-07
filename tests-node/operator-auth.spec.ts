@@ -74,7 +74,12 @@ test("real whitespace-preserving login creates independent browser sessions and 
   expect((await context.cookies()).some(cookie => ["admin_session", "user_email", "user_role"].includes(cookie.name))).toBe(false);
   expect((await page.content()).includes(first.value)).toBe(false);
   expect((await page.evaluate(() => document.cookie)).includes(first.value)).toBe(false);
-  await expect(page.locator("input:not([type=hidden]), table")).toHaveCount(0);
+  const selector = page.locator('form[method="get"][action="/admin"]');
+  await expect(selector).toHaveCount(1);
+  await expect(selector.locator('select[name="collection"]')).toHaveCount(1);
+  await expect(selector.locator('input[type="text"][name="selectedId"]')).toHaveCount(1);
+  await expect(page.locator("input:not([type=hidden]), select, textarea, table, [contenteditable]")).toHaveCount(2);
+  await expect(page.locator("form")).toHaveCount(2); // Inspection and the existing sign-out form.
   const secondContext = await browser.newContext({ baseURL: browserOrigin });
   const replayContext = await browser.newContext({ baseURL: browserOrigin });
   try {
@@ -189,17 +194,19 @@ test("unavailable pages and language switching work publicly at desktop and mobi
     for (const route of ["/profile", "/submit-data", "/data-pulls", "/map"]) {
       const response = await page.goto(route);
       expect(response?.status()).toBe(200);
-      await expect(page.getByRole("heading", { name: "Workflow unavailable", exact: true })).toBeVisible();
+      // /map shows its own unavailable notice since M3 (#40); the other routes keep the shared stub heading.
+      const heading = route === "/map" ? "Map analysis is unavailable in this release." : "Workflow unavailable";
+      await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
       await expect(page.locator("input, table, form")).toHaveCount(0);
       expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)).toBe(false);
     }
   }
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/profile");
-  await page.getByRole("button", { name: "ภาษาไทย", exact: true }).click();
+  await page.getByRole("button", { name: "TH ภาษาไทย", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
   await expect(page.getByRole("heading", { name: "ยังไม่เปิดให้ใช้งาน", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "English", exact: true }).click();
+  await page.getByRole("button", { name: "EN English", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.getByRole("heading", { name: "Workflow unavailable", exact: true })).toBeVisible();
 });

@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-
-type SearchParams = Promise<{ selectedId?: string }>;
+import AdminConsolePage, { type AdminSearchParams } from "../AdminConsolePage";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +8,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false }
 };
 
-export default async function AdminSubmittedDataRedirect({ searchParams }: { searchParams: SearchParams }) {
-  const params = await searchParams;
-  const selected = params.selectedId ? `&selectedId=${encodeURIComponent(params.selectedId)}` : "";
-  redirect(`/admin?collection=submitted-data${selected}`);
+export default function AdminSubmittedDataPage({ searchParams }: { searchParams: AdminSearchParams }) {
+  return <AdminConsolePage path="/admin/submitted-data" searchParams={searchParams} />;
 }

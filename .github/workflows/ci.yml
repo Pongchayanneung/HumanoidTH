@@ -1,5 +1,4 @@
-# Minimal CI. Blocking: typecheck + unit tests and the no-mock-data scan. Advisory (reported, not
-# blocking): Playwright e2e (the axe step inside it is blocking within that job).
+# Minimal CI. Blocking: typecheck + unit tests, the no-mock-data scan, Playwright e2e and the axe scan.
 # Not wired yet: pytest (tests/).
 name: ci
 

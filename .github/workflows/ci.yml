@@ -89,7 +89,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec prisma migrate deploy
-      - run: pnpm run db:seed
+      - name: Seed the disposable database
+        # Guarded seeding (PR #29) needs this opt-in; set only here, on a throwaway 127.0.0.1 database.
+        run: pnpm run db:seed
+        env:
+          ATLAS_ALLOW_SEED: "1"
       - run: pnpm exec playwright install --with-deps chromium
       - name: Playwright e2e (smoke and network)
         run: pnpm exec playwright test tests-node/smoke.spec.ts tests-node/network.spec.ts --reporter=list

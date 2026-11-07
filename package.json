@@ -30,6 +30,7 @@
     "test": "tsx --test test/*.test.ts"
   },
   "dependencies": {
+    "@next/env": "15.5.20",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^9.2.0",
@@ -44,6 +45,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^3.9.1",
+    "server-only": "0.0.1",
     "three": "^0.185.1",
     "zod": "^3.24.1"
   },

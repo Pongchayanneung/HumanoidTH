@@ -58,7 +58,7 @@ export default async function AnalyticsPage() {
 
       {summary.isSampleTruncated && (
         <div className="notice" style={{ background: "rgba(245, 158, 11, 0.08)", borderColor: "#f59e0b", marginBottom: "16px" }}>
-          <strong>Sampled Visualization Active:</strong> Charts plot a bounded sample of {summary.totalAnalyzedEvents.toLocaleString()} records ({summary.coveragePercent}% coverage of {summary.totalVerifiedPublicRecords.toLocaleString()} verified public records). Summary metric cards and BPMN pipeline lanes reflect the complete un-truncated corpus.
+          <strong>Bounded Visualization Active:</strong> Charts plot a bounded subset of {summary.totalAnalyzedEvents.toLocaleString()} records ({summary.coveragePercent}% coverage of {summary.totalVerifiedPublicRecords.toLocaleString()} verified public records). Summary metric cards and BPMN pipeline lanes reflect the complete un-truncated corpus.
         </div>
       )}
 

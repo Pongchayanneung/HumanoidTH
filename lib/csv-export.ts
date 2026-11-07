@@ -262,9 +262,13 @@ export function buildExportPrismaQuery(table: AllowedTable, q?: string | null, l
           ...publicContributionWhere,
           ...(searchTerm
             ? {
-                OR: [
-                  { title: { contains: searchTerm, mode: "insensitive" as const } },
-                  { description: { contains: searchTerm, mode: "insensitive" as const } }
+                AND: [
+                  {
+                    OR: [
+                      { title: { contains: searchTerm, mode: "insensitive" as const } },
+                      { description: { contains: searchTerm, mode: "insensitive" as const } }
+                    ]
+                  }
                 ]
               }
             : {})

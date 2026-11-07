@@ -14,6 +14,7 @@ import {
   MAX_EXPORT_ROWS
 } from "../lib/csv-export";
 import { GET as exportRoute } from "../app/api/export/route";
+import { publicContributionWhere } from "../lib/public-projection";
 
 test("S3 Table Validation: validates allowed tables, normalizes names, and rejects unknown ones", () => {
   // Allowed tables
@@ -189,6 +190,21 @@ test("S3 Query Builder: bounds take, applies search filter q, and enforces publi
   // 6. Perspectives strictly pins parent source relevanceStatus: "ACCEPTED"
   const persQuery = buildExportPrismaQuery("perspective_annotations");
   assert.deepEqual((persQuery.where as any).source, { relevanceStatus: "ACCEPTED" });
+});
+
+test("S3 contribution search keeps the public URL exclusions", () => {
+  const { where } = buildExportPrismaQuery("contributions", "dinsaw");
+
+  assert.deepEqual(where?.OR, publicContributionWhere.OR);
+  assert.ok(where && "AND" in where);
+  assert.deepEqual(where.AND, [
+    {
+      OR: [
+        { title: { contains: "dinsaw", mode: "insensitive" } },
+        { description: { contains: "dinsaw", mode: "insensitive" } }
+      ]
+    }
+  ]);
 });
 
 test("S3 Export Route Handler: rejects invalid table with 400 Bad Request and normalizes valid tables", async () => {

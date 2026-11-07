@@ -1,0 +1,109 @@
+# Atlas Search Resumable Vector Releases Specification (F4)
+
+**Package:** Feature Package F4 — Issue #16  
+**Assignee:** Suk-Nsr  
+**Milestone:** Atlas Search — 6 hours  
+**Status:** Completed  
+**Artifacts Generated:**
+- `lib/search/vector-types.ts`: Type definitions for model profiles, semantic coverage, batch checkpoints, vector release manifest, active pointer, and completion forecasts
+- `lib/search/vector-io.ts`: Binary little-endian Float32 vector encoding/reading, L2 normalization, cosine similarity, release validation without row sampling, active release pointer, and Hour 3 forecasting
+- `lib/search/vector-builder.ts`: Resumable vector release builder with per-batch checkpointing, atomic versioned staging, manifest preservation, and promotion
+- `scripts/build-vector-release.ts`: CLI script for vector release packaging (`pnpm run search:vectors`) with checkpoint-derived forecast and `--mock` mode
+- `test/vector-release.test.ts`: Complete unit test suite verifying binary encoding, full-buffer row validation, per-batch checkpoints, profile guards, coverage, and forecast calculation
+
+---
+
+## 1. Vector Format & Storage Contract
+
+1. **Binary Encoding:** Vectors are stored as contiguous little-endian IEEE-754 32-bit floating point numbers (`Float32Array`) in `vectors.f32`.
+   - Dimensions: **1,024**
+   - Bytes per float: **4 bytes**
+   - Bytes per vector: $1,024 \times 4 = 4,096$ bytes ($4\text{ KiB}$)
+   - Total file size: Exactly $N \times 4,096$ bytes for $N$ vectors.
+2. **Document Mapping (`vectorRow`):**
+   - Each entry in `data/search/documents.json` contains a `vectorRow: number | null` field.
+   - For vectorized documents, `vectorRow` is the 0-indexed integer offset into `vectors.f32`.
+   - Byte offset in `vectors.f32`: $\text{offset} = \text{vectorRow} \times 4,096$.
+   - Unvectorized documents (or in keyword-only releases) have `vectorRow: null`.
+3. **Ordered Keys Hash (`recordKeysHash`):**
+   - SHA-256 hash computed over ordered strings: `${vectorRow}:${typedId}:${contentHash}`.
+   - Any insertion, deletion, reordering, or content modification in the vector set invalidates the hash.
+
+---
+
+## 2. Model Profiles & Generator Separation
+
+Model configurations are explicitly pinned and bound to their generator implementation. Mock vectors are strictly segregated from production Qwen embeddings:
+
+| Property | Production Qwen Profile | Deterministic Mock Profile |
+| :--- | :--- | :--- |
+| **Model ID** | `Alibaba-NLP/gte-Qwen2-1.5B-instruct` | `mock/deterministic-hash-128` |
+| **Revision** | `e085e72a818c399b19e0813958fbc8d8e58dfd27` (pinned commit) | `mock-v1` |
+| **Dimensions** | `1024` | `1024` |
+| **Precision** | `float32` | `float32` |
+| **Pooling** | `last_token` | `last_token` |
+| **Normalization** | `L2 (Euclidean)` | `L2 (Euclidean)` |
+| **Provider** | `tei` | `mock` |
+| **Profile Hash** | `qwen2-gte-1024-f32-l2-e085e72-v1` | `mock-deterministic-hash-1024-v1` |
+
+> [!IMPORTANT]
+> `VectorReleaseBuilder` strictly enforces model profile integrity. Attempting to use `DeterministicMockEmbeddingGenerator` with a production model profile (`DEFAULT_MODEL_PROFILE`) fails with a runtime error. Mock checkpoints cannot be reused by a production Qwen run because checkpoint cache matching requires an exact `modelProfileHash` match.
+
+---
+
+## 3. Resumable Checkpoint Architecture
+
+To protect against process crashes, timeouts, or GPU disconnections during long indexing runs:
+1. **Per-Batch Checkpointing:** Checkpoints are stored in `.cache/search-vector-checkpoints/` incrementally. Each batch of embeddings is written to disk immediately after generation before subsequent batches begin.
+2. **Profile & Content Hash Binding:** Each checkpoint entry records `typedId`, `contentHash`, `vectorRow`, and the float array under a profile-specific checkpoint key.
+3. **Resumption Policy:**
+   - On rebuild, existing checkpoints are examined.
+   - If `modelProfileHash` matches current profile AND `contentHash` matches the current document, the cached vector is reused immediately without re-embedding.
+   - If model profile changes or document text changes, the stale checkpoint is discarded and recomputed.
+4. **Server Boundary:** Checkpoints are stored under `.cache/` (gitignored) and are never committed to git or exposed to browser bundles.
+
+---
+
+## 4. Atomic Versioned Staging & Release Validation
+
+Before any vector release is activated:
+1. **Versioned Staging Directory:** Files are staged in an isolated versioned staging directory (`.cache/search-vector-staging/stage-<releaseId>-<timestamp>/`).
+2. **Full-Buffer Release Validation:** The release validator checks:
+   - `file_size_alignment`: Buffer size strictly matches $N \times 1,024 \times 4$ bytes.
+   - `finite_values`: **Every single vector row** in the buffer is checked (no sampling). Rejects any `NaN`, `+Infinity`, `-Infinity`.
+   - `nonzero_norms`: Rejects zero-magnitude vectors across all rows.
+   - `l2_normalization`: Verifies $\|v\|_2 \approx 1.0 \pm 0.05$ across all rows.
+   - `ordered_typed_key_mapping`: Ensures `vectorRow` indices are contiguous, unique, and strictly match document count.
+   - `manifest_file_checksums`: Verifies that every staged file on disk matches the byte length and SHA-256 recorded in the manifest.
+3. **Atomic Promotion & Active Pointer:**
+   - Files are copied into a versioned release folder (`data/search/releases/<releaseId>/`).
+   - Active files (`documents.json`, `vectors.f32`, `manifest.json`) are promoted to `data/search/`.
+   - An `active-release.json` pointer is written as the single atomic switch boundary. If any check fails during staging, staging aborts and active files remain untouched.
+4. **Manifest Preservation:** The vector builder reads existing base F3 manifest data, preserving `counts`, `emptyKinds`, and `policy` configurations.
+
+---
+
+## 5. Semantic Coverage Modes
+
+Atlas Search supports three explicit coverage tiers:
+- **`absent` (Keyword-Only):**
+  - `vectorCount: 0`, `vectors.f32` is empty or omitted, all `vectorRow` values are `null`.
+  - Declares search mode as pure keyword.
+- **`partial` (Partial Semantic Slice):**
+  - Some documents vectorized ($0 < \text{vectorCount} < \text{totalDocuments}$).
+  - Manifest records incomplete coverage percentages by kind (`source`, `robot`, `contribution`, `perspective`, `relationship`).
+  - Search UI displays visible warning that semantic coverage is partial.
+- **`complete` (Full Semantic Release):**
+  - Every eligible public document has a valid vector ($100\%$ coverage).
+
+---
+
+## 6. Hour 3 Completion Forecast (50% Contingency Gate)
+
+Per acceptance check #4:
+At elapsed hour 3, remaining work is measured from actual completed checkpoints on disk (or explicit CLI arguments `--completed <N> --elapsed-sec <S>`) and a 50% contingency buffer is added:
+$$\text{Total Forecast Remaining} = \text{Estimated Remaining} \times 1.5$$
+$$\text{Forecast Finish} = \text{Elapsed Time} + \text{Total Forecast Remaining}$$
+
+- If $\text{Forecast Finish} \le 4.5\text{ hours}$ (Hour 4½), the team proceeds with full semantic indexing.
+- If $\text{Forecast Finish} > 4.5\text{ hours}$, the build immediately triggers the fallback policy: packaging the completed vectors as a **partial semantic release** and freezing lexical search to guarantee release on time.

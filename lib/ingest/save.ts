@@ -2,8 +2,6 @@ import type { NormalizedSource } from "@/lib/ingest/types";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "../../generated/prisma";
 import {
-  classifyRelevance,
-  extractPerspective,
   classifyWithGemini,
   classifyCalibratedRelevance,
   extractCalibratedPerspective,
@@ -23,7 +21,7 @@ export async function saveSources(records: NormalizedSource[]) {
       relevanceReason: string;
       relevanceConfidence: number;
     };
-    
+
     let annotation: {
       stance: string;
       sentiment: string;
@@ -63,7 +61,8 @@ export async function saveSources(records: NormalizedSource[]) {
           };
         }
 
-        if (relevance.relevanceStatus === "ACCEPTED") {
+        // Only save perspective annotation if relevance is ACCEPTED and annotation confidence meets >= 0.80 threshold
+        if (relevance.relevanceStatus === "ACCEPTED" && (geminiResult.confidence ?? 0) >= 0.80) {
           annotation = {
             stance: geminiResult.stance,
             sentiment: geminiResult.sentiment,
@@ -84,7 +83,17 @@ export async function saveSources(records: NormalizedSource[]) {
         };
         if (calibrated.autoPublishEligible) {
           const pers = extractCalibratedPerspective(record.title, record.excerpt ?? "");
-          annotation = { ...pers, method: "rules_fallback" };
+          if (pers.confidence >= 0.80 && !pers.requiresHumanReview) {
+            annotation = {
+              stance: pers.stance,
+              sentiment: pers.sentiment,
+              perspectiveTheme: pers.perspectiveTheme,
+              targetEntity: pers.targetEntity,
+              evidenceExcerpt: pers.evidenceExcerpt,
+              confidence: pers.confidence,
+              method: "rules_fallback"
+            };
+          }
         }
       }
     } else {
@@ -96,74 +105,101 @@ export async function saveSources(records: NormalizedSource[]) {
       };
       if (calibrated.autoPublishEligible) {
         const pers = extractCalibratedPerspective(record.title, record.excerpt ?? "");
-        annotation = { ...pers, method: "rules_with_evidence" };
-      }
-    }
-
-    const source = await prisma.sourceRecord.upsert({
-      where: { url },
-      create: {
-        sourceType: record.sourceType,
-        title: record.title,
-        url,
-        excerpt: record.excerpt ?? "",
-        publishedAt: record.publishedAt,
-        author: record.author,
-        platform: record.platform,
-        rawMeta: rawMeta as Prisma.InputJsonValue,
-        ...relevance
-      },
-      update: {
-        title: record.title,
-        excerpt: record.excerpt ?? "",
-        publishedAt: record.publishedAt,
-        author: record.author,
-        platform: record.platform,
-        rawMeta: rawMeta as Prisma.InputJsonValue,
-        ...relevance
-      }
-    });
-
-    if (relevance.relevanceStatus === "ACCEPTED" && annotation) {
-      await prisma.perspectiveAnnotation.upsert({
-        where: {
-          sourceId_perspectiveTheme_targetEntity_evidenceExcerpt: {
-            sourceId: source.id,
-            perspectiveTheme: annotation.perspectiveTheme,
-            targetEntity: annotation.targetEntity,
-            evidenceExcerpt: annotation.evidenceExcerpt
-          }
-        },
-        create: { sourceId: source.id, ...annotation },
-        update: annotation
-      });
-
-      // Save extracted relationship triplets if available
-      if (geminiResult?.triplets && geminiResult.triplets.length > 0) {
-        for (const t of geminiResult.triplets) {
-          await prisma.triplet.upsert({
-            where: {
-              subject_relation_object_sourceId: {
-                subject: t.subject,
-                relation: t.relation,
-                object: t.object,
-                sourceId: source.id
-              }
-            },
-            create: {
-              subject: t.subject,
-              relation: t.relation,
-              object: t.object,
-              confidence: t.confidence,
-              sourceId: source.id
-            },
-            update: {
-              confidence: t.confidence
-            }
-          });
+        if (pers.confidence >= 0.80 && !pers.requiresHumanReview) {
+          annotation = {
+            stance: pers.stance,
+            sentiment: pers.sentiment,
+            perspectiveTheme: pers.perspectiveTheme,
+            targetEntity: pers.targetEntity,
+            evidenceExcerpt: pers.evidenceExcerpt,
+            confidence: pers.confidence,
+            method: "rules_with_evidence"
+          };
         }
       }
     }
+
+    // Atomic write of source, verified perspective annotation, and relationship triplets
+    await prisma.$transaction(async (tx) => {
+      const source = await tx.sourceRecord.upsert({
+        where: { url },
+        create: {
+          sourceType: record.sourceType,
+          title: record.title,
+          url,
+          excerpt: record.excerpt ?? "",
+          publishedAt: record.publishedAt,
+          author: record.author,
+          platform: record.platform,
+          rawMeta: rawMeta as Prisma.InputJsonValue,
+          ...relevance
+        },
+        update: {
+          title: record.title,
+          excerpt: record.excerpt ?? "",
+          publishedAt: record.publishedAt,
+          author: record.author,
+          platform: record.platform,
+          rawMeta: rawMeta as Prisma.InputJsonValue,
+          ...relevance
+        }
+      });
+
+      if (relevance.relevanceStatus === "ACCEPTED" && annotation) {
+        // Project schema fields strictly; omit non-schema fields like requiresHumanReview
+        const annotationPayload = {
+          stance: annotation.stance,
+          sentiment: annotation.sentiment,
+          perspectiveTheme: annotation.perspectiveTheme,
+          targetEntity: annotation.targetEntity,
+          evidenceExcerpt: annotation.evidenceExcerpt,
+          confidence: annotation.confidence,
+          method: annotation.method
+        };
+
+        await tx.perspectiveAnnotation.upsert({
+          where: {
+            sourceId_perspectiveTheme_targetEntity_evidenceExcerpt: {
+              sourceId: source.id,
+              perspectiveTheme: annotationPayload.perspectiveTheme,
+              targetEntity: annotationPayload.targetEntity,
+              evidenceExcerpt: annotationPayload.evidenceExcerpt
+            }
+          },
+          create: { sourceId: source.id, ...annotationPayload },
+          update: annotationPayload
+        });
+
+        // Save extracted relationship triplets if available and meeting >= 0.80 threshold
+        if (geminiResult?.triplets && geminiResult.triplets.length > 0) {
+          for (const t of geminiResult.triplets) {
+            const tripletConfidence = t.confidence ?? 0.85;
+            if (tripletConfidence >= 0.80) {
+              await tx.triplet.upsert({
+                where: {
+                  subject_relation_object_sourceId: {
+                    subject: t.subject,
+                    relation: t.relation,
+                    object: t.object,
+                    sourceId: source.id
+                  }
+                },
+                create: {
+                  subject: t.subject,
+                  relation: t.relation,
+                  object: t.object,
+                  confidence: tripletConfidence,
+                  sourceId: source.id
+                },
+                update: {
+                  confidence: tripletConfidence
+                }
+              });
+            }
+          }
+        }
+      }
+    });
 
     saved += 1;
   }

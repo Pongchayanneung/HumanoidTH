@@ -21,7 +21,6 @@ export async function revalidateSearchDocument(
     return { isValid: false, reason: "DELETED", currentDoc: null };
   }
 
-  try {
     switch (doc.kind) {
       case "source": {
         const record = await prisma.sourceRecord.findUnique({
@@ -323,10 +322,6 @@ export async function revalidateSearchDocument(
       default:
         return { isValid: false, reason: "STATUS_INELIGIBLE", currentDoc: null };
     }
-  } catch {
-    // If query fails, suppress to avoid leaking stale/unverified data
-    return { isValid: false, reason: "DELETED", currentDoc: null };
-  }
 }
 
 /**

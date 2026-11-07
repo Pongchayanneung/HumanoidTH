@@ -671,10 +671,10 @@ test("F4 Forecast CLI: refuses to forecast without --elapsed-sec instead of infe
       maxVectorsToGenerate: 2
     }).build();
 
-    const tsx = join(process.cwd(), "node_modules", ".bin", "tsx");
+    const tsxCli = join(process.cwd(), "node_modules", "tsx", "dist", "cli.mjs");
     const script = join(process.cwd(), "scripts", "build-vector-release.ts");
     const run = (extra: string[]) =>
-      spawnSync(tsx, [script, "--forecast", "--mock", ...extra], { cwd: tempDir, encoding: "utf8" });
+      spawnSync(process.execPath, [tsxCli, script, "--forecast", "--mock", ...extra], { cwd: tempDir, encoding: "utf8" });
 
     const noElapsed = run([]);
     assert.notEqual(noElapsed.status, 0);

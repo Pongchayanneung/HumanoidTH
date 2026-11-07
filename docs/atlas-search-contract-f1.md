@@ -6,6 +6,8 @@
 
 `POST /api/search` accepts JSON up to 8 KiB: `query` is required, trimmed and limited to 300 Unicode code points; `types` optionally filters the seven record kinds; `limit` is an optional positive integer, defaults to 10 and is capped at 20. Zero, negative and non-integer limits are invalid. Blank queries request browse results. Invalid requests receive HTTP 400 with `error.code = "invalid_request"`. GET returns 405.
 
+`subtype` optionally filters source records by `paper`, `repository`, `video`, `news_web` or `source`. It intersects with `types` and applies before ranking and the group limit.
+
 Results are grouped by canonical identity, not by kind. A group has a `groupKey` and typed members. Members of different kinds (for example a source and its linked perspective) share a group when they have the same external URL or an explicit parent-source association (`parentTypedId`); the key is that URL in `canonicalizeUrl` form, or the parent's key. A record with no URL and no parent stays a singleton keyed by its typed id; empty URLs and similar titles never merge records. `limit` counts groups, not records: once the limit is reached, later members of groups already admitted are still returned so no evidence is dropped. With a `types` filter only members of the selected kinds appear. In keyword results only members whose evidence matches appear. Group membership adds no score or duplicate-count boost.
 
 Robot models use their typed ID as the group key. A link from a contribution to a robot is a model association and does not affect the contribution's search group.

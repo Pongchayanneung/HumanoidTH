@@ -10,7 +10,7 @@ export function validRanges(text: string, ranges: {start: number; end: number}[]
 }
 export async function searchClient(query: string, type: SearchContentType | '', signal: AbortSignal): Promise<SearchResponse> {
   const kind = contentTypes.slice(0, 5).includes(type as SearchContentType) ? 'source' : type as SearchRecordKind;
-  const response = await fetch('/api/search', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({query, ...(type ? {types: [kind]} : {})}), signal});
+  const response = await fetch('/api/search', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({query, ...(type ? {types: [kind]} : {}), ...(type && kind === 'source' ? {subtype: type} : {})}), signal});
   if (!response.ok) throw new Error('Search unavailable');
   return response.json();
 }

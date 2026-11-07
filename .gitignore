@@ -15,6 +15,7 @@ tsconfig.tsbuildinfo
 generated/
 
 # Test, coverage, and temporary output
+.cache/
 coverage/
 playwright-report/
 test-results/

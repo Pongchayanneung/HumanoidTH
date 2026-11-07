@@ -18,22 +18,18 @@ export default async function ProfilePage() {
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
-  let users: any[] = [];
   let currentUser: any = null;
   let userSubmissions: any[] = [];
   try {
-    [users, currentUser] = await Promise.all([
-      prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
-      currentEmail
-        ? prisma.user.findUnique({
-            where: { email: currentEmail },
-            include: { submissions: { orderBy: { createdAt: "desc" }, take: 50 } }
-          })
-        : Promise.resolve(null)
-    ]);
-    userSubmissions = currentUser?.submissions ?? [];
+    if (currentEmail) {
+      currentUser = await prisma.user.findUnique({
+        where: { email: currentEmail },
+        include: { submissions: { orderBy: { createdAt: "desc" }, take: 50 } }
+      });
+      userSubmissions = currentUser?.submissions ?? [];
+    }
   } catch (error) {
-    console.error("Failed to query users in profile page:", error);
+    console.error("Failed to query user profile:", error);
   }
 
   return (
@@ -76,29 +72,12 @@ export default async function ProfilePage() {
               <select name="role" defaultValue="USER">
                 <option value="USER">User (Read-only)</option>
                 <option value="RESEARCHER">Researcher</option>
-                <option value="ADMIN">Administrator</option>
               </select>
             </label>
             <button type="submit" className="primary" style={{ marginTop: "6px" }}>
               Log In / Register
             </button>
           </form>
-
-          <div style={{ borderTop: "1px solid var(--border)", paddingTop: "14px", marginTop: "14px" }}>
-            <span className="muted" style={{ fontSize: "12px" }}>Quick Simulators:</span>
-            <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
-              <form action={loginAsUser.bind(null, "creativelab.co.th@gmail.com", "ADMIN")}>
-                <button type="submit" className="button" style={{ fontSize: "11px", minHeight: "28px" }}>
-                  Login as Administrator
-                </button>
-              </form>
-              <form action={loginAsUser.bind(null, "researcher@example.com", "RESEARCHER")}>
-                <button type="submit" className="button" style={{ fontSize: "11px", minHeight: "28px" }}>
-                  Login as Researcher
-                </button>
-              </form>
-            </div>
-          </div>
         </section>
       )}
 
@@ -170,36 +149,7 @@ export default async function ProfilePage() {
         </section>
       )}
 
-      <h2>Corpus Users List ({users.length})</h2>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Registered At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.name || "N/A"}</td>
-                <td><code>{user.email}</code></td>
-                <td>
-                  <span className={`badge ${user.role === "ADMIN" ? "ok" : ""}`}>{user.role}</span>
-                </td>
-                <td>{user.createdAt.toLocaleString()}</td>
-              </tr>
-            ))}
-            {!users.length && (
-              <tr>
-                <td className="empty" colSpan={4}>No users registered in database.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+
     </>
   );
 }

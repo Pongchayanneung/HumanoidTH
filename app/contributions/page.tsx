@@ -47,17 +47,31 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
-  // Build filter conditions
-  const where: any = {};
+  // Build filter conditions enforcing public data projection (M3)
+  const where: any = {
+    visibility: "public",
+    NOT: [
+      { sourceUrl: { contains: "placeholder" } },
+      { sourceUrl: { contains: "seed:contribution:thai-hri-research" } }
+    ]
+  };
   if (type) where.contributionType = type;
   if (org) where.organization = org;
   if (robot) where.relatedRobotModelId = robot;
-  if (status) where.verificationStatus = status;
+  if (status) {
+    where.verificationStatus = status;
+  } else {
+    where.verificationStatus = "APPROVED";
+  }
   if (q) {
-    where.OR = [
-      { title: { contains: q, mode: "insensitive" } },
-      { contributorName: { contains: q, mode: "insensitive" } },
-      { description: { contains: q, mode: "insensitive" } }
+    where.AND = [
+      {
+        OR: [
+          { title: { contains: q, mode: "insensitive" } },
+          { contributorName: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } }
+        ]
+      }
     ];
   }
 

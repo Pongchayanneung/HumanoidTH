@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getTranslation } from "@/lib/translations";
+import { sanitizeInventoryForPublic } from "@/lib/public-projection";
 
 export const dynamic = "force-dynamic";
 
@@ -36,18 +37,26 @@ export const metadata: Metadata = {
 
 export default async function InventoryPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const isPublic = params.mode === "public";
-  
   const cookieStore = await cookies();
+  const isAdmin = cookieStore.get("admin_session")?.value === "true";
+  
+  // Public data protection (M3 / T03):
+  // Anonymous visitors are strictly confined to public-safe mode.
+  // Query flags (e.g. ?mode=operator) cannot bypass access boundaries.
+  const isOperator = isAdmin && params.mode === "operator";
+  const isPublic = !isOperator;
+  
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
   let inventory: any[] = [];
   try {
-    inventory = await prisma.ownedInventory.findMany({
+    const rawInventory = await prisma.ownedInventory.findMany({
+      where: isOperator ? {} : { visibility: "public" },
       include: { robotModel: true },
       orderBy: { updatedAt: "desc" }
     });
+    inventory = isOperator ? rawInventory : rawInventory.map((item) => sanitizeInventoryForPublic(item));
   } catch (error) {
     console.error("Failed to query inventory in inventory page:", error);
   }
@@ -107,12 +116,14 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
           <p className="muted">{t.inventoryDesc}</p>
         </div>
         <div className="toolbar">
-          <Link 
-            className={`button ${!isPublic ? "primary" : ""}`} 
-            href="/inventory?mode=operator"
-          >
-            {localT.opMode}
-          </Link>
+          {isAdmin && (
+            <Link 
+              className={`button ${!isPublic ? "primary" : ""}`} 
+              href="/inventory?mode=operator"
+            >
+              {localT.opMode}
+            </Link>
+          )}
           <Link 
             className={`button ${isPublic ? "primary" : ""}`} 
             href="/inventory?mode=public"

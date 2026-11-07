@@ -53,6 +53,7 @@ export const dynamic = "force-dynamic";
 
 export default async function OverviewPage() {
   const cookieStore = await cookies();
+  const isAdmin = cookieStore.get("admin_session")?.value === "true";
   const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
   const t = getTranslation(lang);
 
@@ -82,9 +83,17 @@ export default async function OverviewPage() {
       prisma.sourceRecord.count(),
       prisma.sourceRecord.count({ where: { relevanceStatus: "ACCEPTED" } }),
       prisma.robotModel.count(),
-      prisma.contribution.count(),
-      prisma.ownedInventory.count(),
-      prisma.submittedData.count({ where: { status: { in: ["QUEUED", "NEEDS_REVIEW"] } } }),
+      prisma.contribution.count({
+        where: {
+          visibility: "public",
+          verificationStatus: "APPROVED",
+          NOT: { sourceUrl: { contains: "placeholder" } }
+        }
+      }),
+      prisma.ownedInventory.count({ where: { visibility: "public" } }),
+      isAdmin
+        ? prisma.submittedData.count({ where: { status: { in: ["QUEUED", "NEEDS_REVIEW"] } } })
+        : Promise.resolve(null),
       prisma.sourceRecord.groupBy({ by: ["platform"], _count: { _all: true } }),
       prisma.sourceRecord.aggregate({ _min: { publishedAt: true }, _max: { publishedAt: true } }),
       prisma.pipelineRun.findFirst({ orderBy: { startedAt: "desc" } })
@@ -772,10 +781,12 @@ export default async function OverviewPage() {
           </Link>
           <Link className="button" href="/admin">
             <ClipboardList size={15} color="#b17c56" />
-            <span>📋</span> {t.reviewQueue}{" "}
-            <span style={{ color: "var(--success)", fontWeight: "800" }}>
-              ({pendingReviewsCount ?? "Unavailable"})
-            </span>
+            <span>📋</span> {t.reviewQueue}
+            {isAdmin && pendingReviewsCount !== null && (
+              <span style={{ color: "var(--success)", fontWeight: "800", marginLeft: "4px" }}>
+                ({pendingReviewsCount})
+              </span>
+            )}
           </Link>
         </div>
       </header>

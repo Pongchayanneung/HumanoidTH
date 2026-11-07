@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const protectedPrefixes = ["/admin", "/data-pulls"];
+const protectedPrefixes = ["/admin", "/data-pulls", "/database"];
 const protectedApiPrefixes = ["/api/ingest", "/api/export"];
 
 function isProtectedPath(pathname: string) {
@@ -52,5 +52,13 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/data-pulls/:path*", "/api/ingest/:path*", "/api/export"]
+  matcher: [
+    "/admin/:path*",
+    "/data-pulls/:path*",
+    "/database/:path*",
+    "/database",
+    "/api/ingest/:path*",
+    "/api/export",
+    "/api/export/:path*"
+  ]
 };

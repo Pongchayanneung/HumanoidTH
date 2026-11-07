@@ -16,9 +16,9 @@
   --danger: #9c2e26;
   --low-confidence: #705c30;
 
-  --font-inter-stack: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-latin-stack: var(--font-ibm-plex-sans), "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-thai-stack: var(--font-ibm-plex-sans-thai), "IBM Plex Sans Thai", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-sans: var(--font-inter-stack);
+  --font-sans: var(--font-latin-stack);
   --shadow-soft: 0 4px 20px rgba(46, 50, 48, 0.06);
   --motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --motion-spring: cubic-bezier(0.2, 0.9, 0.18, 1.08);

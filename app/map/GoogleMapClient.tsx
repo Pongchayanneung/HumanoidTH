@@ -79,7 +79,7 @@ export default function GoogleMapClient({ apiKey, points, lang = "en" }: Props) 
         infoWindow.setContent(`
           <div style="max-width:260px; font-family:var(--font-sans); color:var(--text-primary); padding:2px;">
             <strong style="font-size:13px; display:block; margin-bottom:2px;">${point.title.replace(/[<>&"]/g, "")}</strong>
-            <span style="font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase;">${point.contributorType}</span>
+            <span style="font-size:11px; font-weight:700; color:var(--accent-strong); text-transform:uppercase;">${point.contributorType}</span>
             <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">${point.locationLabel}</div>
             <div style="margin-top:6px; font-size:11px; line-height:1.45; border-top:1px solid #eee; padding-top:4px;">${point.summary.replace(/[<>&"]/g, "")}</div>
           </div>
@@ -122,7 +122,7 @@ export default function GoogleMapClient({ apiKey, points, lang = "en" }: Props) 
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
                 <strong style={{ fontSize: 16, display: "block" }}>{activePoint.title}</strong>
-                <span className="badge" style={{ marginTop: 6, display: "inline-block", background: "rgba(74, 124, 89, 0.1)", color: "var(--accent)", borderColor: "rgba(74, 124, 89, 0.2)" }}>{activePoint.contributorType}</span>
+                <span className="badge" style={{ marginTop: 6, display: "inline-block", background: "rgba(74, 124, 89, 0.1)", color: "var(--accent-strong)", borderColor: "rgba(74, 124, 89, 0.2)" }}>{activePoint.contributorType}</span>
               </div>
               <div className="muted" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
                 <span>📍</span> {activePoint.locationLabel}

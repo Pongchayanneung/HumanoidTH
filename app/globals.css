@@ -10,6 +10,7 @@
   --text-primary: #2e3230; /* Grounded desaturated warm charcoal */
   --text-secondary: #5e6661; /* Muted desaturated warm charcoal */
   --focus-ring-dark: #d6be67;
+  --gold-on-dark: #d6be67; /* Brand gold for text and icons on the dark green shell, 9.7:1 on #0b1a15 */
   --accent: #4a7c59; /* Terra forest green primary */
   --accent-strong: #365b41;
   --success: #4a7c59;
@@ -86,7 +87,7 @@ textarea {
   font-size: 16px;
   font-weight: 800;
   margin-bottom: 18px;
-  color: var(--warning); /* Yellow/Gold brand color */
+  color: var(--gold-on-dark); /* Yellow/Gold brand color */
   letter-spacing: 0.5px;
 }
 
@@ -439,7 +440,7 @@ tbody tr:hover {
 .badge.ok {
   background: #e8f4eb;
   border-color: #9fc7aa;
-  color: var(--success);
+  color: var(--accent-strong); /* --success on this tint is 4.3:1; strong is 6.8:1 */
 }
 
 .badge.warn {
@@ -522,14 +523,14 @@ tbody tr:hover {
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.5px;
-  color: var(--warning); /* Gold/Yellow brand color */
+  color: var(--gold-on-dark); /* Gold/Yellow brand color */
   text-transform: uppercase;
 }
 
 .mobile-profile {
   display: flex;
   align-items: center;
-  color: var(--warning);
+  color: var(--gold-on-dark);
   cursor: pointer;
   transition: opacity 0.2s ease;
 }
@@ -615,7 +616,7 @@ tbody tr:hover {
 }
 
 .tab-item.active .tab-icon {
-  color: var(--warning); /* Active icon is gold/yellow */
+  color: var(--gold-on-dark); /* Active icon is gold/yellow */
 }
 
 .tab-icon {
@@ -718,7 +719,7 @@ tbody tr:hover {
 }
 
 .lang-selector button.active {
-  background: var(--warning); /* Vibrant Yellow/Gold active indicator */
+  background: var(--gold-on-dark); /* Vibrant Yellow/Gold active indicator, 9.7:1 with the dark label */
   color: #0b1a15; /* Dark background font color */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   transform: translateY(-0.5px);

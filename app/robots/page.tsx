@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
+import { isEligiblePublicRobot } from "@/lib/public-projection";
 
 export const dynamic = "force-dynamic";
 
@@ -155,6 +156,8 @@ export default async function RobotsPage() {
         take: 1000
       })
     ]);
+    // Public projection (M3): Exclude placeholders and unverified foreign robots from public registry
+    robots = robots.filter((r) => isEligiblePublicRobot(r.canonicalName));
   } catch (error) {
     console.error("Database query failed in robots page:", error);
     dbOffline = true;

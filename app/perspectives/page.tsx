@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
+import { PUBLIC_DATASET_SCOPE_LABEL } from "@/lib/public-projection";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,11 @@ export const metadata: Metadata = {
 
   try {
     items = await prisma.perspectiveAnnotation.findMany({
+      where: {
+        source: {
+          relevanceStatus: "ACCEPTED"
+        }
+      },
       include: { source: true },
       orderBy: { createdAt: "desc" },
       take: 200
@@ -63,6 +69,9 @@ export const metadata: Metadata = {
     <>
       <h1>{t.perspectivesTitle}</h1>
       <p className="muted">{t.perspectivesDesc}</p>
+      <div className="notice" style={{ background: "rgba(59, 130, 246, 0.08)", borderColor: "var(--accent)", marginBottom: 16 }}>
+        <strong>Dataset Scope:</strong> {PUBLIC_DATASET_SCOPE_LABEL}. Perspective records inherit parent source eligibility. Unaccepted sources are omitted.
+      </div>
       {dbOffline && (
         <div className="notice" style={{ marginBottom: 16 }}>
           Live perspective annotations are unavailable. No substitute perspective records are being shown.

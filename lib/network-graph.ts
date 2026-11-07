@@ -131,7 +131,8 @@ export type NetworkGraphOptions = {
 
 let cachedGraph: { key: string; graph: NetworkGraph; cachedAt: number } | null = null;
 
-const fallbackWarning = "Database unavailable or permission denied. Falling back to imported seed file.";
+const databaseUnavailableWarning = "Database unavailable or permission denied.";
+const fallbackWarning = `${databaseUnavailableWarning} Falling back to imported seed file.`;
 const importFileWarning = "Imported seed file is unavailable.";
 
 const clusterLabels: Record<string, string> = {
@@ -631,7 +632,7 @@ export async function loadGraphRecordsAuto(): Promise<SourceLoadResult> {
     return { records: await loadGraphRecordsFromPrisma(), resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: [] };
   } catch {
     if (!fileAvailable) {
-      return { records: [], resolvedSource: "fallback_file", databaseAvailable: false, fileAvailable, warnings: [fallbackWarning, importFileWarning] };
+      return { records: [], resolvedSource: "fallback_file", databaseAvailable: false, fileAvailable, warnings: [databaseUnavailableWarning, importFileWarning] };
     }
     return {
       records: await loadGraphRecordsFromFile(),

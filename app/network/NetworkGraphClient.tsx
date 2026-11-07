@@ -146,7 +146,8 @@ const localT = {
     graphFailedLoad: "Network graph failed to load.",
     noRelationships: "No network relationships have been generated yet.",
     depth: "Depth",
-    sourceWarning: "Showing the local JSON cache because the database is unavailable"
+    sourceUsingImport: "Showing the Atlas import because the database is unavailable",
+    sourceUnavailable: "Neither the database nor the Atlas import is available"
   },
   th: {
     searchPlaceholder: "ค้นหาโหนด...",
@@ -200,7 +201,8 @@ const localT = {
     graphFailedLoad: "ไม่สามารถโหลดกราฟความสัมพันธ์ได้",
     noRelationships: "ยังไม่มีการสร้างความสัมพันธ์ในระบบ",
     depth: "ความลึกระดับ",
-    sourceWarning: "กำลังใช้งานไฟล์แคชสำรองในเครื่อง"
+    sourceUsingImport: "กำลังแสดงข้อมูลจากไฟล์นำเข้าของ Atlas เนื่องจากไม่สามารถใช้ฐานข้อมูลได้",
+    sourceUnavailable: "ไม่สามารถใช้ฐานข้อมูลและไฟล์นำเข้าของ Atlas ได้"
   }
 };
 
@@ -696,7 +698,7 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
     database: "Database",
     file: "Import file",
     hybrid: "Hybrid",
-    fallback_file: "Local file (database unavailable)"
+    fallback_file: graph?.meta.file_available ? localT[lang].sourceUsingImport : localT[lang].sourceUnavailable
   }[graph?.meta.resolved_source ?? "file"];
 
   return (
@@ -772,7 +774,7 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
 
       {graph && (
         <div className={`${styles.sourceStatus} ${graph.meta.resolved_source === "fallback_file" ? styles.sourceWarning : ""}`}>
-          <span>{localT[lang].dataSource} {graph.meta.resolved_source === "fallback_file" ? localT[lang].sourceWarning : sourceLabel}</span>
+          <span>{localT[lang].dataSource} {sourceLabel}</span>
           <span>{graph.meta.node_count} {lang === "th" ? "โหนด" : "nodes"} / {graph.meta.edge_count} {lang === "th" ? "เส้นเชื่อม" : "edges"}</span>
           {graph.meta.warnings.map((warning) => (
             <span key={warning}>{warning}</span>

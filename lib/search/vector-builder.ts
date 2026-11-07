@@ -9,16 +9,18 @@ import {
 } from "node:fs";
 import { resolve, join } from "node:path";
 import { createHash } from "node:crypto";
-import type { SearchDocument, SearchRecordKind, LanguageTag } from "./types";
+import type { SearchDocument, SearchExportManifest, SearchRecordKind, LanguageTag } from "./types";
 import {
   DEFAULT_MODEL_PROFILE,
+  MOCK_MODEL_PROFILE,
   type ModelProfile,
   type SemanticCoverage,
   type SemanticCoverageKindStats,
   type VectorBatchCheckpoint,
   type VectorReleaseManifest,
   type EmbeddingGenerator,
-  type VectorValidationResult
+  type VectorValidationResult,
+  type ActiveVectorReleasePointer
 } from "./vector-types";
 import {
   encodeVectorsToBuffer,
@@ -97,14 +99,34 @@ export class VectorReleaseBuilder {
 
   constructor(options?: BuildVectorReleaseOptions) {
     const rootDir = process.cwd();
+    const embeddingGenerator =
+      options?.embeddingGenerator ||
+      new DeterministicMockEmbeddingGenerator(options?.profile?.dimensions || 1024);
+
+    let profile = options?.profile;
+    if (!profile) {
+      if (embeddingGenerator instanceof DeterministicMockEmbeddingGenerator) {
+        profile = MOCK_MODEL_PROFILE;
+      } else {
+        profile = DEFAULT_MODEL_PROFILE;
+      }
+    } else if (
+      embeddingGenerator instanceof DeterministicMockEmbeddingGenerator &&
+      profile.provider !== "mock"
+    ) {
+      throw new Error(
+        `Cannot build semantic release: DeterministicMockEmbeddingGenerator cannot be labelled as production model profile "${profile.modelId}". Pass MOCK_MODEL_PROFILE or provide a real embedding generator.`
+      );
+    }
+
     this.options = {
       documentsPath: options?.documentsPath || resolve(rootDir, "data", "search", "documents.json"),
       outputDir: options?.outputDir || resolve(rootDir, "data", "search"),
       checkpointDir: options?.checkpointDir || resolve(rootDir, ".cache", "search-vector-checkpoints"),
       stagingDir: options?.stagingDir || resolve(rootDir, ".cache", "search-vector-staging"),
-      profile: options?.profile || DEFAULT_MODEL_PROFILE,
+      profile,
       batchSize: options?.batchSize || 64,
-      embeddingGenerator: options?.embeddingGenerator || new DeterministicMockEmbeddingGenerator(options?.profile?.dimensions || 1024),
+      embeddingGenerator,
       maxVectorsToGenerate: options?.maxVectorsToGenerate ?? Infinity,
       releaseId: options?.releaseId || "search-v1-hybrid",
       datasetId: options?.datasetId || "thailand-humanoid-atlas"
@@ -177,21 +199,32 @@ export class VectorReleaseBuilder {
    * Builds the vector release:
    * 1. Loads documents
    * 2. Checks resumable checkpoints
-   * 3. Generates missing embeddings in batches
+   * 3. Generates missing embeddings in batches with per-batch checkpointing
    * 4. Updates document vectorRow pointers
    * 5. Encodes little-endian Float32 binary file
-   * 6. Validates staged release
-   * 7. Atomically promotes files to active directory
+   * 6. Validates staged release in a versioned staging directory
+   * 7. Atomically promotes files to active directory and switches active-release pointer
    */
   async build(): Promise<BuildVectorReleaseResult> {
-    const { documentsPath, stagingDir, outputDir, profile, batchSize, embeddingGenerator, maxVectorsToGenerate, releaseId, datasetId } = this.options;
+    const {
+      documentsPath,
+      stagingDir,
+      outputDir,
+      profile,
+      batchSize,
+      embeddingGenerator,
+      maxVectorsToGenerate,
+      releaseId,
+      datasetId
+    } = this.options;
 
     // Load documents
     const rawDocsJson = readFileSync(documentsPath, "utf8");
     const documents: SearchDocument[] = JSON.parse(rawDocsJson);
 
-    // Prepare directories
-    mkdirSync(stagingDir, { recursive: true });
+    // Prepare versioned staging directory
+    const releaseStageDir = resolve(stagingDir, `stage-${releaseId}-${Date.now()}`);
+    mkdirSync(releaseStageDir, { recursive: true });
     mkdirSync(outputDir, { recursive: true });
 
     // Load matching checkpoints
@@ -223,21 +256,25 @@ export class VectorReleaseBuilder {
       documents[r].vectorRow = null;
     }
 
-    // Generate missing vectors in batches
+    // Generate missing vectors in batches and checkpoint each batch immediately
     if (missingDocs.length > 0) {
-      const textsToEmbed = missingDocs.map((m) => m.doc.retrievalText || m.doc.title);
-      const generatedVectors = await embeddingGenerator.generateBatches(textsToEmbed, {
-        batchSize
-      });
-
-      // Insert generated vectors and write batch checkpoints
       for (let i = 0; i < missingDocs.length; i += batchSize) {
         const batchSlice = missingDocs.slice(i, i + batchSize);
-        const checkpointEntries: { typedId: string; contentHash: string; vectorRow: number; vector: Float32Array }[] = [];
+        const batchTexts = batchSlice.map((m) => m.doc.retrievalText || m.doc.title);
+        const batchVectors = await embeddingGenerator.generateBatches(batchTexts, {
+          batchSize
+        });
+
+        const checkpointEntries: {
+          typedId: string;
+          contentHash: string;
+          vectorRow: number;
+          vector: Float32Array;
+        }[] = [];
 
         for (let j = 0; j < batchSlice.length; j++) {
           const item = batchSlice[j];
-          const vec = generatedVectors[i + j];
+          const vec = batchVectors[j];
           vectors[item.rowIndex] = vec;
           item.doc.vectorRow = item.rowIndex;
 
@@ -255,9 +292,10 @@ export class VectorReleaseBuilder {
     }
 
     // Binary encode Float32 vectors
-    const vectorBuffer = targetDocs.length > 0
-      ? encodeVectorsToBuffer(vectors, profile.dimensions)
-      : Buffer.alloc(0);
+    const vectorBuffer =
+      targetDocs.length > 0
+        ? encodeVectorsToBuffer(vectors, profile.dimensions)
+        : Buffer.alloc(0);
 
     // Compute semantic coverage
     const coverage = this.computeCoverage(documents, targetDocs.length);
@@ -265,47 +303,70 @@ export class VectorReleaseBuilder {
     // Compute recordKeysHash
     const recordKeysHash = targetDocs.length > 0 ? computeRecordKeysHash(documents) : null;
 
-    // Stage files in stagingDir
-    const stagedDocsPath = resolve(stagingDir, "documents.json");
-    const stagedVectorsPath = resolve(stagingDir, "vectors.f32");
-    const stagedManifestPath = resolve(stagingDir, "manifest.json");
+    // Load existing base manifest to preserve F3 counts, policy, and metadata
+    const existingManifestPath = resolve(outputDir, "manifest.json");
+    let baseManifest: Partial<SearchExportManifest> = {};
+    if (existsSync(existingManifestPath)) {
+      try {
+        baseManifest = JSON.parse(readFileSync(existingManifestPath, "utf8"));
+      } catch (err) {
+        console.warn(`Failed reading existing base manifest from ${existingManifestPath}:`, err);
+      }
+    }
+
+    // Stage files in versioned releaseStageDir
+    const stagedDocsPath = resolve(releaseStageDir, "documents.json");
+    const stagedVectorsPath = resolve(releaseStageDir, "vectors.f32");
+    const stagedManifestPath = resolve(releaseStageDir, "manifest.json");
 
     const docsJsonStr = JSON.stringify(documents, null, 2);
     writeFileSync(stagedDocsPath, docsJsonStr, "utf8");
-    writeFileSync(stagedVectorsPath, vectorBuffer);
+    if (targetDocs.length > 0) {
+      writeFileSync(stagedVectorsPath, vectorBuffer);
+    }
 
     // Compute file hashes and sizes
     const docsSha256 = createHash("sha256").update(Buffer.from(docsJsonStr, "utf8")).digest("hex");
     const docsBytes = Buffer.byteLength(docsJsonStr, "utf8");
 
-    const vectorsSha256 = createHash("sha256").update(vectorBuffer).digest("hex");
-    const vectorsBytes = vectorBuffer.length;
-
     const fileChecksums: Record<string, { sha256: string; bytes: number }> = {
-      "documents.json": { sha256: docsSha256, bytes: docsBytes },
-      "vectors.f32": { sha256: vectorsSha256, bytes: vectorsBytes }
+      ...(baseManifest.fileChecksums || {}),
+      "documents.json": { sha256: docsSha256, bytes: docsBytes }
     };
 
-    // If probe-128.json exists, copy and hash it
+    let vectorsSha256: string | undefined;
+    if (targetDocs.length > 0) {
+      vectorsSha256 = createHash("sha256").update(vectorBuffer).digest("hex");
+      fileChecksums["vectors.f32"] = { sha256: vectorsSha256, bytes: vectorBuffer.length };
+    }
+
+    // If probe-128.json exists in outputDir, copy and hash it
     const existingProbePath = resolve(outputDir, "probe-128.json");
     if (existsSync(existingProbePath)) {
       const probeJson = readFileSync(existingProbePath, "utf8");
       const probeSha256 = createHash("sha256").update(Buffer.from(probeJson, "utf8")).digest("hex");
-      fileChecksums["probe-128.json"] = { sha256: probeSha256, bytes: Buffer.byteLength(probeJson, "utf8") };
-      copyFileSync(existingProbePath, resolve(stagingDir, "probe-128.json"));
+      fileChecksums["probe-128.json"] = {
+        sha256: probeSha256,
+        bytes: Buffer.byteLength(probeJson, "utf8")
+      };
+      copyFileSync(existingProbePath, resolve(releaseStageDir, "probe-128.json"));
     }
 
-    // Prepare enriched manifest
+    // Prepare enriched manifest preserving F3 counts & policy
     const manifest: VectorReleaseManifest = {
+      ...baseManifest,
       manifestVersion: "2.0",
-      datasetId,
+      datasetId: baseManifest.datasetId || datasetId,
       releaseId,
       generatedAt: new Date().toISOString(),
+      counts: baseManifest.counts,
+      policy: baseManifest.policy,
       modelProfile: targetDocs.length > 0 ? profile : null,
       coverage,
       recordKeysHash,
       recordsSha256: docsSha256,
       files: {
+        ...(baseManifest.files || {}),
         documents: "documents.json",
         probeSample128: "probe-128.json",
         vectors: targetDocs.length > 0 ? "vectors.f32" : undefined
@@ -313,25 +374,43 @@ export class VectorReleaseBuilder {
       fileChecksums
     };
 
-    writeFileSync(stagedManifestPath, JSON.stringify(manifest, null, 2), "utf8");
+    const manifestJsonStr = JSON.stringify(manifest, null, 2);
+    writeFileSync(stagedManifestPath, manifestJsonStr, "utf8");
+    const manifestSha256 = createHash("sha256").update(Buffer.from(manifestJsonStr, "utf8")).digest("hex");
 
-    // Validate staged release
+    // Validate staged release: check every row and all staged file checksums
     const validation = validateVectorRelease({
       buffer: vectorBuffer,
       documents,
       expectedDimensions: profile.dimensions,
       expectedVectorCount: targetDocs.length,
-      profile
+      profile,
+      manifest,
+      manifestDir: releaseStageDir
     });
 
     if (!validation.isValid) {
+      // Clean up staged files on failure
+      rmSync(releaseStageDir, { recursive: true, force: true });
       throw new Error(`Vector release validation failed: ${validation.errors.join("; ")}`);
     }
 
-    // Atomic promotion: copy staged files into outputDir
-    const stagedFiles = [stagedDocsPath, stagedVectorsPath, stagedManifestPath];
+    // Versioned release directory
+    const versionedReleaseDir = resolve(outputDir, "releases", releaseId);
+    mkdirSync(versionedReleaseDir, { recursive: true });
+
+    const stagedFiles = [stagedDocsPath, stagedManifestPath];
+    if (targetDocs.length > 0) stagedFiles.push(stagedVectorsPath);
     const promotedFiles: string[] = [];
 
+    // Copy to versioned release directory
+    copyFileSync(stagedDocsPath, resolve(versionedReleaseDir, "documents.json"));
+    copyFileSync(stagedManifestPath, resolve(versionedReleaseDir, "manifest.json"));
+    if (targetDocs.length > 0) {
+      copyFileSync(stagedVectorsPath, resolve(versionedReleaseDir, "vectors.f32"));
+    }
+
+    // Promote to top-level outputDir
     const finalDocsPath = resolve(outputDir, "documents.json");
     const finalVectorsPath = resolve(outputDir, "vectors.f32");
     const finalManifestPath = resolve(outputDir, "manifest.json");
@@ -339,11 +418,35 @@ export class VectorReleaseBuilder {
     copyFileSync(stagedDocsPath, finalDocsPath);
     promotedFiles.push(finalDocsPath);
 
-    copyFileSync(stagedVectorsPath, finalVectorsPath);
-    promotedFiles.push(finalVectorsPath);
+    if (targetDocs.length > 0) {
+      copyFileSync(stagedVectorsPath, finalVectorsPath);
+      promotedFiles.push(finalVectorsPath);
+    }
 
     copyFileSync(stagedManifestPath, finalManifestPath);
     promotedFiles.push(finalManifestPath);
+
+    // Switch active-release pointer as single atomic pointer
+    const activePointer: ActiveVectorReleasePointer = {
+      releaseId,
+      datasetId: manifest.datasetId,
+      activeAt: manifest.generatedAt,
+      manifestSha256,
+      recordsSha256: docsSha256,
+      vectorSha256: vectorsSha256,
+      modelProfileHash: targetDocs.length > 0 ? profile.profileHash : null,
+      files: {
+        manifest: "manifest.json",
+        documents: "documents.json",
+        vectors: targetDocs.length > 0 ? "vectors.f32" : undefined
+      }
+    };
+    const activePointerPath = resolve(outputDir, "active-release.json");
+    writeFileSync(activePointerPath, JSON.stringify(activePointer, null, 2), "utf8");
+    promotedFiles.push(activePointerPath);
+
+    // Clean up temporary staging directory
+    rmSync(releaseStageDir, { recursive: true, force: true });
 
     return {
       manifest,
@@ -358,60 +461,66 @@ export class VectorReleaseBuilder {
    * Computes semantic coverage statistics across all 7 kinds and languages.
    */
   private computeCoverage(documents: SearchDocument[], vectorCount: number): SemanticCoverage {
-    const totalDocs = documents.length;
-    let status: "complete" | "partial" | "absent" = "absent";
+    const kinds: SearchRecordKind[] = [
+      "source",
+      "robot",
+      "contribution",
+      "perspective",
+      "relationship",
+      "inventory",
+      "entity"
+    ];
 
-    if (vectorCount === 0) {
-      status = "absent";
-    } else if (vectorCount >= totalDocs) {
-      status = "complete";
-    } else {
-      status = "partial";
+    const languages: LanguageTag[] = ["th", "en", "mixed", "unknown"];
+
+    const byKind: Record<SearchRecordKind, SemanticCoverageKindStats> = {} as any;
+    for (const kind of kinds) {
+      byKind[kind] = { total: 0, indexed: 0, coveragePct: 0 };
     }
 
-    const byKind: Record<SearchRecordKind, SemanticCoverageKindStats> = {
-      source: { total: 0, indexed: 0, coveragePct: 0 },
-      robot: { total: 0, indexed: 0, coveragePct: 0 },
-      contribution: { total: 0, indexed: 0, coveragePct: 0 },
-      perspective: { total: 0, indexed: 0, coveragePct: 0 },
-      inventory: { total: 0, indexed: 0, coveragePct: 0 },
-      relationship: { total: 0, indexed: 0, coveragePct: 0 },
-      entity: { total: 0, indexed: 0, coveragePct: 0 }
-    };
+    const byLanguage: Record<LanguageTag, { total: number; indexed: number }> = {} as any;
+    for (const lang of languages) {
+      byLanguage[lang] = { total: 0, indexed: 0 };
+    }
 
-    const byLanguage: Record<LanguageTag, { total: number; indexed: number }> = {
-      th: { total: 0, indexed: 0 },
-      en: { total: 0, indexed: 0 },
-      mixed: { total: 0, indexed: 0 },
-      unknown: { total: 0, indexed: 0 }
-    };
+    for (let i = 0; i < documents.length; i++) {
+      const doc = documents[i];
+      const kind = doc.kind;
+      const lang = doc.language || "en";
 
-    for (const doc of documents) {
-      const hasVector = doc.vectorRow !== null && doc.vectorRow !== undefined;
-
-      if (byKind[doc.kind]) {
-        byKind[doc.kind].total++;
-        if (hasVector) byKind[doc.kind].indexed++;
+      if (byKind[kind]) {
+        byKind[kind].total++;
+        if (i < vectorCount && doc.vectorRow !== null) {
+          byKind[kind].indexed++;
+        }
       }
 
-      if (byLanguage[doc.language]) {
-        byLanguage[doc.language].total++;
-        if (hasVector) byLanguage[doc.language].indexed++;
+      if (byLanguage[lang]) {
+        byLanguage[lang].total++;
+        if (i < vectorCount && doc.vectorRow !== null) {
+          byLanguage[lang].indexed++;
+        }
       }
     }
 
-    for (const kind of Object.keys(byKind) as SearchRecordKind[]) {
-      const stats = byKind[kind];
-      stats.coveragePct = stats.total > 0 ? (stats.indexed / stats.total) * 100 : 0;
+    for (const kind of kinds) {
+      const stat = byKind[kind];
+      stat.coveragePct = stat.total > 0 ? (stat.indexed / stat.total) * 100 : 100;
     }
 
-    const overallCoveragePct = totalDocs > 0 ? (vectorCount / totalDocs) * 100 : 0;
+    const overallPct = documents.length > 0 ? (vectorCount / documents.length) * 100 : 0;
+    const status =
+      vectorCount === 0
+        ? "absent"
+        : vectorCount >= documents.length
+        ? "complete"
+        : "partial";
 
     return {
       status,
-      totalDocuments: totalDocs,
+      totalDocuments: documents.length,
       vectorCount,
-      overallCoveragePct,
+      overallCoveragePct: overallPct,
       byKind,
       byLanguage
     };

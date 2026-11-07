@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import RobotViewer from "./components/RobotViewer";
 import CopyCommands from "./components/CopyCommands";
-import { getTranslation } from "@/lib/translations";
+import { getTranslation, parseLanguage } from "@/lib/translations";
 import { getOperatorPrincipal, pendingReviewsFor, type SessionResult } from "@/lib/operator";
 import {
   Bot,
@@ -58,7 +58,7 @@ export default async function OverviewPage() {
   let session: SessionResult = { ok: false, code: "UNAUTHENTICATED" };
   try {
     const cookieStore = await cookies();
-    lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+    lang = parseLanguage(cookieStore.get("lang")?.value);
     const operatorResult = await getOperatorPrincipal();
     session = operatorResult;
   } catch {

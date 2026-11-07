@@ -18,6 +18,10 @@ export const VALID_STATUSES = [
   "FAILED"
 ];
 
+// Free-text filters are bounded so a crafted URL cannot push unbounded or unstorable text
+// (control characters, NUL, lone surrogates) into a database LIKE query.
+export const MAX_FILTER_LENGTH = 200;
+
 export interface ContributionFilterInput {
   type?: string | string[];
   org?: string | string[];
@@ -36,9 +40,12 @@ export interface ValidatedContributionFilters {
   statusNotice: string | null;
 }
 
+// Truncates on code point boundaries and drops control characters and lone surrogates, so a
+// hostile value cannot split a surrogate pair or carry a NUL into a notice.
 export function truncateParam(val: string, maxLen = 40): string {
-  if (val.length <= maxLen) return val;
-  return `${val.slice(0, maxLen)}...`;
+  const points = Array.from(val.replace(/[\p{Cc}\p{Cs}]/gu, ""));
+  if (points.length <= maxLen) return points.join("");
+  return `${points.slice(0, maxLen).join("")}...`;
 }
 
 /**
@@ -50,6 +57,20 @@ export function normalizeScalarParam(param: string | string[] | undefined): stri
     return param[0]?.trim() || undefined;
   }
   return param.trim() || undefined;
+}
+
+/**
+ * Normalizes a free-text query parameter and reports whether it is within bounds.
+ * `invalid` is true for values longer than MAX_FILTER_LENGTH or containing control characters.
+ */
+export function readBoundedTextParam(param: string | string[] | undefined): { value?: string; invalid: boolean } {
+  const raw = Array.isArray(param) ? param[0] : param;
+  if (raw === undefined) return { invalid: false };
+  if (/[\p{Cc}\p{Cs}]/u.test(raw)) return { invalid: true };
+  const value = raw.trim();
+  if (!value) return { invalid: false };
+  if (Array.from(value).length > MAX_FILTER_LENGTH) return { invalid: true };
+  return { value, invalid: false };
 }
 
 /**
@@ -90,12 +111,20 @@ export function validateContributionFilters(
     }
   }
 
+  const freeText = [input.q, input.org, input.robot].map(readBoundedTextParam);
+  if (!filterError && freeText.some((field) => field.invalid)) {
+    filterError = lang === "th"
+      ? `ค่าตัวกรองไม่ถูกต้อง ใช้ได้ไม่เกิน ${MAX_FILTER_LENGTH} ตัวอักษรและไม่มีอักขระควบคุม`
+      : `Invalid filter value. Filters accept at most ${MAX_FILTER_LENGTH} characters and no control characters.`;
+  }
+
   return {
     type,
-    org,
-    robot,
+    // Rejected free text is never echoed back into the page.
+    org: freeText[1].value,
+    robot: freeText[2].value,
     status,
-    q,
+    q: freeText[0].value,
     filterError,
     statusNotice
   };

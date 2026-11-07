@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { getTranslation } from "@/lib/translations";
+import { getTranslation, parseLanguage } from "@/lib/translations";
 import { sanitizeInventoryForPublic } from "@/lib/public-projection";
 import { getOperatorPrincipal } from "@/lib/operator";
 
@@ -49,7 +49,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Se
   const isOperator = isOperatorUser && params.mode === "operator";
   const isPublic = !isOperator;
   
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  const lang = parseLanguage(cookieStore.get("lang")?.value);
   const t = getTranslation(lang);
 
   let inventory: any[] = [];

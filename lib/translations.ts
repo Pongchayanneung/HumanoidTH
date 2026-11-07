@@ -190,6 +190,12 @@ export const translations = {
 
 export type Language = "en" | "th";
 
+// The lang cookie is client-controlled. Only own, known keys may index the dictionaries,
+// otherwise values such as "constructor" or "__proto__" resolve to Object.prototype members.
+export function parseLanguage(value: string | undefined | null): Language {
+  return value === "th" ? "th" : "en";
+}
+
 export function getTranslation(lang: Language) {
-  return translations[lang] || translations.en;
+  return Object.hasOwn(translations, lang) ? translations[lang] : translations.en;
 }

@@ -2,8 +2,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
-import { getTranslation } from "@/lib/translations";
+import { getTranslation, parseLanguage } from "@/lib/translations";
 import { getOperatorPrincipal } from "@/lib/operator";
+import { normalizeScalarParam, readBoundedTextParam } from "@/lib/contribution-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false }
 };
 
-type SearchParams = Promise<{ table?: string; q?: string }>;
+type SearchParams = Promise<{ table?: string | string[]; q?: string | string[] }>;
 
 const tableOptions = [
   { value: "sources", label: "Source Records" },
@@ -26,11 +27,13 @@ const tableOptions = [
 
 export default async function DatabasePage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const table = tableOptions.some(t => t.value === params.table) ? params.table! : "sources";
-  const q = params.q ?? "";
+  const requestedTable = normalizeScalarParam(params.table);
+  const table = tableOptions.find(t => t.value === requestedTable)?.value ?? "sources";
+  const search = readBoundedTextParam(params.q);
+  const q = search.value ?? "";
 
   const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  const lang = parseLanguage(cookieStore.get("lang")?.value);
   const t = getTranslation(lang);
 
   // Defense in depth (M3 / T03): Raw database browsing is restricted to verified operators.
@@ -53,7 +56,10 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
   let data: any[] = [];
 
   try {
-    switch (table) {
+    // An out-of-bounds text search runs no query at all.
+    switch (search.invalid ? "rejected" : table) {
+      case "rejected":
+        break;
       case "robots":
         data = await prisma.robotModel.findMany({
           where: q ? { canonicalName: { contains: q, mode: "insensitive" } } : {},
@@ -143,6 +149,10 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
           }
         }
       `}} />
+
+      {search.invalid && (
+        <p className="notice" role="alert">Invalid text search. Use at most 200 characters and no control characters.</p>
+      )}
 
       {/* Selector & Search Form */}
       <form method="GET" className="panel db-form">

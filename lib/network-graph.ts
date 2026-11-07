@@ -865,6 +865,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
   if (cachedGraph?.key === cacheKey && Date.now() - cachedGraph.cachedAt < 60_000) return cachedGraph.graph;
 
   const source = await loadGraphRecords(sourceMode);
+  // Nothing to read from is a server fault, not an empty graph. Throwing keeps it out of the cache
+  // and lets the API answer 503 instead of a 200 or a 404 that looks like a real empty result.
+  if (!source.databaseAvailable && !source.fileAvailable) throw new Error("No network graph source is available.");
   const nodes = new Map<string, NetworkNode>();
   const edges = new Map<string, NetworkEdge>();
   const recordNodeByName = new Map<string, string>();

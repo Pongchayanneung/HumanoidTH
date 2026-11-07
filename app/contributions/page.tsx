@@ -2,7 +2,7 @@ import React from "react";
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { getTranslation } from "@/lib/translations";
+import { getTranslation, parseLanguage } from "@/lib/translations";
 import { publicContributionWhere, isEligiblePublicRobot } from "@/lib/public-projection";
 import {
   CONTRIBUTION_TYPES,
@@ -49,7 +49,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   let lang: "en" | "th" = "en";
   try {
     const cookieStore = await cookies();
-    lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+    lang = parseLanguage(cookieStore.get("lang")?.value);
   } catch {
     // Default to 'en' when rendered outside request store (e.g. unit tests)
   }

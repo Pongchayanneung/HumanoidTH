@@ -39,9 +39,15 @@ test("network API supports source modes", async ({ request }) => {
   expect(["hybrid", "database", "fallback_file"]).toContain(hybrid.meta.resolved_source);
 
   const databaseResponse = await request.get("/api/network/graph?source=database");
-  expect([200, 503]).toContain(databaseResponse.status());
+  const databaseStatus = databaseResponse.status();
+  expect([200, 503]).toContain(databaseStatus);
   const database = await databaseResponse.json();
-  expect(database.meta.source_mode).toBe("database");
+  if (databaseStatus === 200) {
+    expect(database.meta.source_mode).toBe("database");
+  } else {
+    expect(typeof database.error).toBe("string");
+    expect("meta" in database).toBe(false);
+  }
 });
 
 test("network page renders graph UI and core controls", async ({ page }) => {

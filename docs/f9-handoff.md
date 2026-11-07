@@ -18,10 +18,10 @@ deploy and is not a substitute for the hosted checks below.
 | 1 | Hosted bundle loads the release (release id served equals manifest release id) | UNRUN | UNRUN |
 | 2 | Semantic slice working by hour 3 | UNRUN | UNRUN |
 | 3 | Freeze at hour 4.5 | UNRUN | UNRUN |
-| 4 | Focused checks | PASS | `scripts/f9-handoff-check.ts` all 5 checks passed |
-| 5 | Typecheck | PASS | `pnpm typecheck` exit code 0 |
-| 6 | Production build | PASS | `pnpm build` completed with static generation exit code 0 |
-| 7 | Baseline regressions ([m7-baseline-check.md](./m7-baseline-check.md)) | PASS | M7 outcome suite passed in CI e2e |
+| 4 | Focused checks | PASS | `node scripts/f9-handoff-check.ts` passed 5/5 local checks on the tested commit with Node `v24.16.0`. |
+| 5 | Typecheck | PASS | [PR #61 CI typecheck](https://github.com/Pongchayanneung/HumanoidTH/actions/runs/42389763802/job/128454682109) passed on the tested commit. |
+| 6 | Production build | UNRUN | Production build evidence is pending for the tested commit. |
+| 7 | Baseline regressions ([m7-baseline-check.md](./m7-baseline-check.md)) | UNRUN | [PR #61 CI](https://github.com/Pongchayanneung/HumanoidTH/actions/runs/42389763802/job/128454682288) covered smoke and network tests. [M7 passed in PR #60 CI](https://github.com/Pongchayanneung/HumanoidTH/actions/runs/42399266007) on a separate revision. |
 | 8 | Other-device Thai queries | UNRUN | Final rehearsal |
 | 9 | Other-device English queries | UNRUN | Final rehearsal |
 | 10 | Outage and recovery | UNRUN | Final rehearsal |
@@ -32,16 +32,16 @@ deploy and is not a substitute for the hosted checks below.
 
 | Field | Value |
 |-------|-------|
-| Tested commit | `3939e016265087ebfc22faeb13d78f9921753656` |
-| URL | `http://localhost:3333` (local production smoke test) |
-| Model id | `UNRUN` (keyword-first release) |
-| Index id | `releaseId: search-v1-keyword` |
-| Policy id | `FROZEN_SEMANTIC_POLICY` |
-| Release id / profile (from handoff check) | `search-v1-keyword` / Node `v26.9.0` |
-| Coverage (eligible vs embedded) | 251 eligible / 0 embedded (keyword mode) |
-| Coverage complete? (yes/no; if no, demo is labelled partial/keyword-only) | No, labelled keyword-only on screen and in handoff |
-| Pilot results | `test/search-evaluation.test.ts` passing |
-| Latency results | Offline retrieval latency verified in `test/search-evaluation.test.ts` |
+| Tested commit | `743345ddaf61ad0ed96cf8dcb42345e292c6d451` (local checker and PR CI) |
+| Hosted URL | `UNRUN` |
+| Model id | `UNRUN` |
+| Index id | `UNRUN` |
+| Policy id | `UNRUN` |
+| Local manifest release id / profile | `search-v1-keyword` / `UNRUN` |
+| Coverage (eligible vs embedded) | `UNRUN`. The local checker reported no coverage figures. |
+| Coverage complete? (yes/no; if no, demo is labelled partial/keyword-only) | `UNRUN` |
+| Pilot results | `UNRUN` |
+| Latency results | `UNRUN` |
 | Operations (who restarts, who rolls back, where) | Deployer: Pongchayanneung; Verifiers: NoneTP, Suk-Nsr |
 | Unfinished scope | Live TEI vector embeddings and hosted staging URL |
 

@@ -78,6 +78,12 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://postgres@127.0.0.1:5432/atlas_ci
+      # Throwaway operator config so /admin redirects to sign-in (smoke spec). The hash has a random salt
+      # and no known password; nothing here is a secret or reaches a real service.
+      OPERATOR_EMAIL: ci@example.com
+      OPERATOR_PASSWORD_HASH: scrypt$32768$8$3$700b42268ea42601b668a4ff2b03baae$46e3ae12976871ab6174f950a7d037afac9c3efbf647d670946d9aa66b9387838d54e8ec639f2405ac8339168735d2b0e26e2d748acdc47544699f845a6001d4
+      OPERATOR_AUTH_EPOCH: ci-throwaway
+      OPERATOR_APP_ORIGIN: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

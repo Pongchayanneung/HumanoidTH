@@ -4,14 +4,24 @@ import {
   validateContributionFilters,
   buildContributionWhere,
   normalizeScalarParam,
+  truncateParam,
   CONTRIBUTION_TYPES,
   VALID_STATUSES
 } from "../lib/contribution-filters";
+import ContributionsPage from "../app/contributions/page";
+import { prisma } from "../lib/prisma";
 
 test("valid statuses and contribution types pass filter validation", () => {
-  for (const status of ["APPROVED", "NEEDS_REVIEW", "REJECTED"]) {
+  // APPROVED produces neither error nor notice
+  const approvedRes = validateContributionFilters({ status: "APPROVED" });
+  assert.equal(approvedRes.filterError, null);
+  assert.equal(approvedRes.statusNotice, null);
+
+  // Non-approved valid statuses produce a helpful public notice and are ignored in query
+  for (const status of ["NEEDS_REVIEW", "REJECTED", "QUEUED", "ANALYZED", "FAILED"]) {
     const res = validateContributionFilters({ status });
-    assert.equal(res.filterError, null, `Status ${status} should be valid`);
+    assert.equal(res.filterError, null, `Status ${status} should not be an error`);
+    assert.ok(res.statusNotice?.includes("Status filtering is disabled for public visitors"), `Status ${status} should have statusNotice`);
   }
 
   for (const type of CONTRIBUTION_TYPES) {
@@ -20,7 +30,7 @@ test("valid statuses and contribution types pass filter validation", () => {
   }
 });
 
-test("unknown filter values fail clearly rather than silently broadening results", () => {
+test("unknown filter values fail clearly and truncate excessively long inputs", () => {
   // Legacy or fabricated statuses must fail
   const legacyVerified = validateContributionFilters({ status: "VERIFIED" });
   assert.ok(legacyVerified.filterError?.includes('Unknown verification status "VERIFIED"'));
@@ -30,6 +40,18 @@ test("unknown filter values fail clearly rather than silently broadening results
 
   const unknownType = validateContributionFilters({ type: "unknown_hack_type" });
   assert.ok(unknownType.filterError?.includes('Unknown contribution type "unknown_hack_type"'));
+
+  // Very long invalid values must be safely truncated to avoid unbounded memory/HTML reflection
+  const hugeString = "A".repeat(100000);
+  const truncatedStatus = validateContributionFilters({ status: hugeString });
+  assert.ok(truncatedStatus.filterError);
+  assert.ok(truncatedStatus.filterError.length < 300, "Error message must remain safely bounded");
+  assert.ok(truncatedStatus.filterError.includes("..."));
+
+  const truncatedType = validateContributionFilters({ type: hugeString });
+  assert.ok(truncatedType.filterError);
+  assert.ok(truncatedType.filterError.length < 300, "Error message must remain safely bounded");
+  assert.ok(truncatedType.filterError.includes("..."));
 });
 
 test("repeated query parameters are normalized to scalars without throwing", () => {
@@ -55,7 +77,8 @@ test("constructed where clause strictly enforces M3/M5 public membership", () =>
     type: "software_repository",
     org: "KMUTT FIBO",
     q: "ROS2 navigation",
-    filterError: null
+    filterError: null,
+    statusNotice: null
   });
 
   // Strict public isolation
@@ -75,7 +98,60 @@ test("constructed where clause strictly enforces M3/M5 public membership", () =>
   // Even if a caller passes status="NEEDS_REVIEW", public where clause must remain APPROVED
   const safeWhere = buildContributionWhere({
     status: "NEEDS_REVIEW",
-    filterError: null
+    filterError: null,
+    statusNotice: null
   });
   assert.equal(safeWhere.verificationStatus, "APPROVED", "Public where clause must remain pinned to APPROVED");
+});
+
+test("ContributionsPage: directly exercises page execution with filtered queries and status notice", async () => {
+  let capturedContributionWhere: any = null;
+  let capturedRobotWhere: any = null;
+  const originalContributionFindMany = prisma.contribution.findMany;
+  const originalRobotFindMany = prisma.robotModel.findMany;
+
+  (prisma.contribution as any).findMany = async (args: any) => {
+    if (!capturedContributionWhere && args?.where) {
+      capturedContributionWhere = args.where;
+    }
+    return [
+      {
+        id: "contrib-1",
+        title: "Test Public Contribution",
+        contributorName: "Author",
+        contributionType: "software_repository",
+        organization: "KMUTT FIBO",
+        license: "MIT",
+        verificationStatus: "APPROVED",
+        description: "Test description",
+        sourceUrl: "https://example.com/repo",
+        relatedRobotModel: { canonicalName: "Dinsaw Robot" },
+        updatedAt: new Date("2026-11-01T00:00:00Z")
+      }
+    ];
+  };
+
+  (prisma.robotModel as any).findMany = async (args: any) => {
+    capturedRobotWhere = args?.where;
+    return [{ id: "robot-1", canonicalName: "Dinsaw Robot" }];
+  };
+
+  try {
+    const pageJsx = await ContributionsPage({
+      searchParams: Promise.resolve({
+        type: "software_repository",
+        status: "QUEUED"
+      })
+    });
+
+    assert.ok(pageJsx, "Page JSX should render successfully");
+    assert.equal(capturedContributionWhere.verificationStatus, "APPROVED");
+    assert.equal(capturedContributionWhere.visibility, "public");
+    assert.equal(capturedContributionWhere.contributionType, "software_repository");
+    // Verify robot dropdown query filters by public contributions
+    assert.ok(capturedRobotWhere?.contributions?.some, "Robot query must only list robots with public contributions");
+  } finally {
+    prisma.contribution.findMany = originalContributionFindMany;
+    prisma.robotModel.findMany = originalRobotFindMany;
+  }
 });

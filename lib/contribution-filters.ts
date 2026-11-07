@@ -33,6 +33,12 @@ export interface ValidatedContributionFilters {
   status?: string;
   q?: string;
   filterError: string | null;
+  statusNotice: string | null;
+}
+
+export function truncateParam(val: string, maxLen = 40): string {
+  if (val.length <= maxLen) return val;
+  return `${val.slice(0, maxLen)}...`;
 }
 
 /**
@@ -57,11 +63,16 @@ export function validateContributionFilters(input: ContributionFilterInput): Val
   const q = normalizeScalarParam(input.q);
 
   let filterError: string | null = null;
+  let statusNotice: string | null = null;
 
   if (type && !CONTRIBUTION_TYPES.includes(type)) {
-    filterError = `Unknown contribution type "${type}". Valid values are: ${CONTRIBUTION_TYPES.join(", ")}.`;
-  } else if (status && !VALID_STATUSES.includes(status)) {
-    filterError = `Unknown verification status "${status}". Valid values are: ${VALID_STATUSES.join(", ")}.`;
+    filterError = `Unknown contribution type "${truncateParam(type, 40)}". Valid values are: ${CONTRIBUTION_TYPES.join(", ")}.`;
+  } else if (status) {
+    if (!VALID_STATUSES.includes(status)) {
+      filterError = `Unknown verification status "${truncateParam(status, 40)}". Valid values are: ${VALID_STATUSES.join(", ")}.`;
+    } else if (status !== "APPROVED") {
+      statusNotice = `Status filtering is disabled for public visitors. All displayed contributions are verified public records (ignoring requested status "${truncateParam(status, 40)}").`;
+    }
   }
 
   return {
@@ -70,7 +81,8 @@ export function validateContributionFilters(input: ContributionFilterInput): Val
     robot,
     status,
     q,
-    filterError
+    filterError,
+    statusNotice
   };
 }
 

@@ -87,6 +87,7 @@ export interface ReproducibleSourceSnapshot {
 
 export interface VersionHistoryEntry {
   version: number;
+  snapshot?: ReproducibleSourceSnapshot;
   contentHash: string;
   assertionsHash: string;
   snapshotHash: string;

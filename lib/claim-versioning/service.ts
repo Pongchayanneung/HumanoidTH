@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type {
   SourceClaimRecord,
   PerspectiveAssertionItem,
@@ -368,6 +368,9 @@ export async function updateSourceClaim(
     tripletsToKeep = input.triplets !== undefined ? input.triplets : current.triplets;
   }
 
+  perspectivesToKeep = perspectivesToKeep.map((p) => ({ ...p, id: p.id && current.perspectives.some((old) => old.id === p.id) ? p.id : randomUUID() }));
+  tripletsToKeep = tripletsToKeep.map((t) => ({ ...t, id: t.id && current.triplets.some((old) => old.id === t.id) ? t.id : randomUUID() }));
+
   const updatedSourceFields = {
     ...current.source,
     ...input.patch,
@@ -396,7 +399,26 @@ export async function updateSourceClaim(
     }
   ];
 
+  const baselineParent = existingHistory.find((entry) => entry.version === currentVersion - 1);
+  const baseline = buildSourceSnapshot(current.source, current.perspectives, current.triplets, undefined, undefined,
+    baselineParent?.version, baselineParent?.snapshotHash);
+  const history = [...existingHistory];
+  const baselineIndex = history.findIndex((entry) => entry.version === currentVersion);
+  if (baselineIndex >= 0 && !history[baselineIndex].snapshot) {
+    history[baselineIndex] = { ...history[baselineIndex], snapshot: baseline };
+  } else if (baselineIndex < 0) {
+    history.push({ version: currentVersion, snapshot: baseline, contentHash: baseline.contentHash,
+      assertionsHash: baseline.assertionsHash, snapshotHash: baseline.snapshotHash,
+      relevanceStatus: baseline.relevanceStatus, actor: baseline.metadata.actor,
+      reason: baseline.metadata.reason, updatedAt: baseline.metadata.timestamp });
+  }
+  const nextSnapshot = buildSourceSnapshot(
+    { ...updatedSourceFields, rawMeta: { _versioning: { version: newVersion, updatedAt: nowIso } } },
+    perspectivesToKeep, tripletsToKeep, actorEmail, input.reason, currentVersion, currentVersioning.snapshotHash
+  );
+
   const newHistoryEntry: VersionHistoryEntry = {
+    snapshot: nextSnapshot,
     actor: actorEmail,
     assertionsHash: newAssertionsHash,
     contentHash: newContentHash,
@@ -410,7 +432,7 @@ export async function updateSourceClaim(
   const newVersioning: SourceVersioningMeta = {
     assertionsHash: newAssertionsHash,
     contentHash: newContentHash,
-    history: [...existingHistory, newHistoryEntry],
+    history: [...history, newHistoryEntry],
     lastUpdatedBy: actorEmail,
     revisionReason: input.reason,
     snapshotHash: newSnapshotHash,

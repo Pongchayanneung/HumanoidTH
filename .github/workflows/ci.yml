@@ -1,5 +1,4 @@
-# Minimal CI. Blocking: typecheck + unit tests and the no-mock-data scan. Advisory (reported, not
-# blocking): Playwright e2e and the axe accessibility scan.
+# Minimal CI. Blocking: typecheck + unit tests, the no-mock-data scan, Playwright e2e and the axe scan.
 # Not wired yet: pytest (tests/).
 name: ci
 
@@ -101,7 +100,5 @@ jobs:
       - name: Playwright e2e (smoke and network)
         run: pnpm exec playwright test tests-node/smoke.spec.ts tests-node/network.spec.ts tests-node/m7-outcomes.spec.ts --reporter=list
       - name: axe accessibility scan (serious and critical, 390px and 1440px)
-        # Red on main today: color-contrast, link-name, label-content-name-mismatch and more.
-        # Remove continue-on-error once the findings are fixed.
-        continue-on-error: true
+        # Blocking since #57 (axe 14/14 on main).
         run: pnpm exec playwright test tests-node/a11y.spec.ts --reporter=list --retries=0

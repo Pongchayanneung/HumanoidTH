@@ -459,10 +459,11 @@ test("R2: Correcting source evidence supersedes obsolete assertions with new one
   assert.equal(result.activePerspectivesCount, 1);
   assert.equal(result.snapshot.assertions.perspectives[0].evidenceExcerpt, "Updated pilot showed high patient acceptance across 12 hospital wards.");
 
-  // Check repository: old perspective 'pers_01' was replaced, only 'pers_updated_01' exists
+  // The replacement receives a new ID recorded in the snapshot.
   const claims = await repo.findSourceWithClaims(source.id);
   assert.equal(claims.perspectives.length, 1);
-  assert.equal(claims.perspectives[0].id, "pers_updated_01");
+  assert.notEqual(claims.perspectives[0].id, "pers_01");
+  assert.equal(claims.perspectives[0].id, result.snapshot.assertions.perspectives[0].id);
 });
 
 test("R2: Transaction failure rolls back completely and allows idempotent retry", async () => {
@@ -548,4 +549,42 @@ test("R2: Shared operator access policy fails closed on unauthenticated or unaut
   // 3. Database untouched
   const sourceAfter = await repo.findSourceWithClaims(source.id);
   assert.equal(sourceAfter.source?.title, "Chula Unveils Healthcare Assistant Humanoid");
+});
+
+test("updates persist verifiable historical snapshots with assertion IDs", async () => {
+  const source = makeInitialSource();
+  const repo = new InMemoryClaimRepository(source, samplePerspectives, sampleTriplets);
+  const result = await updateSourceClaim({ sourceId: source.id, expectedVersion: 1,
+    actor: { kind: "operator", email: "reviewer@example.org" }, reason: "correct",
+    patch: { title: "Corrected" }, perspectives: [{ ...samplePerspectives[0], id: undefined }] }, repo);
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  const stored = await repo.findSourceWithClaims(source.id);
+  const history = (stored.source!.rawMeta._versioning as any).history;
+  assert.equal(history[0].snapshot.source.title, source.title);
+  assert.equal(history[0].snapshot.assertions.perspectives[0].id, "pers_01");
+  assert.equal(history[1].snapshot.assertions.perspectives[0].id, stored.perspectives[0].id);
+  assert.ok(history.every((entry: any) => verifySnapshotIntegrity(entry.snapshot).isValid));
+});
+
+test("search suppresses cached source after an editorial update", async () => {
+  const { createSearchPost } = await import("../lib/search/api");
+  const source = makeInitialSource({ author: null, platform: null, publishedAt: null });
+  const repo = new InMemoryClaimRepository(source, samplePerspectives, sampleTriplets);
+  const doc: SearchDocument = {
+    typedId: `source:${source.id}`, kind: "source", title: source.title, body: source.excerpt,
+    url: source.url, metadata: {}, contentHash: computeContentHash({ typedId: `source:${source.id}`,
+      title: source.title, body: source.excerpt, url: source.url, metadata: {} }),
+    dependencyHash: computeDependencyHash(null), evidence: [], groupId: source.url,
+    isPartial: false, isTitleOnly: false, language: "en", origin: "seed", parentTypedId: null,
+    retrievalText: source.excerpt, vectorRow: null
+  };
+  const database = { sourceRecord: { findUnique: async () => (await repo.findSourceWithClaims(source.id)).source } };
+  const search = createSearchPost(async () => ({ documents: [doc], release: { id: "r", generatedAt: "2026-01-01" }, coverage: { indexed: 0, eligible: 1 } }),
+    { revalidate: async (candidate) => (await revalidateSearchDocument(candidate, database)).isValid });
+  const request = () => new Request("http://localhost/api/search", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ query: "" }) });
+  assert.equal((await (await search(request())).json()).groups.length, 1);
+  const result = await updateSourceClaim({ sourceId: source.id, expectedVersion: 1, actor: { kind: "operator", email: "r@example.org" }, reason: "retire", patch: { relevanceStatus: "REJECTED" } }, repo);
+  assert.equal(result.ok, true);
+  assert.equal((await (await search(request())).json()).groups.length, 0);
 });

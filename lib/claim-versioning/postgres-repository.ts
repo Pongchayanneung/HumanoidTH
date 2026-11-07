@@ -183,7 +183,7 @@ export class PostgresClaimVersioningRepository implements ClaimVersioningReposit
           if (p.id && keptPerspectiveIds.includes(p.id)) {
             await tx.perspectiveAnnotation.update({ where: { id: p.id }, data });
           } else {
-            await tx.perspectiveAnnotation.create({ data: { ...data, sourceId } });
+            await tx.perspectiveAnnotation.create({ data: { ...data, id: p.id, sourceId } });
           }
         }
 
@@ -193,7 +193,7 @@ export class PostgresClaimVersioningRepository implements ClaimVersioningReposit
           if (t.id && keptTripletIds.includes(t.id)) {
             await tx.triplet.update({ where: { id: t.id }, data });
           } else {
-            await tx.triplet.create({ data: { ...data, sourceId } });
+            await tx.triplet.create({ data: { ...data, id: t.id, sourceId } });
           }
         }
 
@@ -207,7 +207,7 @@ export class PostgresClaimVersioningRepository implements ClaimVersioningReposit
       // Update the source record
       const updateData: Record<string, unknown> = {
         ...instruction.updatedSource,
-        rawMeta: instruction.updatedSource.rawMeta as Prisma.InputJsonValue
+        rawMeta: JSON.parse(JSON.stringify(instruction.updatedSource.rawMeta)) as Prisma.InputJsonValue
       };
       if (instruction.updatedSource.relevanceStatus) {
         updateData.relevanceStatus = instruction.updatedSource.relevanceStatus as any;

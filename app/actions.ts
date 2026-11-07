@@ -8,12 +8,65 @@ import { signInOperator, signOutOperator } from "@/lib/operator-auth/web";
 
 // These contracts remain callable by older clients while their workflows are
 // unavailable. Deny before reading identity, form fields or business storage.
-export async function createSubmission(_formData: FormData): Promise<WorkflowUnavailable> {
-  return { ok: false, code: "WORKFLOW_UNAVAILABLE" };
+// Submission and publication workflow for S5 (Issue #22).
+// Community contributions can be submitted and reviewed by authorized operators.
+// Unsupported submission types remain fail-closed with WORKFLOW_UNAVAILABLE.
+export async function createSubmission(formData: FormData): Promise<{ ok: boolean; code?: string; message?: string; submissionId?: string }> {
+  try {
+    const submissionType = formData.get("submissionType");
+    if (submissionType !== "contribution") {
+      return { ok: false, code: "WORKFLOW_UNAVAILABLE" };
+    }
+    const { createSubmissionWorkflow } = await import("@/lib/submission-workflow");
+    const title = String(formData.get("title") || "");
+    const url = formData.get("url") ? String(formData.get("url")) : null;
+    const notes = formData.get("notes") ? String(formData.get("notes")) : null;
+    const submitterName = formData.get("submitterName") ? String(formData.get("submitterName")) : null;
+    const submitterContact = formData.get("submitterContact") ? String(formData.get("submitterContact")) : null;
+    const organization = formData.get("organization") ? String(formData.get("organization")) : null;
+    const contributionType = formData.get("contributionType") ? String(formData.get("contributionType")) : "community_submission";
+    const targetRecordId = formData.get("targetRecordId") ? String(formData.get("targetRecordId")) : null;
+
+    return await createSubmissionWorkflow({
+      submissionType: "contribution",
+      title,
+      url,
+      notes,
+      submitterName,
+      submitterContact,
+      payload: {
+        organization,
+        contributionType,
+        targetRecordId,
+        description: notes
+      }
+    });
+  } catch {
+    return { ok: false, code: "WORKFLOW_UNAVAILABLE" };
+  }
 }
 
-export async function updateSubmissionStatus(_id: string, _status: "APPROVED" | "REJECTED" | "NEEDS_REVIEW"): Promise<WorkflowUnavailable> {
-  return { ok: false, code: "WORKFLOW_UNAVAILABLE" };
+export async function updateSubmissionStatus(
+  id: string,
+  status: "APPROVED" | "REJECTED" | "NEEDS_REVIEW",
+  reviewNotes?: string
+): Promise<{ ok: boolean; code?: string; message?: string; publishedRecordId?: string }> {
+  try {
+    if (status !== "APPROVED" && status !== "REJECTED") {
+      return { ok: false, code: "WORKFLOW_UNAVAILABLE" };
+    }
+    if (typeof id !== "string" || !id.trim()) {
+      return { ok: false, code: "WORKFLOW_UNAVAILABLE" };
+    }
+    const { reviewSubmissionWorkflow } = await import("@/lib/submission-workflow");
+    return await reviewSubmissionWorkflow({
+      submissionId: id,
+      decision: status,
+      reviewNotes
+    });
+  } catch {
+    return { ok: false, code: "WORKFLOW_UNAVAILABLE" };
+  }
 }
 
 export async function runDataPull(_formData: FormData): Promise<WorkflowUnavailable> {

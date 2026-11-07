@@ -57,7 +57,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
 
   // Validate and normalize filter inputs (M8-B)
   const validatedFilters = validateContributionFilters(params);
-  const { type, org, robot, q, filterError } = validatedFilters;
+  const { type, org, robot, q, filterError, statusNotice } = validatedFilters;
 
   // Build filter conditions enforcing M3/M5 public projection
   const where = buildContributionWhere(validatedFilters);
@@ -66,6 +66,13 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   let dbRobots: any[] = [];
   let dbOrganizations: any[] = [];
   let queryFailed = false;
+
+  // Reusable query for robot models associated with public contributions
+  const robotWhere = {
+    contributions: {
+      some: publicContributionWhere
+    }
+  };
 
   try {
     if (!filterError) {
@@ -77,14 +84,9 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           take: 200
         }),
         prisma.robotModel.findMany({
-          where: {
-            NOT: [
-              { canonicalName: { contains: "placeholder", mode: "insensitive" } },
-              { canonicalName: { contains: "pending", mode: "insensitive" } },
-              { canonicalName: { contains: "unverified", mode: "insensitive" } }
-            ]
-          },
-          select: { id: true, canonicalName: true }
+          where: robotWhere,
+          select: { id: true, canonicalName: true },
+          orderBy: { canonicalName: "asc" }
         }),
         prisma.contribution.findMany({
           select: { organization: true },
@@ -102,14 +104,9 @@ export default async function ContributionsPage({ searchParams }: { searchParams
       // For invalid filters, populate dropdowns from public data without querying invalid records
       const [resRobots, resOrgs] = await Promise.all([
         prisma.robotModel.findMany({
-          where: {
-            NOT: [
-              { canonicalName: { contains: "placeholder", mode: "insensitive" } },
-              { canonicalName: { contains: "pending", mode: "insensitive" } },
-              { canonicalName: { contains: "unverified", mode: "insensitive" } }
-            ]
-          },
-          select: { id: true, canonicalName: true }
+          where: robotWhere,
+          select: { id: true, canonicalName: true },
+          orderBy: { canonicalName: "asc" }
         }),
         prisma.contribution.findMany({
           select: { organization: true },
@@ -133,6 +130,33 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   const robots = dbRobots.filter((r) => isEligiblePublicRobot(r.canonicalName));
   const uniqueOrgs = dbOrganizations.map((o) => o.organization).filter(Boolean) as string[];
 
+  const localT = {
+    en: {
+      statusNoticeTitle: "Status Notice",
+      invalidFilterTitle: "Invalid Filter Parameter",
+      dbFailureTitle: "Database Query Failure",
+      dbFailureDesc: "Unable to load contribution records. Please try again later.",
+      allTypes: "All Types",
+      allOrgs: "All Organizations",
+      allRobots: "All Robots",
+      searchPlaceholder: "e.g. SLAM, study",
+      applyBtn: "Apply Filters",
+      emptyRecords: "No contribution records match the current filter criteria."
+    },
+    th: {
+      statusNoticeTitle: "การแจ้งเตือนสถานะ",
+      invalidFilterTitle: "พารามิเตอร์ตัวกรองไม่ถูกต้อง",
+      dbFailureTitle: "เกิดข้อผิดพลาดในการดึงข้อมูล",
+      dbFailureDesc: "ไม่สามารถดึงข้อมูลรายการได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง",
+      allTypes: "ทุกประเภทผลงาน",
+      allOrgs: "ทุกองค์กร",
+      allRobots: "ทุกหุ่นยนต์",
+      searchPlaceholder: "ค้นหาผลงาน, ผู้จัดทำ...",
+      applyBtn: "ค้นหา",
+      emptyRecords: "ไม่พบข้อมูลผลงานหรือการมีส่วนร่วมที่ตรงกับเงื่อนไขการค้นหา"
+    }
+  }[lang];
+
   return (
     <>
       <div className="topline">
@@ -142,6 +166,17 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         </div>
       </div>
 
+      {statusNotice && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="notice"
+          style={{ backgroundColor: "#eff6ff", borderLeftColor: "#3b82f6", color: "#1e40af", marginBottom: 16 }}
+        >
+          <strong>{localT.statusNoticeTitle}:</strong> {statusNotice}
+        </div>
+      )}
+
       {filterError && (
         <div
           role="alert"
@@ -149,7 +184,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           className="notice"
           style={{ backgroundColor: "#fdf2f2", borderLeftColor: "var(--danger)", color: "#b91c1c", marginBottom: 16 }}
         >
-          <strong>Invalid Filter Parameter:</strong> {filterError}
+          <strong>{localT.invalidFilterTitle}:</strong> {filterError}
         </div>
       )}
 
@@ -160,14 +195,14 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           className="notice"
           style={{ backgroundColor: "#fef2f2", borderLeftColor: "var(--danger)", color: "#b91c1c", marginBottom: 16 }}
         >
-          <strong>Database Query Failure:</strong> Unable to load contribution records. Please try again later.
+          <strong>{localT.dbFailureTitle}:</strong> {localT.dbFailureDesc}
         </div>
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `
         .filter-form {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) 100px;
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) 120px;
           gap: 10px;
           align-items: end;
           margin-bottom: 16px;
@@ -203,8 +238,8 @@ export default async function ContributionsPage({ searchParams }: { searchParams
       <form method="GET" className="panel filter-form">
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
           Type
-          <select name="type" defaultValue={type || ""}>
-            <option value="">All Types</option>
+          <select name="type" defaultValue={type || ""} style={{ minHeight: "44px" }}>
+            <option value="">{localT.allTypes}</option>
             {CONTRIBUTION_TYPES.map((ct) => (
               <option key={ct} value={ct}>
                 {ct.replace(/_/g, " ")}
@@ -215,8 +250,8 @@ export default async function ContributionsPage({ searchParams }: { searchParams
 
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
           Organization
-          <select name="org" defaultValue={org || ""}>
-            <option value="">All Organizations</option>
+          <select name="org" defaultValue={org || ""} style={{ minHeight: "44px" }}>
+            <option value="">{localT.allOrgs}</option>
             {uniqueOrgs.map((o) => (
               <option key={o} value={o}>
                 {o}
@@ -227,8 +262,8 @@ export default async function ContributionsPage({ searchParams }: { searchParams
 
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
           Target Robot
-          <select name="robot" defaultValue={robot || ""}>
-            <option value="">All Robots</option>
+          <select name="robot" defaultValue={robot || ""} style={{ minHeight: "44px" }}>
+            <option value="">{localT.allRobots}</option>
             {robots.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.canonicalName}
@@ -239,11 +274,11 @@ export default async function ContributionsPage({ searchParams }: { searchParams
 
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
           Text Search
-          <input name="q" defaultValue={q || ""} placeholder="e.g. SLAM, study" />
+          <input name="q" defaultValue={q || ""} placeholder={localT.searchPlaceholder} style={{ minHeight: "44px" }} />
         </label>
 
-        <button type="submit" className="primary submit-btn" style={{ minHeight: "36px" }}>
-          Apply
+        <button type="submit" className="primary submit-btn" style={{ minHeight: "44px" }}>
+          {localT.applyBtn}
         </button>
       </form>
 
@@ -298,7 +333,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
                   )}
                 </td>
                 <td style={{ fontSize: "12px" }}>
-                  {item.updatedAt.toLocaleDateString()}
+                  {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : "-"}
                 </td>
               </tr>
             ))}
@@ -306,10 +341,10 @@ export default async function ContributionsPage({ searchParams }: { searchParams
               <tr>
                 <td className="empty" colSpan={8}>
                   {queryFailed
-                    ? "Unable to load contribution records. Please try again later."
+                    ? localT.dbFailureDesc
                     : filterError
-                    ? "No records shown due to invalid filter parameter."
-                    : "No contribution records match the current filter criteria."}
+                    ? localT.invalidFilterTitle
+                    : localT.emptyRecords}
                 </td>
               </tr>
             )}

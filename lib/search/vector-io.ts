@@ -309,10 +309,19 @@ export function calculateCompletionForecast(params: {
     deadlineSeconds = 4.5 * 3600 // 4.5 hours from feature start
   } = params;
 
+  if (
+    completedDocuments <= 0 ||
+    elapsedSeconds <= 0 ||
+    !Number.isFinite(completedDocuments) ||
+    !Number.isFinite(elapsedSeconds)
+  ) {
+    throw new Error(
+      `Cannot calculate completion forecast: valid measured progress is required. Received completedDocuments=${completedDocuments}, elapsedSeconds=${elapsedSeconds}.`
+    );
+  }
+
   const remainingDocuments = Math.max(0, totalDocuments - completedDocuments);
-  const docsPerSecond = elapsedSeconds > 0 && completedDocuments > 0
-    ? completedDocuments / elapsedSeconds
-    : 1.0;
+  const docsPerSecond = completedDocuments / elapsedSeconds;
 
   const estimatedRemainingSeconds = docsPerSecond > 0 ? remainingDocuments / docsPerSecond : 0;
   const contingencySeconds = estimatedRemainingSeconds * 0.5; // 50% contingency

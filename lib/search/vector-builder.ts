@@ -5,7 +5,8 @@ import {
   existsSync,
   readdirSync,
   copyFileSync,
-  rmSync
+  rmSync,
+  renameSync
 } from "node:fs";
 import { resolve, join } from "node:path";
 import { createHash } from "node:crypto";
@@ -92,6 +93,48 @@ export class DeterministicMockEmbeddingGenerator implements EmbeddingGenerator {
 }
 
 /**
+ * Production TEI / Remote Embedding Generator for live model serving.
+ */
+export class TeiEmbeddingGenerator implements EmbeddingGenerator {
+  private endpoint: string;
+  private dimensions: number;
+
+  constructor(endpoint: string, dimensions: number = 1024) {
+    this.endpoint = endpoint.replace(/\/+$/, "");
+    this.dimensions = dimensions;
+  }
+
+  async generateBatches(
+    texts: string[],
+    options?: { batchSize?: number; onProgress?: (completed: number, total: number) => void }
+  ): Promise<Float32Array[]> {
+    const results: Float32Array[] = [];
+    const batchSize = options?.batchSize || 32;
+
+    for (let i = 0; i < texts.length; i += batchSize) {
+      const chunk = texts.slice(i, i + batchSize);
+      const res = await fetch(`${this.endpoint}/embed`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inputs: chunk, normalize: true, truncate: true })
+      });
+      if (!res.ok) {
+        throw new Error(`Embedding service returned HTTP ${res.status}: ${await res.text()}`);
+      }
+      const data = (await res.json()) as number[][];
+      for (const row of data) {
+        const f32 = new Float32Array(row);
+        results.push(l2Normalize(f32));
+      }
+      if (options?.onProgress) {
+        options.onProgress(Math.min(i + batchSize, texts.length), texts.length);
+      }
+    }
+    return results;
+  }
+}
+
+/**
  * Resumable Vector Release Builder for Atlas Search (F4).
  */
 export class VectorReleaseBuilder {
@@ -99,16 +142,32 @@ export class VectorReleaseBuilder {
 
   constructor(options?: BuildVectorReleaseOptions) {
     const rootDir = process.cwd();
-    const embeddingGenerator =
-      options?.embeddingGenerator ||
-      new DeterministicMockEmbeddingGenerator(options?.profile?.dimensions || 1024);
+    let profile: ModelProfile;
+    if (options?.profile) {
+      profile = options.profile;
+    } else if (options?.embeddingGenerator instanceof DeterministicMockEmbeddingGenerator) {
+      profile = MOCK_MODEL_PROFILE;
+    } else {
+      profile = MOCK_MODEL_PROFILE;
+    }
 
-    let profile = options?.profile;
-    if (!profile) {
-      if (embeddingGenerator instanceof DeterministicMockEmbeddingGenerator) {
-        profile = MOCK_MODEL_PROFILE;
+    let embeddingGenerator = options?.embeddingGenerator;
+    if (!embeddingGenerator) {
+      if (profile.provider === "mock") {
+        embeddingGenerator = new DeterministicMockEmbeddingGenerator(profile.dimensions);
       } else {
-        profile = DEFAULT_MODEL_PROFILE;
+        // Production profile requested without explicit generator: check environment
+        const teiUrl = process.env.EMBEDDING_SERVICE_URL || process.env.TEI_ENDPOINT;
+        if (teiUrl) {
+          embeddingGenerator = new TeiEmbeddingGenerator(teiUrl, profile.dimensions);
+        } else if (options?.maxVectorsToGenerate === 0) {
+          // Keyword-only release requires 0 vectors
+          embeddingGenerator = new DeterministicMockEmbeddingGenerator(profile.dimensions);
+        } else {
+          throw new Error(
+            `Cannot build semantic release: Production model profile "${profile.modelId}" requires a real embedding service. Configure EMBEDDING_SERVICE_URL (or TEI_ENDPOINT) or provide an EmbeddingGenerator instance.`
+          );
+        }
       }
     } else if (
       embeddingGenerator instanceof DeterministicMockEmbeddingGenerator &&
@@ -395,7 +454,7 @@ export class VectorReleaseBuilder {
       throw new Error(`Vector release validation failed: ${validation.errors.join("; ")}`);
     }
 
-    // Versioned release directory
+    // Versioned immutable release directory
     const versionedReleaseDir = resolve(outputDir, "releases", releaseId);
     mkdirSync(versionedReleaseDir, { recursive: true });
 
@@ -403,30 +462,29 @@ export class VectorReleaseBuilder {
     if (targetDocs.length > 0) stagedFiles.push(stagedVectorsPath);
     const promotedFiles: string[] = [];
 
-    // Copy to versioned release directory
-    copyFileSync(stagedDocsPath, resolve(versionedReleaseDir, "documents.json"));
-    copyFileSync(stagedManifestPath, resolve(versionedReleaseDir, "manifest.json"));
-    if (targetDocs.length > 0) {
-      copyFileSync(stagedVectorsPath, resolve(versionedReleaseDir, "vectors.f32"));
-    }
+    // Copy to versioned immutable release directory
+    const versionedDocsPath = resolve(versionedReleaseDir, "documents.json");
+    const versionedManifestPath = resolve(versionedReleaseDir, "manifest.json");
+    const versionedVectorsPath = resolve(versionedReleaseDir, "vectors.f32");
 
-    // Promote to top-level outputDir
-    const finalDocsPath = resolve(outputDir, "documents.json");
-    const finalVectorsPath = resolve(outputDir, "vectors.f32");
-    const finalManifestPath = resolve(outputDir, "manifest.json");
+    copyFileSync(stagedDocsPath, versionedDocsPath);
+    promotedFiles.push(versionedDocsPath);
 
-    copyFileSync(stagedDocsPath, finalDocsPath);
-    promotedFiles.push(finalDocsPath);
+    copyFileSync(stagedManifestPath, versionedManifestPath);
+    promotedFiles.push(versionedManifestPath);
 
     if (targetDocs.length > 0) {
-      copyFileSync(stagedVectorsPath, finalVectorsPath);
-      promotedFiles.push(finalVectorsPath);
+      copyFileSync(stagedVectorsPath, versionedVectorsPath);
+      promotedFiles.push(versionedVectorsPath);
     }
 
-    copyFileSync(stagedManifestPath, finalManifestPath);
-    promotedFiles.push(finalManifestPath);
+    // Switch active-release pointer atomically, pointing to immutable release directory
+    const relManifest = join("releases", releaseId, "manifest.json").replace(/\\/g, "/");
+    const relDocs = join("releases", releaseId, "documents.json").replace(/\\/g, "/");
+    const relVectors = targetDocs.length > 0
+      ? join("releases", releaseId, "vectors.f32").replace(/\\/g, "/")
+      : undefined;
 
-    // Switch active-release pointer as single atomic pointer
     const activePointer: ActiveVectorReleasePointer = {
       releaseId,
       datasetId: manifest.datasetId,
@@ -435,15 +493,38 @@ export class VectorReleaseBuilder {
       recordsSha256: docsSha256,
       vectorSha256: vectorsSha256,
       modelProfileHash: targetDocs.length > 0 ? profile.profileHash : null,
+      releaseDir: join("releases", releaseId).replace(/\\/g, "/"),
       files: {
-        manifest: "manifest.json",
-        documents: "documents.json",
-        vectors: targetDocs.length > 0 ? "vectors.f32" : undefined
+        manifest: relManifest,
+        documents: relDocs,
+        vectors: relVectors
       }
     };
+
+    // Atomically write active-release pointer via temporary file + renameSync
     const activePointerPath = resolve(outputDir, "active-release.json");
-    writeFileSync(activePointerPath, JSON.stringify(activePointer, null, 2), "utf8");
+    const tempPointerPath = resolve(outputDir, `active-release.json.tmp.${Date.now()}.${process.pid}`);
+    writeFileSync(tempPointerPath, JSON.stringify(activePointer, null, 2), "utf8");
+    renameSync(tempPointerPath, activePointerPath);
     promotedFiles.push(activePointerPath);
+
+    // Atomically promote to top-level outputDir (for backward-compatible path access)
+    const writeAtomic = (srcPath: string, dstPath: string) => {
+      const tmpDst = `${dstPath}.tmp.${Date.now()}.${process.pid}`;
+      copyFileSync(srcPath, tmpDst);
+      renameSync(tmpDst, dstPath);
+      promotedFiles.push(dstPath);
+    };
+
+    const finalDocsPath = resolve(outputDir, "documents.json");
+    const finalVectorsPath = resolve(outputDir, "vectors.f32");
+    const finalManifestPath = resolve(outputDir, "manifest.json");
+
+    writeAtomic(stagedDocsPath, finalDocsPath);
+    if (targetDocs.length > 0) {
+      writeAtomic(stagedVectorsPath, finalVectorsPath);
+    }
+    writeAtomic(stagedManifestPath, finalManifestPath);
 
     // Clean up temporary staging directory
     rmSync(releaseStageDir, { recursive: true, force: true });

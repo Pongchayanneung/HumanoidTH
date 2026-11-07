@@ -134,6 +134,7 @@ export interface ActiveVectorReleasePointer {
   recordsSha256: string;
   vectorSha256?: string;
   modelProfileHash?: string | null;
+  releaseDir?: string;
   files: {
     manifest: string;
     documents: string;

@@ -43,6 +43,26 @@ test("API defaults and clamps the result limit", async () => {
   }
 });
 
+test("source subtype is validated and filters before matching and the group limit", async () => {
+  for (const subtype of [null, "robot", "PAPER", [], 1]) assert.equal(validateSearchRequest({ query: "", subtype }), null);
+  for (const subtype of ["paper", "repository", "video", "news_web", "source"]) assert.equal(validateSearchRequest({ query: "", subtype })?.subtype, subtype);
+  const source = documents[0];
+  const records = Array.from({ length: 10 }, (_, i) => ({ ...source, typedId: `source:repo-${i}`, groupId: `repo-${i}`, url: `https://github.com/example/${i}` }));
+  records.push({ ...source, typedId: "source:paper", groupId: "paper", url: "https://doi.org/10.1/example" });
+  const handler = createSearchPost(async () => ({ documents: records, release: { id: "fixture", generatedAt: "2026-01-01" }, coverage: { indexed: 0, eligible: 11 } }));
+  for (const query of ["", "robot"]) {
+    const broad = await (await handler(request(JSON.stringify({ query, types: ["source"] })))).json();
+    assert.equal(broad.groups.length, 10);
+    assert.ok(broad.groups.every((group: { results: { contentType: string }[] }) => group.results[0].contentType === "repository"));
+    const filtered = await (await handler(request(JSON.stringify({ query, types: ["source"], subtype: "paper" })))).json();
+    assert.equal(filtered.groups.length, 1);
+    assert.equal(filtered.groups[0].results[0].reference.id, "source:paper");
+  }
+  const intersection = await (await handler(request(JSON.stringify({ query: "", types: ["robot"], subtype: "paper" })))).json();
+  assert.deepEqual(intersection.groups, []);
+  assert.equal((await handler(request(JSON.stringify({ query: "", subtype: "invalid" })))).status, 400);
+});
+
 test("constructed titles are labelled derived in matches and result evidence", async () => {
   for (const [kind, fieldName] of [["perspective", "perspective_theme"], ["relationship", "relation"]] as const) {
     const title = "Constructed title";

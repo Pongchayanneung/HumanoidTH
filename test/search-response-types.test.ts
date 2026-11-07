@@ -5,7 +5,7 @@ import type { SearchRequest, SearchReference, SearchCoverage, SearchModelProfile
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 type Assert<T extends true> = T;
 type ContractChecks = [
-  Assert<Equal<SearchRequest, { query: string; types?: SearchReference["kind"][]; limit?: number }>>,
+  Assert<Equal<SearchRequest, { query: string; types?: SearchReference["kind"][]; subtype?: "paper" | "repository" | "video" | "news_web" | "source"; limit?: number }>>,
   Assert<Equal<SearchReference, { kind: "source" | "robot" | "contribution" | "perspective" | "inventory" | "relationship" | "entity"; id: string }>>,
   Assert<Equal<SearchCoverage, { indexed: number; eligible: number }>>,
   Assert<Equal<{ [K in keyof SearchResultEvidence]: SearchResultEvidence[K] }, { fieldName: string; originalText: string; label: string; coverage: "full" | "partial" | "title-only"; startOffset: number; endOffset: number; evidenceKind: "source" | "derived" }>>,

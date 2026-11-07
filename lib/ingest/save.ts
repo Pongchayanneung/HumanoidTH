@@ -41,13 +41,31 @@ export async function saveSources(records: NormalizedSource[]) {
         const isSufficient = sufficiency === "sufficient";
         const isHighConfidence = (geminiResult.relevanceConfidence ?? 0) >= 0.80;
 
+        // Apply contradictory signal gate and calibrated relevance checks to Gemini path
+        const calibratedCheck = classifyCalibratedRelevance(record.title, record.excerpt ?? "");
+        const isContradictoryOrUncertain = calibratedCheck.relevanceStatus === "UNCERTAIN";
+        const isCalibratedRejected = calibratedCheck.relevanceStatus === "REJECTED";
+
         if (!isSufficient) {
           relevance = {
             relevanceStatus: "UNCERTAIN",
             relevanceReason: `Machine suggestion requires human review: insufficient evidence (${sufficiency}).`,
             relevanceConfidence: Math.min(geminiResult.relevanceConfidence ?? 0.5, 0.45)
           };
-        } else if (!isHighConfidence && geminiResult.isRelevant) {
+        } else if (isContradictoryOrUncertain) {
+          relevance = {
+            relevanceStatus: "UNCERTAIN",
+            relevanceReason: `Machine suggestion requires human review: contradictory signals or uncertain evidence (${calibratedCheck.relevanceReason}).`,
+            relevanceConfidence: Math.min(geminiResult.relevanceConfidence ?? 0.65, 0.65)
+          };
+        } else if (geminiResult.isRelevant && isCalibratedRejected) {
+          relevance = {
+            relevanceStatus: "UNCERTAIN",
+            relevanceReason: `Machine suggestion requires human review: conflict between model and calibrated rule (${calibratedCheck.relevanceReason}).`,
+            relevanceConfidence: 0.50
+          };
+        } else if (!isHighConfidence) {
+          // Gate both predicted classes (relevant or non-relevant) below 0.80 confidence
           relevance = {
             relevanceStatus: "UNCERTAIN",
             relevanceReason: `Machine suggestion requires human review: low confidence (${geminiResult.relevanceConfidence}).`,
@@ -142,6 +160,20 @@ export async function saveSources(records: NormalizedSource[]) {
           platform: record.platform,
           rawMeta: rawMeta as Prisma.InputJsonValue,
           ...relevance
+        }
+      });
+
+      // Clean up stale machine-generated annotations and triplets on re-ingestion
+      // preserving any human-reviewed records (method === "human_review")
+      await tx.perspectiveAnnotation.deleteMany({
+        where: {
+          sourceId: source.id,
+          method: { not: "human_review" }
+        }
+      });
+      await tx.triplet.deleteMany({
+        where: {
+          sourceId: source.id
         }
       });
 

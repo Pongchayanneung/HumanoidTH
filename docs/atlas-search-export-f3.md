@@ -12,7 +12,7 @@
 - `lib/search/types.ts`: TypeScript contracts for search documents, manifest, and revalidation
 - `lib/search/text-utils.ts`: Text sanitization, 2,000 Unicode code point capping, language detection, evidence ranges, and deterministic SHA-256 content hashing
 - `lib/search/revalidation.ts`: Current-record revalidation suppressing deleted, hidden, or modified records before display
-- `lib/search/exporter.ts`: Direct paginated database reader (mock-tested) and offline seed fallback exporter
+- `lib/search/exporter.ts`: Direct paginated database reader (never run, no test covers it) and offline seed fallback exporter
 - `scripts/export-search-corpus.ts`: Automated CLI corpus exporter
 
 ---
@@ -48,8 +48,8 @@ The search index strictly excludes:
 1. **Placeholder Omission:** Known seed placeholders (e.g. `"OpenAlex abstract metadata available."`, `"Academic paper about ... indexed on OpenAlex."`, `"Placeholder contribution for Thai human-robot interaction research."`) are detected and stripped before indexing. Sources where excerpts are purely placeholders/templates are indexed as `isTitleOnly: true` with empty body.
 2. **Unicode Code Point Capping:** Body indexing text is capped at **2,000 Unicode code points** using `Array.from(text).slice(0, 2000)`. This prevents character corruption for Thai combining marks and tone diacritics. Truncated records carry `isPartial: true`.
 3. **Evidence Offset Ranges:** Every search document provides a structured `evidence` array containing exact UTF-16 offset ranges (`startOffset`, `endOffset`) into the original stored field.
-4. **Deterministic Hashes:** Every document computes a public-field `contentHash` and dependency `dependencyHash` using SHA-256. Parent links in perspectives and relationships resolve directly to source document typed IDs (`source:seed-N`).
-5. **Database vs Seed Execution:** The database export path is implemented with paginated Prisma reads and unit-tested with mocks; it has not yet run against a live production Postgres database. For the hackathon build, the published static index is generated from the authoritative seed dataset, where all 6,714 sources are exported (as seed import assigns `ACCEPTED`), while database exports filter by explicit `relevanceStatus === "ACCEPTED"`.
+4. **Deterministic Hashes:** Every document computes a public-field `contentHash` and dependency `dependencyHash` using SHA-256. Parent links in perspectives and relationships point to source document typed IDs (`source:seed-N`) where the parent source is in this release; 3 of 4 perspectives and 4 of 10 relationships have `parentTypedId: null` because their parent source is not in the release.
+5. **Database vs Seed Execution:** The database export path is implemented with paginated Prisma reads; it has not been run against any database and no unit test covers it (the tests cover the seed path and shared utilities only). For the hackathon build, the published static index is generated from the authoritative seed dataset, where all 6,714 sources are exported (as seed import assigns `ACCEPTED`), while database exports filter by explicit `relevanceStatus === "ACCEPTED"`.
 
 ---
 

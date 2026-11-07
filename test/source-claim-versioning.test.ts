@@ -296,6 +296,27 @@ test("R2: Concurrent edits detect conflicts (OCC) instead of silently overwritin
   assert.equal(resultB.currentSnapshot.source.excerpt, "Updated excerpt with refined trial details.");
 });
 
+test("R2: overlapping reviews cannot both commit the same version", async () => {
+  const source = makeInitialSource();
+  const repo = new InMemoryClaimRepository(source, samplePerspectives, sampleTriplets);
+  const original = repo.executeAtomicUpdate.bind(repo);
+  let queue = Promise.resolve();
+  repo.executeAtomicUpdate = async (sourceId, updateFn) => {
+    const previous = queue;
+    let release!: () => void;
+    queue = new Promise<void>((resolve) => { release = resolve; });
+    await previous;
+    try { return await original(sourceId, updateFn); } finally { release(); }
+  };
+  const input: UpdateSourceClaimInput = {
+    actor: { kind: "operator", email: "reviewer@example.org" }, expectedVersion: 1,
+    patch: { title: "Review" }, reason: "Correction", sourceId: source.id
+  };
+  const results = await Promise.all([updateSourceClaim(input, repo), updateSourceClaim(input, repo)]);
+  assert.equal(results.filter((result) => result.ok).length, 1);
+  assert.equal(results.filter((result) => !result.ok && result.code === "STALE_VERSION_CONFLICT").length, 1);
+});
+
 test("R2: Reclassifying ACCEPTED -> REJECTED suppresses stale derived claims and invalidates search eligibility", async () => {
   const source = makeInitialSource();
   const repo = new InMemoryClaimRepository(source, samplePerspectives, sampleTriplets);
@@ -515,6 +536,14 @@ test("R2: Shared operator access policy fails closed on unauthenticated or unaut
   );
   assert.equal(invalidActorResult.ok, false);
   assert.equal(invalidActorResult.code, "UNAUTHORIZED");
+
+  for (const actor of [{ email: "attacker@external.org" }, { email: "attacker@external.org", role: undefined }]) {
+    const result = await updateSourceClaim({
+      actor, expectedVersion: 1, patch: { title: "Hacked Title" }, reason: "Unauthorized", sourceId: source.id
+    }, repo);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "UNAUTHORIZED");
+  }
 
   // 3. Database untouched
   const sourceAfter = await repo.findSourceWithClaims(source.id);

@@ -253,12 +253,18 @@ export function isAuthorizedOperator(actor: unknown): boolean {
 
   // Check User role / email: { email: string, role?: string }
   if (typeof a.email === "string" && a.email.includes("@")) {
-    if (a.role === "ADMIN" || a.role === "RESEARCHER" || a.role === undefined) {
+    if (a.role === "ADMIN" || a.role === "RESEARCHER") {
       return true;
     }
   }
 
   return false;
+}
+
+class ClaimConflict extends Error {
+  constructor(public current: { source: SourceClaimRecord; perspectives: PerspectiveAssertionItem[]; triplets: TripletAssertionItem[] }) {
+    super("Concurrent source update");
+  }
 }
 
 /**
@@ -414,7 +420,12 @@ export async function updateSourceClaim(
   };
 
   // 6. Execute atomic update
-  const atomicResult = await repository.executeAtomicUpdate(input.sourceId, async () => {
+  const atomicResult = await repository.executeAtomicUpdate(input.sourceId, async (locked) => {
+    const lockedVersion = ((locked.source.rawMeta?._versioning ?? {}) as Partial<SourceVersioningMeta>).version ?? 1;
+    const lockedHash = computeSourceContentHash(locked.source);
+    if (lockedVersion !== currentVersion || lockedHash !== currentContentHash) {
+      throw new ClaimConflict(locked);
+    }
     return {
       perspectivesToKeep,
       retireAllDerivedClaims,
@@ -428,7 +439,22 @@ export async function updateSourceClaim(
         relevanceStatus: targetStatus
       }
     };
+  }).catch((error: unknown) => {
+    if (!(error instanceof ClaimConflict)) throw error;
+    return error;
   });
+
+  if (atomicResult instanceof ClaimConflict) {
+    const locked = atomicResult.current;
+    const currentVersion = ((locked.source.rawMeta?._versioning ?? {}) as Partial<SourceVersioningMeta>).version ?? 1;
+    return {
+      ok: false, code: "STALE_VERSION_CONFLICT", currentVersion,
+      expectedVersion: input.expectedVersion, expectedContentHash: input.expectedContentHash,
+      currentContentHash: computeSourceContentHash(locked.source),
+      currentSnapshot: buildSourceSnapshot(locked.source, locked.perspectives, locked.triplets),
+      message: `Conflict detected: record changed while the edit was being saved.`
+    };
+  }
 
   // 7. Construct and verify final snapshot
   const snapshot = buildSourceSnapshot(

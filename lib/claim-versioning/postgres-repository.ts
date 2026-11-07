@@ -98,6 +98,7 @@ export class PostgresClaimVersioningRepository implements ClaimVersioningReposit
     suppressedCount: number;
   }> {
     return await this.client.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "SourceRecord" WHERE id = ${sourceId} FOR UPDATE`;
       const record = await tx.sourceRecord.findUnique({
         where: { id: sourceId },
         include: {
@@ -167,44 +168,32 @@ export class PostgresClaimVersioningRepository implements ClaimVersioningReposit
         const oldPerspectivesCount = currentPerspectives.length;
         const oldTripletsCount = currentTriplets.length;
 
-        // Replace perspectives
-        await tx.perspectiveAnnotation.deleteMany({
-          where: { sourceId }
-        });
+        const keptPerspectiveIds = (instruction.perspectivesToKeep ?? [])
+          .flatMap((p) => p.id && currentPerspectives.some((old) => old.id === p.id) ? [p.id] : []);
+        const keptTripletIds = (instruction.tripletsToKeep ?? [])
+          .flatMap((t) => t.id && currentTriplets.some((old) => old.id === t.id) ? [t.id] : []);
 
-        if (instruction.perspectivesToKeep && instruction.perspectivesToKeep.length > 0) {
-          for (const p of instruction.perspectivesToKeep) {
-            await tx.perspectiveAnnotation.create({
-              data: {
-                confidence: p.confidence,
-                evidenceExcerpt: p.evidenceExcerpt,
-                method: p.method,
-                perspectiveTheme: p.perspectiveTheme,
-                sentiment: p.sentiment,
-                sourceId,
-                stance: p.stance,
-                targetEntity: p.targetEntity
-              }
-            });
+        await tx.perspectiveAnnotation.deleteMany({ where: { sourceId, id: { notIn: keptPerspectiveIds } } });
+        for (const p of instruction.perspectivesToKeep ?? []) {
+          const data = {
+            confidence: p.confidence, evidenceExcerpt: p.evidenceExcerpt, method: p.method,
+            perspectiveTheme: p.perspectiveTheme, sentiment: p.sentiment, stance: p.stance,
+            targetEntity: p.targetEntity
+          };
+          if (p.id && keptPerspectiveIds.includes(p.id)) {
+            await tx.perspectiveAnnotation.update({ where: { id: p.id }, data });
+          } else {
+            await tx.perspectiveAnnotation.create({ data: { ...data, sourceId } });
           }
         }
 
-        // Replace triplets
-        await tx.triplet.deleteMany({
-          where: { sourceId }
-        });
-
-        if (instruction.tripletsToKeep && instruction.tripletsToKeep.length > 0) {
-          for (const t of instruction.tripletsToKeep) {
-            await tx.triplet.create({
-              data: {
-                confidence: t.confidence,
-                object: t.object,
-                relation: t.relation,
-                sourceId,
-                subject: t.subject
-              }
-            });
+        await tx.triplet.deleteMany({ where: { sourceId, id: { notIn: keptTripletIds } } });
+        for (const t of instruction.tripletsToKeep ?? []) {
+          const data = { confidence: t.confidence, object: t.object, relation: t.relation, subject: t.subject };
+          if (t.id && keptTripletIds.includes(t.id)) {
+            await tx.triplet.update({ where: { id: t.id }, data });
+          } else {
+            await tx.triplet.create({ data: { ...data, sourceId } });
           }
         }
 

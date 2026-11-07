@@ -1,5 +1,5 @@
-# Minimal CI. Blocking: typecheck + unit tests. Advisory (reported, not blocking): the no-mock-data
-# scan (fails on main today, see issue #12 M7), Playwright e2e and the axe accessibility scan.
+# Minimal CI. Blocking: typecheck + unit tests and the no-mock-data scan. Advisory (reported, not
+# blocking): Playwright e2e and the axe accessibility scan.
 # Not wired yet: pytest (tests/).
 name: ci
 
@@ -42,8 +42,6 @@ jobs:
   no-mock-data:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Advisory: red on main today (flags "fallback" wording). Remove continue-on-error once main is clean.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

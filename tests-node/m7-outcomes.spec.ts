@@ -74,9 +74,10 @@ const FORGED_COOKIES = [
 
 // Every route a visitor can reach without signing in, plus the sign-in page itself.
 const NAV_ROUTES = [
-  "/", "/dashboard", "/data-pulls", "/map", "/network", "/perspectives", "/robots", "/inventory",
+  "/search", "/", "/dashboard", "/data-pulls", "/map", "/network", "/perspectives", "/robots", "/inventory",
   "/contributions", "/analytics", "/database", "/submit-data", "/admin", "/profile",
 ];
+const MOBILE_NAV_ROUTES = ["/", "/dashboard", "/search", "/robots", "/contributions"];
 const PUBLIC_PAGES = NAV_ROUTES.filter((route) => route !== "/admin");
 
 // Skip the 2.5 s first-visit splash so keyboard and click tests start on the real page.
@@ -520,8 +521,8 @@ test("3 discovery (phone): the five tab destinations are listed and reachable", 
   await expect(tabs).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Primary", exact: true })).toBeHidden();
   const hrefs = await tabs.getByRole("link").evaluateAll((links) => links.map((link) => link.getAttribute("href")));
-  expect(hrefs).toEqual(["/", "/dashboard", "/network", "/robots", "/contributions"]);
-  for (const route of ["/dashboard", "/network", "/robots", "/contributions"]) {
+  expect(hrefs).toEqual(MOBILE_NAV_ROUTES);
+  for (const route of MOBILE_NAV_ROUTES.slice(1)) {
     await tabs.locator(`a[href="${route}"]`).click();
     await expect(page, route).toHaveURL(new RegExp(`${route}$`), { timeout: 90_000 });
     await expect(page.locator("main h1").first(), route).toBeVisible({ timeout: 90_000 });
@@ -733,18 +734,18 @@ test("6 keyboard (phone): Tab reaches the language buttons and every tab link, E
   await page.goto("/");
   await page.locator("main h1").first().waitFor();
 
-  const stops = await tabThrough(page, ["lang", "tab"], 7, 260);
-  expect(stops.map((stop) => stop.id)).toEqual(["EN English", "TH ภาษาไทย", "/", "/dashboard", "/network", "/robots", "/contributions"]);
+  const stops = await tabThrough(page, ["lang", "tab"], MOBILE_NAV_ROUTES.length + 2, 260);
+  expect(stops.map((stop) => stop.id)).toEqual(["EN English", "TH ภาษาไทย", ...MOBILE_NAV_ROUTES]);
   for (const stop of stops) {
     expect(stop.visible, `${stop.id} is on screen when focused`).toBe(true);
     expect(stop.outline, `${stop.id} shows a focus outline`).toBe(true);
   }
-  // Focus is on the last tab (/contributions); Shift+Tab walks back to /network.
+  // Focus is on the last tab (/contributions); Shift+Tab walks back to /search.
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Shift+Tab");
-  expect((await focused(page)).id).toBe("/network");
+  expect((await focused(page)).id).toBe("/search");
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/network$/, { timeout: 90_000 });
+  await expect(page).toHaveURL(/\/search$/, { timeout: 90_000 });
 
   // The phone header language buttons are keyboard operable too.
   await page.goto("/");

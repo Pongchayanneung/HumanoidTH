@@ -1,5 +1,5 @@
 {
-  "evaluatedAt": "2026-11-07T11:33:49.237Z",
+  "evaluatedAt": "2026-11-07T15:45:16.113Z",
   "benchmarkVersion": "1.0.0",
   "totalCases": 32,
   "summary": {
@@ -51,8 +51,8 @@
     },
     "calibrated": {
       "totalCases": 32,
-      "correctRelevanceCount": 30,
-      "relevanceAccuracy": 0.9375,
+      "correctRelevanceCount": 32,
+      "relevanceAccuracy": 1,
       "syntheticTrapsCount": 8,
       "syntheticTrapsFalsePositives": 0,
       "syntheticTrapsFalsePositiveRate": 0,
@@ -68,13 +68,13 @@
       "byLanguage": {
         "en": {
           "total": 18,
-          "correct": 17,
-          "accuracy": 0.9444
+          "correct": 18,
+          "accuracy": 1
         },
         "th": {
           "total": 12,
-          "correct": 11,
-          "accuracy": 0.9167
+          "correct": 12,
+          "accuracy": 1
         },
         "bilingual": {
           "total": 2,
@@ -85,8 +85,8 @@
       "bySource": {
         "real_seed": {
           "total": 16,
-          "correct": 14,
-          "accuracy": 0.875
+          "correct": 16,
+          "accuracy": 1
         },
         "synthetic_fixture": {
           "total": 16,
@@ -96,7 +96,7 @@
       }
     },
     "improvements": {
-      "accuracyDelta": 0.5312,
+      "accuracyDelta": 0.5937,
       "trapFalsePositiveReduction": 4,
       "uncertaintyDetectionDelta": 0.8,
       "privacyStanceDelta": 0.5,
@@ -135,18 +135,18 @@
         "autoPublishRisk": false
       },
       "calibrated": {
-        "relevanceStatus": "REJECTED",
-        "calibratedConfidence": 0.89,
-        "relevanceReason": "Embodied robotics record without verified Thailand institutional or geographic connection.",
+        "relevanceStatus": "ACCEPTED",
+        "calibratedConfidence": 0.94,
+        "relevanceReason": "Embodied humanoid or service robotics research/deployment with verified Thailand connection.",
         "evidenceSufficiency": "sufficient",
         "topicalRelevance": "embodied_robot",
-        "thailandConnection": false,
+        "thailandConnection": true,
         "requiresHumanReview": false,
-        "autoPublishEligible": false,
+        "autoPublishEligible": true,
         "stance": "neutral",
         "sentiment": "neutral",
         "perspectiveTheme": "unclear",
-        "isCorrectStatus": false,
+        "isCorrectStatus": true,
         "isTrapFalsePositive": false,
         "autoPublishRisk": false
       }
@@ -323,18 +323,18 @@
         "autoPublishRisk": false
       },
       "calibrated": {
-        "relevanceStatus": "REJECTED",
-        "calibratedConfidence": 0.89,
-        "relevanceReason": "Embodied robotics record without verified Thailand institutional or geographic connection.",
+        "relevanceStatus": "ACCEPTED",
+        "calibratedConfidence": 0.94,
+        "relevanceReason": "Embodied humanoid or service robotics research/deployment with verified Thailand connection.",
         "evidenceSufficiency": "sufficient",
         "topicalRelevance": "embodied_robot",
-        "thailandConnection": false,
+        "thailandConnection": true,
         "requiresHumanReview": false,
-        "autoPublishEligible": false,
+        "autoPublishEligible": true,
         "stance": "supportive",
         "sentiment": "positive",
         "perspectiveTheme": "healthcare_and_eldercare_trust",
-        "isCorrectStatus": false,
+        "isCorrectStatus": true,
         "isTrapFalsePositive": false,
         "autoPublishRisk": false
       }

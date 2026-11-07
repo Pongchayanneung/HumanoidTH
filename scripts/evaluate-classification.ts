@@ -111,7 +111,7 @@ async function main() {
       passed: calibrated.insufficientEvidenceCorrectlyUncertainCount === calibrated.insufficientEvidenceCount
     },
     {
-      description: "Auto-publication gate eliminates unsafe auto-publishes (0 leaks)",
+      description: "Auto-publication gate eliminates unsafe auto-publishes on benchmark corpus (0 leaks on benchmark)",
       passed: calibrated.autoPublishFalsePositivesCount === 0
     },
     {

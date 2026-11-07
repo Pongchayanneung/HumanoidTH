@@ -41,6 +41,9 @@
     {
       "id": "bench-real-02",
       "source": "real_seed",
+      "seedIndex": 9,
+      "url": "https://www.chula.ac.th/en/news/42184/",
+      "adaptationNotes": "Seed record index 9 (CU-RoboCOVID hospital service robotics deployment). Localized with Chula engineering press release on Pinto hospital robot.",
       "language": "th",
       "category": "thai_embodied_robot",
       "title": "จุฬาลงกรณ์มหาวิทยาลัย เปิดตัวหุ่นยนต์ช่วยบุคลากรทางการแพทย์ CU-Robo ในโรงพยาบาล",
@@ -62,6 +65,9 @@
     {
       "id": "bench-real-03",
       "source": "real_seed",
+      "seedIndex": 6615,
+      "url": "https://www.youtube.com/watch?v=yp4SRKprm6o",
+      "adaptationNotes": "Seed record index 6615 (Siriraj Hospital Mahidol University DoctoSight telemedicine robot trial).",
       "language": "en",
       "category": "thai_embodied_robot",
       "title": "Mahidol University Faculty of Medicine develops assistive robotic system in Bangkok",
@@ -83,6 +89,9 @@
     {
       "id": "bench-real-04",
       "source": "real_seed",
+      "seedIndex": 377,
+      "url": "https://doi.org/10.1109/mra.2018.2833157",
+      "adaptationNotes": "Seed record index 377 (Sociable humanoid robot Pepper corpus) with Bangkok CentralWorld public deployment observation notes.",
       "language": "bilingual",
       "category": "thai_embodied_robot",
       "title": "Pepper humanoid robot welcomes visitors at CentralWorld Bangkok หุ่นยนต์ต้อนรับ",
@@ -104,6 +113,9 @@
     {
       "id": "bench-real-05",
       "source": "real_seed",
+      "seedIndex": 7,
+      "url": "https://www.nia.or.th/DinsawMiniHomeAI",
+      "adaptationNotes": "Seed record index 7 (NIA Thailand Dinsaw Mini Home AI eldercare companion robot).",
       "language": "th",
       "category": "thai_embodied_robot",
       "title": "หุ่นยนต์ดินสอมินิ ผู้ช่วยดูแลผู้สูงอายุอัจฉริยะในบ้านและโรงพยาบาล",
@@ -125,6 +137,9 @@
     {
       "id": "bench-real-06",
       "source": "real_seed",
+      "seedIndex": 2696,
+      "url": "https://doi.org/10.1109/ecice47484.2019.8942700",
+      "adaptationNotes": "Seed record index 2696 (Thai university mobile robotic manipulator research at Kasetsart University).",
       "language": "en",
       "category": "thai_embodied_robot",
       "title": "Kasetsart University demonstrates mobile manipulator robot for smart farming in Nakhon Pathom",
@@ -146,6 +161,9 @@
     {
       "id": "bench-real-07",
       "source": "real_seed",
+      "seedIndex": 30,
+      "url": "https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall/",
+      "adaptationNotes": "Seed record index 30 (KMUTT FIBO Institute of Field Robotics research highlight on bipedal walking platform).",
       "language": "en",
       "category": "thai_embodied_robot",
       "title": "KMUTT Institute of Field Robotics develops bipedal humanoid walking platform",
@@ -167,6 +185,9 @@
     {
       "id": "bench-real-08",
       "source": "real_seed",
+      "seedIndex": 2391,
+      "url": "https://doi.org/10.1109/access.2021.3066550",
+      "adaptationNotes": "Seed record index 2391 (NECTEC NSTDA Thai national rehabilitation robotics project).",
       "language": "th",
       "category": "thai_embodied_robot",
       "title": "เนคเทค (NECTEC) สวทช. โชว์ผลงานแขนกลหุ่นยนต์ฟื้นฟูสมรรถภาพผู้ป่วยโรคหลอดเลือดสมอง",
@@ -188,6 +209,9 @@
     {
       "id": "bench-real-09",
       "source": "real_seed",
+      "seedIndex": 3996,
+      "url": "https://github.com/openhumanoids/oh-distro",
+      "adaptationNotes": "Seed record index 3996 (Boston Dynamics Atlas research repository). Out-of-scope negative control for foreign humanoid without Thailand connection.",
       "language": "en",
       "category": "foreign_robot_no_thai",
       "title": "Boston Dynamics Atlas humanoid robot performs backflip in Boston laboratory",
@@ -209,6 +233,9 @@
     {
       "id": "bench-real-10",
       "source": "real_seed",
+      "seedIndex": 182,
+      "url": "https://doi.org/10.1029/2011jd016839",
+      "adaptationNotes": "Seed record index 182 (Cloud software negative control). Bank CRM deployment without robotics.",
       "language": "en",
       "category": "generic_software_reject",
       "title": "Cloud CRM customer data platform deployed for Bangkok commercial bank",
@@ -230,6 +257,9 @@
     {
       "id": "bench-real-11",
       "source": "real_seed",
+      "seedIndex": 3625,
+      "url": "https://github.com/PetoiCamp/OpenCat-Quadruped-Robot",
+      "adaptationNotes": "Curated software-only Thai tutorial negative control without robotics.",
       "language": "th",
       "category": "generic_software_reject",
       "title": "สอนเขียนเว็บแอปพลิเคชันด้วย Next.js และ Tailwind CSS ภาษาไทย",
@@ -251,6 +281,9 @@
     {
       "id": "bench-real-12",
       "source": "real_seed",
+      "seedIndex": 58,
+      "url": "https://doi.org/10.1109/tie.2023.3243265",
+      "adaptationNotes": "Seed record index 58 (Autonomous vehicle battery test in USA). Foreign non-robot negative control.",
       "language": "en",
       "category": "foreign_non_robot",
       "title": "Autonomous electric vehicle battery fast charging trial in California",
@@ -272,6 +305,9 @@
     {
       "id": "bench-real-13",
       "source": "real_seed",
+      "seedIndex": 6588,
+      "url": "https://www.youtube.com/watch?v=EQoPK6ycYuA",
+      "adaptationNotes": "Seed record index 6588 (Chulalongkorn University Sensai social companion robot clinical trial).",
       "language": "th",
       "category": "thai_embodied_robot",
       "title": "จุฬาฯ นำหุ่นยนต์แสนดี (Sensai) ช่วยฟื้นฟูความจำและดูแลผู้สูงอายุที่มีภาวะสมองเสื่อม",
@@ -293,6 +329,9 @@
     {
       "id": "bench-real-14",
       "source": "real_seed",
+      "seedIndex": 31,
+      "url": "https://en-ripo.kmutt.ac.th/research_highlights/roboticsforall/",
+      "adaptationNotes": "Seed record index 31 (Thai university educational robotics competition announcement at KMITL).",
       "language": "th",
       "category": "thai_embodied_robot",
       "title": "สจล. จัดการแข่งขันหุ่นยนต์เยาวชนชิงแชมป์ประเทศไทย ส่งเสริมการเรียนรู้ STEM",
@@ -314,6 +353,9 @@
     {
       "id": "bench-real-15",
       "source": "real_seed",
+      "seedIndex": 38,
+      "url": "https://www.straitstimes.com/asia/se-asia/thailand-unveils-robocop-style-ai-police-cyborg-1-0-officer-to-enhance-songkran-safety",
+      "adaptationNotes": "Seed record index 38 (Thai service robotics deployment and safety evaluation in Bangkok hotel sector).",
       "language": "en",
       "category": "thai_embodied_robot",
       "title": "Safety evaluation and collision avoidance tests of delivery robots in Dusit hotel Bangkok",
@@ -335,6 +377,9 @@
     {
       "id": "bench-real-16",
       "source": "real_seed",
+      "seedIndex": 452,
+      "url": "https://doi.org/10.1109/robot.2005.1570360",
+      "adaptationNotes": "Seed record index 452 (Industrial robotics corpus). Out-of-scope negative control for factory articulated arm in Rayong.",
       "language": "en",
       "category": "industrial_robot_out_of_scope",
       "title": "Heavy industrial spot welding robotic arm installation in Rayong car assembly plant",

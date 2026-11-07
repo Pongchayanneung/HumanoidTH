@@ -7,7 +7,7 @@ import {
   LayoutDashboard,
   Network,
   Bot,
-  CircleUserRound
+  UsersRound
 } from "lucide-react";
 import { getTranslation } from "@/lib/translations";
 
@@ -23,7 +23,7 @@ export default function MobileTabNav({ currentLang = "en" }: MobileTabNavProps) 
     { href: "/dashboard", label: t.dashboard, icon: LayoutDashboard },
     { href: "/network", label: t.network, icon: Network },
     { href: "/robots", label: t.robots, icon: Bot },
-    { href: "/profile", label: t.profile, icon: CircleUserRound }
+    { href: "/contributions", label: t.contributors, icon: UsersRound }
   ];
 
   return (
@@ -42,7 +42,7 @@ export default function MobileTabNav({ currentLang = "en" }: MobileTabNavProps) 
             className={`tab-item ${isActive || isAdminSection ? "active" : ""}`}
             aria-current={isActive || isAdminSection ? "page" : undefined}
           >
-            <Icon size={20} className="tab-icon" />
+            <Icon size={20} className="tab-icon" aria-hidden="true" />
             <span className="tab-label">{tab.label}</span>
           </Link>
         );

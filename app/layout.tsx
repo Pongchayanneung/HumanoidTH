@@ -97,7 +97,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
-  const lang = (cookieStore.get("lang")?.value || "en") as "en" | "th";
+  const lang = cookieStore.get("lang")?.value === "th" ? "th" : "en";
   const t = getTranslation(lang);
   const siteUrl = getSiteUrl();
   const structuredData = {
@@ -137,7 +137,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
         <FirstTimeLoader />
         <div className="app-shell">
-          <MobileHeader />
+          <MobileHeader currentLang={lang} />
           <aside className="sidebar">
             <div className="brand-logo-container">
               <img src="/logo.png" alt="Thailand Humanoid Atlas" className="brand-logo" />

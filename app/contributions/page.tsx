@@ -4,6 +4,12 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
 import { publicContributionWhere, isEligiblePublicRobot } from "@/lib/public-projection";
+import {
+  CONTRIBUTION_TYPES,
+  validateContributionFilters,
+  buildContributionWhere,
+  type ContributionFilterInput
+} from "@/lib/contribution-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -33,17 +39,12 @@ export const metadata: Metadata = {
     description: "Directory of open-source software, research publications, datasets, and hardware designs contributing to humanoid robotics in Thailand.",
     images: ["/logo.png"]
   }
-};type SearchParams = Promise<{
-  type?: string;
-  org?: string;
-  robot?: string;
-  status?: string;
-  q?: string;
-}>;
+};
+
+type SearchParams = Promise<ContributionFilterInput>;
 
 export default async function ContributionsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const { type, org, robot, status, q } = params;
 
   let lang: "en" | "th" = "en";
   try {
@@ -54,78 +55,131 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   }
   const t = getTranslation(lang);
 
-  // Build filter conditions enforcing public data projection (M3)
-  // Anonymous public access is strictly constrained to approved, public contributions.
-  // Query flags (e.g. ?status=...) cannot broaden access or reveal internal review states.
-  const where: any = {
-    ...publicContributionWhere
-  };
-  if (type) where.contributionType = type;
-  if (org) where.organization = org;
-  if (robot) where.relatedRobotModelId = robot;
-  if (q) {
-    where.AND = [
-      {
-        OR: [
-          { title: { contains: q, mode: "insensitive" } },
-          { contributorName: { contains: q, mode: "insensitive" } },
-          { description: { contains: q, mode: "insensitive" } }
-        ]
-      }
-    ];
-  }
+  // Validate and normalize filter inputs (M8-B)
+  const validatedFilters = validateContributionFilters(params, lang);
+  const { type, org, robot, q, filterError, statusNotice } = validatedFilters;
+
+  // Build filter conditions enforcing M3/M5 public projection
+  const where = buildContributionWhere(validatedFilters);
 
   let dbItems: any[] = [];
   let dbRobots: any[] = [];
   let dbOrganizations: any[] = [];
+  let queryFailed = false;
+
+  // Reusable query for robot models associated with public contributions
+  const robotWhere = {
+    contributions: {
+      some: publicContributionWhere
+    }
+  };
 
   try {
-    const [resItems, resRobots, resOrgs] = await Promise.all([
-      prisma.contribution.findMany({
-        where,
-        include: { relatedRobotModel: true },
-        orderBy: { updatedAt: "desc" },
-        take: 200
-      }),
-      prisma.robotModel.findMany({
-        where: {
-          NOT: [
-            { canonicalName: { contains: "placeholder", mode: "insensitive" } },
-            { canonicalName: { contains: "pending", mode: "insensitive" } },
-            { canonicalName: { contains: "unverified", mode: "insensitive" } }
-          ]
-        },
-        select: { id: true, canonicalName: true }
-      }),
-      prisma.contribution.findMany({
-        select: { organization: true },
-        distinct: ["organization"],
-        where: {
-          organization: { not: null },
-          ...publicContributionWhere
-        }
-      })
-    ]);
-    dbItems = resItems;
-    dbRobots = resRobots;
-    dbOrganizations = resOrgs;
+    if (!filterError) {
+      const [resItems, resRobots, resOrgs] = await Promise.all([
+        prisma.contribution.findMany({
+          where,
+          include: { relatedRobotModel: true },
+          orderBy: { updatedAt: "desc" },
+          take: 200
+        }),
+        prisma.robotModel.findMany({
+          where: robotWhere,
+          select: { id: true, canonicalName: true },
+          orderBy: { canonicalName: "asc" }
+        }),
+        prisma.contribution.findMany({
+          select: { organization: true },
+          distinct: ["organization"],
+          where: {
+            organization: { not: null },
+            ...publicContributionWhere
+          }
+        })
+      ]);
+      dbItems = resItems;
+      dbRobots = resRobots;
+      dbOrganizations = resOrgs;
+    } else {
+      // For invalid filters, populate dropdowns from public data without querying invalid records
+      const [resRobots, resOrgs] = await Promise.all([
+        prisma.robotModel.findMany({
+          where: robotWhere,
+          select: { id: true, canonicalName: true },
+          orderBy: { canonicalName: "asc" }
+        }),
+        prisma.contribution.findMany({
+          select: { organization: true },
+          distinct: ["organization"],
+          where: {
+            organization: { not: null },
+            ...publicContributionWhere
+          }
+        })
+      ]);
+      dbRobots = resRobots;
+      dbOrganizations = resOrgs;
+    }
   } catch (error) {
+    // Log detailed technical error only to server logs, never leak raw Prisma traces to public HTML
     console.error("Failed to query contributions in contributions page:", error);
+    queryFailed = true;
   }
 
   const items = dbItems;
   const robots = dbRobots.filter((r) => isEligiblePublicRobot(r.canonicalName));
   const uniqueOrgs = dbOrganizations.map((o) => o.organization).filter(Boolean) as string[];
 
-  // Taxonomies
-  const contributionTypes = [
-    "research_paper",
-    "software_repository",
-    "hardware_design",
-    "dataset",
-    "educational_material",
-    "event_demo_record"
-  ];
+  const localT = {
+    en: {
+      statusNoticeTitle: "Status Notice",
+      invalidFilterTitle: "Invalid Filter Parameter",
+      dbFailureTitle: "Database Query Failure",
+      dbFailureDesc: "Unable to load contribution records. Please try again later.",
+      filterTypeLabel: "Type",
+      filterOrgLabel: "Organization",
+      filterRobotLabel: "Target Robot",
+      filterSearchLabel: "Text Search",
+      allTypes: "All Types",
+      allOrgs: "All Organizations",
+      allRobots: "All Robots",
+      searchPlaceholder: "e.g. SLAM, study",
+      applyBtn: "Apply Filters",
+      emptyRecords: "No contribution records match the current filter criteria.",
+      thTitle: "Title / Contributor",
+      thType: "Type",
+      thOrg: "Organization",
+      thTargetModel: "Target Model",
+      thLicense: "License",
+      thStatus: "Status",
+      thDescription: "Abstract / Description",
+      thLastUpdated: "Last Updated"
+    },
+    th: {
+      statusNoticeTitle: "การแจ้งเตือนสถานะ",
+      invalidFilterTitle: "พารามิเตอร์ตัวกรองไม่ถูกต้อง",
+      dbFailureTitle: "เกิดข้อผิดพลาดในการดึงข้อมูล",
+      dbFailureDesc: "ไม่สามารถดึงข้อมูลรายการได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง",
+      filterTypeLabel: "ประเภท",
+      filterOrgLabel: "องค์กร",
+      filterRobotLabel: "หุ่นยนต์เป้าหมาย",
+      filterSearchLabel: "ค้นหาข้อความ",
+      allTypes: "ทุกประเภทผลงาน",
+      allOrgs: "ทุกองค์กร",
+      allRobots: "ทุกหุ่นยนต์",
+      searchPlaceholder: "ค้นหาผลงาน, ผู้จัดทำ...",
+      applyBtn: "ค้นหา",
+      emptyRecords: "ไม่พบข้อมูลผลงานหรือการมีส่วนร่วมที่ตรงกับเงื่อนไขการค้นหา",
+      thTitle: "ชื่อผลงาน / ผู้จัดทำ",
+      thType: "ประเภท",
+      thOrg: "องค์กร",
+      thTargetModel: "หุ่นยนต์เป้าหมาย",
+      thLicense: "สัญญาอนุญาต",
+      thStatus: "สถานะ",
+      thDescription: "บทคัดย่อ / คำอธิบาย",
+      thLastUpdated: "อัปเดตล่าสุด"
+    }
+  }[lang];
 
   return (
     <>
@@ -136,12 +190,43 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         </div>
       </div>
 
+      {statusNotice && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="notice"
+          style={{ backgroundColor: "#eff6ff", borderLeftColor: "#3b82f6", color: "#1e40af", marginBottom: 16 }}
+        >
+          <strong>{localT.statusNoticeTitle}:</strong> {statusNotice}
+        </div>
+      )}
 
+      {filterError && (
+        <div
+          role="alert"
+          aria-live="polite"
+          className="notice"
+          style={{ backgroundColor: "#fdf2f2", borderLeftColor: "var(--danger)", color: "#b91c1c", marginBottom: 16 }}
+        >
+          <strong>{localT.invalidFilterTitle}:</strong> {filterError}
+        </div>
+      )}
+
+      {queryFailed && (
+        <div
+          role="alert"
+          aria-live="polite"
+          className="notice"
+          style={{ backgroundColor: "#fef2f2", borderLeftColor: "var(--danger)", color: "#b91c1c", marginBottom: 16 }}
+        >
+          <strong>{localT.dbFailureTitle}:</strong> {localT.dbFailureDesc}
+        </div>
+      )}
 
       <style dangerouslySetInnerHTML={{ __html: `
         .filter-form {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 100px;
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) 120px;
           gap: 10px;
           align-items: end;
           margin-bottom: 16px;
@@ -159,6 +244,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           .filter-form {
             grid-template-columns: 1fr;
           }
+        }
         .type-badge {
           border-radius: 4px !important;
           font-size: 11px;
@@ -175,51 +261,49 @@ export default async function ContributionsPage({ searchParams }: { searchParams
       {/* Filter Toolbar */}
       <form method="GET" className="panel filter-form">
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          Type
-          <select name="type" defaultValue={type || ""}>
-            <option value="">All Types</option>
-            {contributionTypes.map(ct => (
-              <option key={ct} value={ct}>{ct.replace(/_/g, " ")}</option>
+          {localT.filterTypeLabel}
+          <select name="type" defaultValue={type || ""} style={{ minHeight: "44px" }}>
+            <option value="">{localT.allTypes}</option>
+            {CONTRIBUTION_TYPES.map((ct) => (
+              <option key={ct} value={ct}>
+                {ct.replace(/_/g, " ")}
+              </option>
             ))}
           </select>
         </label>
 
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          Organization
-          <select name="org" defaultValue={org || ""}>
-            <option value="">All Organizations</option>
-            {uniqueOrgs.map(o => (
-              <option key={o} value={o}>{o}</option>
+          {localT.filterOrgLabel}
+          <select name="org" defaultValue={org || ""} style={{ minHeight: "44px" }}>
+            <option value="">{localT.allOrgs}</option>
+            {uniqueOrgs.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
             ))}
           </select>
         </label>
 
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          Target Robot
-          <select name="robot" defaultValue={robot || ""}>
-            <option value="">All Robots</option>
-            {robots.map(r => (
-              <option key={r.id} value={r.id}>{r.canonicalName}</option>
+          {localT.filterRobotLabel}
+          <select name="robot" defaultValue={robot || ""} style={{ minHeight: "44px" }}>
+            <option value="">{localT.allRobots}</option>
+            {robots.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.canonicalName}
+              </option>
             ))}
           </select>
         </label>
 
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          Verification Status
-          <select name="status" defaultValue={status || ""}>
-            <option value="">All Statuses</option>
-            <option value="VERIFIED">Verified</option>
-            <option value="UNVERIFIED">Unverified</option>
-            <option value="FLAGGED">Flagged</option>
-          </select>
+          {localT.filterSearchLabel}
+          <input name="q" defaultValue={q || ""} placeholder={localT.searchPlaceholder} style={{ minHeight: "44px" }} />
         </label>
 
-        <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          Text Search
-          <input name="q" defaultValue={q || ""} placeholder="e.g. SLAM, study" />
-        </label>
-
-        <button type="submit" className="primary submit-btn" style={{ minHeight: "36px" }}>Apply</button>
+        <button type="submit" className="primary submit-btn" style={{ minHeight: "44px" }}>
+          {localT.applyBtn}
+        </button>
       </form>
 
       {/* Contributions Table */}
@@ -227,14 +311,14 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         <table>
           <thead>
             <tr>
-              <th>Title / Contributor</th>
-              <th>Type</th>
-              <th>Organization</th>
-              <th>Target Model</th>
-              <th>License</th>
-              <th>Status</th>
-              <th>Abstract / Description</th>
-              <th>Last Updated</th>
+              <th>{localT.thTitle}</th>
+              <th>{localT.thType}</th>
+              <th>{localT.thOrg}</th>
+              <th>{localT.thTargetModel}</th>
+              <th>{localT.thLicense}</th>
+              <th>{localT.thStatus}</th>
+              <th>{localT.thDescription}</th>
+              <th>{localT.thLastUpdated}</th>
             </tr>
           </thead>
           <tbody>
@@ -243,7 +327,9 @@ export default async function ContributionsPage({ searchParams }: { searchParams
                 <td>
                   <strong>{item.title}</strong>
                   <br />
-                  <span className="muted" style={{ fontSize: "12px" }}>By {item.contributorName}</span>
+                  <span className="muted" style={{ fontSize: "12px" }}>
+                    By {item.contributorName}
+                  </span>
                 </td>
                 <td>
                   <span className="badge type-badge">
@@ -252,9 +338,11 @@ export default async function ContributionsPage({ searchParams }: { searchParams
                 </td>
                 <td>{item.organization || "N/A"}</td>
                 <td>{item.relatedRobotModel?.canonicalName || "General / None"}</td>
-                <td><code>{item.license || "N/A"}</code></td>
                 <td>
-                  <span className={`badge ${item.verificationStatus === "APPROVED" ? "ok" : item.verificationStatus === "REJECTED" ? "danger" : "warn"}`}>
+                  <code>{item.license || "N/A"}</code>
+                </td>
+                <td>
+                  <span className="badge ok">
                     {item.verificationStatus}
                   </span>
                 </td>
@@ -269,13 +357,19 @@ export default async function ContributionsPage({ searchParams }: { searchParams
                   )}
                 </td>
                 <td style={{ fontSize: "12px" }}>
-                  {item.updatedAt.toLocaleDateString()}
+                  {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : "-"}
                 </td>
               </tr>
             ))}
             {!items.length && (
               <tr>
-                <td className="empty" colSpan={8}>No contribution records match the current filter criteria.</td>
+                <td className="empty" colSpan={8}>
+                  {queryFailed
+                    ? localT.dbFailureDesc
+                    : filterError
+                    ? localT.invalidFilterTitle
+                    : localT.emptyRecords}
+                </td>
               </tr>
             )}
           </tbody>

@@ -29,7 +29,8 @@
     "ingest:gdelt": "tsx scripts/ingest.ts gdelt",
     "ingest:youtube": "tsx scripts/ingest.ts youtube",
     "test": "tsx --test test/*.test.ts",
-    "search:export": "tsx scripts/export-search-corpus.ts"
+    "search:export": "tsx scripts/export-search-corpus.ts",
+    "search:vectors": "tsx scripts/build-vector-release.ts"
   },
   "dependencies": {
     "@next/env": "15.5.29",

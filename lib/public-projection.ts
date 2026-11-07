@@ -36,27 +36,18 @@ export const publicContributionWhere = {
  */
 export const publicRobotWhere = {
   NOT: [
-    { canonicalName: { contains: "placeholder" } },
-    { canonicalName: { contains: "Placeholder" } },
-    { canonicalName: { contains: "PLACEHOLDER" } },
-    { canonicalName: { contains: "prototype pending" } },
-    { canonicalName: { contains: "Prototype Pending" } },
-    { canonicalName: { contains: "PROTOTYPE PENDING" } },
-    { canonicalName: { contains: "rumored_unverified" } },
-    { canonicalName: { contains: "Rumored_Unverified" } },
-    { canonicalName: { contains: "RUMORED_UNVERIFIED" } },
+    { canonicalName: { contains: "placeholder", mode: "insensitive" as const } },
+    { canonicalName: { contains: "prototype pending", mode: "insensitive" as const } },
+    { canonicalName: { contains: "rumored_unverified", mode: "insensitive" as const } },
     {
       canonicalName: {
         in: [
           "Bumi Humanoid Robot",
-          "bumi humanoid robot",
           "UBTECH Walker",
-          "ubtech walker",
           "Hospital Delivery Service Robot",
-          "hospital delivery service robot",
-          "Thai University Social Robot Prototype",
-          "thai university social robot prototype"
-        ]
+          "Thai University Social Robot Prototype"
+        ],
+        mode: "insensitive" as const
       }
     }
   ]

@@ -1,10 +1,16 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { getTranslation, parseLanguage } from "@/lib/translations";
 import { getOperatorPrincipal } from "@/lib/operator";
 import { normalizeScalarParam, readBoundedTextParam } from "@/lib/contribution-filters";
+import {
+  fetchExportableRecords,
+  TABLE_COLUMNS,
+  DEFAULT_EXPORT_LIMIT,
+  normalizeTableName,
+  type AllowedTable
+} from "@/lib/csv-export";
 
 export const dynamic = "force-dynamic";
 
@@ -20,15 +26,18 @@ const tableOptions = [
   { value: "robots", label: "Robot Models" },
   { value: "owned_inventory", label: "Owned Inventory" },
   { value: "contributions", label: "Contributions" },
-  { value: "submissions", label: "Submitted Data" },
   { value: "perspective_annotations", label: "Perspective Annotations" },
   { value: "pull_jobs", label: "Source Pull Jobs" }
 ] as const;
 
 export default async function DatabasePage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const requestedTable = normalizeScalarParam(params.table);
-  const table = tableOptions.find(t => t.value === requestedTable)?.value ?? "sources";
+  const rawTable = normalizeScalarParam(params.table);
+  const isSubmissions =
+    rawTable?.trim().toLowerCase() === "submissions" ||
+    rawTable?.trim().toLowerCase() === "submission";
+  const normalizedTable = normalizeTableName(rawTable);
+  const table: AllowedTable = normalizedTable ?? "sources";
   const search = readBoundedTextParam(params.q);
   const q = search.value ?? "";
 
@@ -53,68 +62,19 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
     );
   }
 
-  let data: any[] = [];
+  let data: Record<string, unknown>[] = [];
 
-  try {
-    // An out-of-bounds text search runs no query at all.
-    switch (search.invalid ? "rejected" : table) {
-      case "rejected":
-        break;
-      case "robots":
-        data = await prisma.robotModel.findMany({
-          where: q ? { canonicalName: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      case "owned_inventory":
-        data = await prisma.ownedInventory.findMany({
-          where: q ? { displayName: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      case "contributions":
-        data = await prisma.contribution.findMany({
-          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      case "submissions":
-        data = await prisma.submittedData.findMany({
-          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      case "perspective_annotations":
-        data = await prisma.perspectiveAnnotation.findMany({
-          where: q ? { perspectiveTheme: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      case "pull_jobs":
-        data = await prisma.sourcePullJob.findMany({
-          where: q ? { query: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
-        break;
-      default:
-        data = await prisma.sourceRecord.findMany({
-          where: q ? { title: { contains: q, mode: "insensitive" } } : {},
-          orderBy: { createdAt: "desc" },
-          take: 250
-        });
+  if (!isSubmissions && !search.invalid) {
+    try {
+      // S3 Parity: Query identical exportable dataset using shared query builder, row predicates, and limit.
+      data = await fetchExportableRecords(table, q, DEFAULT_EXPORT_LIMIT);
+    } catch (error) {
+      console.error("Database query failed in database browser page:", error);
     }
-  } catch (error) {
-    console.error("Database query failed in database browser page:", error);
   }
 
-  // Column headers based on keys in records
-  const headers = data.length > 0 ? Object.keys(data[0]) : [];
+  // Column headers based strictly on explicit TABLE_COLUMNS allowlist
+  const headers = isSubmissions ? [] : TABLE_COLUMNS[table] ?? [];
 
   return (
     <>
@@ -124,13 +84,36 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
           <p className="muted">{t.databaseDesc}</p>
         </div>
         <div className="toolbar">
-          <a className="button primary" href={`/api/export?table=${table}`} download>
-            Export CSV ({table.replace(/_/g, " ")})
-          </a>
+          {isSubmissions ? (
+            <span
+              className="button"
+              style={{ opacity: 0.6, cursor: "not-allowed" }}
+              aria-disabled="true"
+              title="Submissions export is disabled pending review workflow policy confirmation."
+            >
+              Export CSV (disabled)
+            </span>
+          ) : (
+            <a
+              className="button primary"
+              href={`/api/export?table=${table}${q ? `&q=${encodeURIComponent(q)}` : ""}&limit=${DEFAULT_EXPORT_LIMIT}`}
+              download
+            >
+              Export CSV ({table.replace(/_/g, " ")})
+            </a>
+          )}
         </div>
       </div>
 
+      {isSubmissions && (
+        <div className="notice" role="alert" style={{ marginBottom: "16px" }}>
+          <strong>Submissions Workflow Notice:</strong> Community submissions export and browsing are disabled pending review workflow policy confirmation (Issue #23).
+        </div>
+      )}
 
+      <div className="panel muted" style={{ fontSize: "12px", marginBottom: "16px", padding: "10px 14px" }}>
+        <strong>Export Policy Notice (S3):</strong> Displayed table view and CSV downloads have aligned public privacy boundaries (sensitive hardware serials, exact locations, custodians, and unreviewed submitter contacts are redacted; only verified/approved rows are exported) matching active search query filters.
+      </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
         .db-form {
@@ -158,7 +141,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
       <form method="GET" className="panel db-form">
         <label style={{ fontSize: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
           Table selection
-          <select name="table" defaultValue={table}>
+          <select name="table" defaultValue={isSubmissions ? "submissions" : table}>
             {tableOptions.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
@@ -176,7 +159,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
       {/* Dense Monospace Grid view */}
       <div className="panel" style={{ padding: "12px" }}>
         <h2 style={{ fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}>
-          Table Preview: <code>{table}</code> ({data.length} records)
+          Table Preview: <code>{isSubmissions ? "submissions" : table}</code> ({data.length} records)
         </h2>
         
         <div className="table-wrap" style={{ border: "1px solid var(--border)", borderRadius: "4px" }}>
@@ -214,7 +197,9 @@ export default async function DatabasePage({ searchParams }: { searchParams: Sea
               {!data.length && (
                 <tr>
                   <td className="empty" colSpan={headers.length || 1} style={{ textAlign: "center", padding: "20px" }}>
-                    No records found in this table query.
+                    {isSubmissions
+                      ? "Submissions export and browsing are disabled pending review workflow policy confirmation."
+                      : "No records found in this table query."}
                   </td>
                 </tr>
               )}

@@ -8,13 +8,14 @@ import {
   isEligiblePublicRobot,
   isEligiblePublicContribution,
   publicContributionWhere,
+  publicRobotWhere,
   publicInventoryWhere,
   publicSourceRecordWhere,
   publicPerspectiveWhere,
   PUBLIC_DATASET_SCOPE_LABEL
 } from "../lib/public-projection";
 import { GET as exportRoute } from "../app/api/export/route";
-import { getOperatorPrincipal, pendingReviewsFor } from "../lib/operator";
+import { getOperatorPrincipal, pendingReviewsFor, setOperatorPrincipalResolverForTesting } from "../lib/operator";
 import ContributionsPage from "../app/contributions/page";
 import OverviewPage from "../app/page";
 import { prisma } from "../lib/prisma";
@@ -75,7 +76,7 @@ test("sanitizeInventoryForPublic masks sensitive hardware fields and allowlists 
   assert.ok(safeSanitized.locationLabel?.includes("Masked"), "Location must still be masked for public");
 });
 
-test("isEligiblePublicRobot filters unverified foreign robots and generic placeholders", () => {
+test("isEligiblePublicRobot filters unverified foreign robots, mixed-case placeholders, and enforces case-insensitivity", () => {
   // Verified Thai robots must be eligible
   assert.equal(isEligiblePublicRobot("Dinsaw Robot"), true);
   assert.equal(isEligiblePublicRobot("Pinto Robot"), true);
@@ -88,6 +89,25 @@ test("isEligiblePublicRobot filters unverified foreign robots and generic placeh
   // Generic bucket placeholders must be rejected
   assert.equal(isEligiblePublicRobot("Hospital Delivery Service Robot"), false);
   assert.equal(isEligiblePublicRobot("Thai University Social Robot Prototype"), false);
+
+  // Mixed-case placeholder and exclusion variations must strictly fail
+  assert.equal(isEligiblePublicRobot("pLaCeHoLdEr"), false);
+  assert.equal(isEligiblePublicRobot("Generic pLaCeHoLdEr Robot"), false);
+  assert.equal(isEligiblePublicRobot("PLACEHOLDER"), false);
+  assert.equal(isEligiblePublicRobot("placeholder model"), false);
+  assert.equal(isEligiblePublicRobot("pRoToTyPe PeNdInG"), false);
+  assert.equal(isEligiblePublicRobot("PROTOTYPE PENDING"), false);
+  assert.equal(isEligiblePublicRobot("RuMoReD_uNvErIfIeD"), false);
+  assert.equal(isEligiblePublicRobot("bUmI hUmAnOiD rObOt"), false);
+  assert.equal(isEligiblePublicRobot("uBtEcH wAlKeR"), false);
+  assert.equal(isEligiblePublicRobot("hOsPiTaL dElIvErY sErViCe RoBoT"), false);
+  assert.equal(isEligiblePublicRobot("tHaI uNiVeRsItY sOcIaL rObOt PrOtOtYpE"), false);
+
+  // Verify publicRobotWhere Prisma query structure uses mode: "insensitive" across all NOT clauses
+  assert.ok(Array.isArray(publicRobotWhere.NOT));
+  for (const clause of publicRobotWhere.NOT as any[]) {
+    assert.equal(clause.canonicalName.mode, "insensitive", "All publicRobotWhere exclusions must enforce case-insensitivity");
+  }
 });
 
 test("isEligiblePublicContribution rejects private, unapproved, or placeholder records", () => {
@@ -99,6 +119,24 @@ test("isEligiblePublicContribution rejects private, unapproved, or placeholder r
       sourceUrl: "https://www.chula.ac.th/en/news/42184/"
     }),
     true
+  );
+
+  // Mixed-case placeholder in URL must be rejected
+  assert.equal(
+    isEligiblePublicContribution({
+      visibility: "public",
+      verificationStatus: "APPROVED",
+      sourceUrl: "https://example.com/pLaCeHoLdEr"
+    }),
+    false
+  );
+  assert.equal(
+    isEligiblePublicContribution({
+      visibility: "public",
+      verificationStatus: "APPROVED",
+      sourceUrl: "seed:contribution:THAI-HRI-RESEARCH"
+    }),
+    false
   );
 
   // Private visibility must be rejected
@@ -132,15 +170,37 @@ test("isEligiblePublicContribution rejects private, unapproved, or placeholder r
   );
 });
 
-test("Export API: stays unavailable (M2 policy), whatever credentials or cookies are sent", async () => {
-  // M2 (#36) disables the legacy export workflow. Neither Basic credentials nor forged unsigned
-  // cookies may reopen it; any change to this needs an authenticated operator path first.
+test("Export API: unauthenticated / forged / basic credentials get 403 WORKFLOW_UNAVAILABLE, verified operator session succeeds", async () => {
+  // M2 (#36) / S3 (#23): Neither Basic credentials nor forged unsigned
+  // cookies may open export. Only a verified operator session can access it.
   const forged = Buffer.from("operator@test.local:super-secret-password-xyz").toString("base64");
   const attempts: Record<string, string>[] = [{}, { cookie: "admin_session=true; user_role=ADMIN" }, { authorization: `Basic ${forged}` }];
   for (const headers of attempts) {
-    const res = await exportRoute(new NextRequest("http://localhost:3000/api/export?table=submissions", { headers }));
+    const res = await exportRoute(new NextRequest("http://localhost:3000/api/export?table=sources", { headers }));
     assert.equal(res.status, 403);
     assert.deepEqual(await res.json(), { ok: false, code: "WORKFLOW_UNAVAILABLE" });
+  }
+
+  // Operator session succeeds on allowed tables (e.g. sources)
+  const originalSourceFindMany = prisma.sourceRecord.findMany;
+  (prisma.sourceRecord as any).findMany = async () => [];
+  try {
+    setOperatorPrincipalResolverForTesting(async () => ({
+      ok: true,
+      principal: { kind: "operator", email: "op@test.local" }
+    }));
+    const opRes = await exportRoute(new NextRequest("http://localhost:3000/api/export?table=sources"));
+    assert.equal(opRes.status, 200);
+    assert.equal(opRes.headers.get("content-type"), "text/csv; charset=utf-8");
+
+    // Submissions export is disabled pending workflow confirmation (returns 403 WORKFLOW_UNAVAILABLE even for operator)
+    const subRes = await exportRoute(new NextRequest("http://localhost:3000/api/export?table=submissions"));
+    assert.equal(subRes.status, 403);
+    const subJson = await subRes.json();
+    assert.equal(subJson.code, "WORKFLOW_UNAVAILABLE");
+  } finally {
+    setOperatorPrincipalResolverForTesting(null);
+    prisma.sourceRecord.findMany = originalSourceFindMany;
   }
 });
 

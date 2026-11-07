@@ -88,12 +88,19 @@ test("constructed where clause strictly enforces M3/M5 public membership", () =>
   assert.equal(where.organization, "KMUTT FIBO");
   assert.ok(Array.isArray(where.AND));
 
-  // Placeholder exclusion preserved
-  const notList = Array.isArray(where.NOT) ? where.NOT : [where.NOT];
-  const containsPlaceholder = notList.some(
-    (cond: any) => cond.sourceUrl?.contains === "placeholder" || cond.sourceUrl?.contains?.includes("placeholder")
+  // Placeholder exclusion preserved (supports top-level NOT or OR null-safe NOT)
+  const notList = Array.isArray(where.NOT)
+    ? where.NOT
+    : (where.OR as any[])?.find((clause) => clause && clause.NOT)?.NOT || [];
+  const containsPlaceholder = (Array.isArray(notList) ? notList : [notList]).some(
+    (cond: any) => cond?.sourceUrl?.contains === "placeholder" || cond?.sourceUrl?.contains?.includes("placeholder")
   );
   assert.ok(containsPlaceholder, "Must exclude placeholder sourceUrls");
+
+  const containsNamedSeed = (Array.isArray(notList) ? notList : [notList]).some(
+    (cond: any) => cond?.sourceUrl?.contains?.includes("seed:contribution:thai-hri-research")
+  );
+  assert.ok(containsNamedSeed, "Must exclude named seed contribution");
 
   // Even if a caller passes status="NEEDS_REVIEW", public where clause must remain APPROVED
   const safeWhere = buildContributionWhere({

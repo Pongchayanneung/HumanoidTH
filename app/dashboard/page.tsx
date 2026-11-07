@@ -2,6 +2,11 @@ import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation, parseLanguage } from "@/lib/translations";
+import {
+  publicContributionWhere,
+  publicSourceRecordWhere,
+  publicPerspectiveWhere
+} from "@/lib/public-projection";
 
 export const dynamic = "force-dynamic";
 
@@ -49,17 +54,17 @@ export default async function DashboardPage() {
     ] = await Promise.all([
       prisma.robotModel.groupBy({ by: ["countryOfOrigin"], _count: { _all: true } }),
       prisma.robotModel.groupBy({ by: ["robotType"], _count: { _all: true } }),
-      prisma.sourceRecord.groupBy({ by: ["sourceType"], _count: { _all: true } }),
+      prisma.sourceRecord.groupBy({ by: ["sourceType"], where: publicSourceRecordWhere, _count: { _all: true } }),
       prisma.robotModel.groupBy({ by: ["embodimentLevel"], _count: { _all: true } }),
-      prisma.contribution.groupBy({ by: ["contributionType"], _count: { _all: true } }),
-      prisma.perspectiveAnnotation.groupBy({ by: ["perspectiveTheme"], _count: { _all: true } }),
+      prisma.contribution.groupBy({ by: ["contributionType"], where: publicContributionWhere, _count: { _all: true } }),
+      prisma.perspectiveAnnotation.groupBy({ by: ["perspectiveTheme"], where: publicPerspectiveWhere, _count: { _all: true } }),
       // Confidence buckets
-      prisma.perspectiveAnnotation.count({ where: { confidence: { gte: 0.8 } } }),
-      prisma.perspectiveAnnotation.count({ where: { confidence: { gte: 0.5, lt: 0.8 } } }),
-      prisma.perspectiveAnnotation.count({ where: { confidence: { lt: 0.5 } } }),
-      prisma.sourceRecord.count({ where: { relevanceConfidence: { gte: 0.8 } } }),
-      prisma.sourceRecord.count({ where: { relevanceConfidence: { gte: 0.5, lt: 0.8 } } }),
-      prisma.sourceRecord.count({ where: { relevanceConfidence: { lt: 0.5 } } })
+      prisma.perspectiveAnnotation.count({ where: { ...publicPerspectiveWhere, confidence: { gte: 0.8 } } }),
+      prisma.perspectiveAnnotation.count({ where: { ...publicPerspectiveWhere, confidence: { gte: 0.5, lt: 0.8 } } }),
+      prisma.perspectiveAnnotation.count({ where: { ...publicPerspectiveWhere, confidence: { lt: 0.5 } } }),
+      prisma.sourceRecord.count({ where: { ...publicSourceRecordWhere, relevanceConfidence: { gte: 0.8 } } }),
+      prisma.sourceRecord.count({ where: { ...publicSourceRecordWhere, relevanceConfidence: { gte: 0.5, lt: 0.8 } } }),
+      prisma.sourceRecord.count({ where: { ...publicSourceRecordWhere, relevanceConfidence: { lt: 0.5 } } })
     ]);
 
     data = {

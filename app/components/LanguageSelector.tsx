@@ -11,7 +11,7 @@ export default function LanguageSelector({ currentLang }: LanguageSelectorProps)
   const [isPending, startTransition] = useTransition();
 
   const handleLangChange = (lang: "en" | "th") => {
-    if (lang === currentLang) return;
+    if (isPending || lang === currentLang) return;
     startTransition(async () => {
       await setLanguage(lang);
     });
@@ -22,19 +22,21 @@ export default function LanguageSelector({ currentLang }: LanguageSelectorProps)
       <button
         onClick={() => handleLangChange("en")}
         className={currentLang === "en" ? "active" : ""}
-        aria-label="English"
-        disabled={isPending}
+        aria-label="EN English"
+        aria-disabled={isPending}
+        aria-pressed={currentLang === "en"}
       >
-        <span className="flag">🇬🇧</span>
+        <span className="flag" aria-hidden="true">🇬🇧</span>
         <span className="lang-text">EN</span>
       </button>
       <button
         onClick={() => handleLangChange("th")}
         className={currentLang === "th" ? "active" : ""}
-        aria-label="ภาษาไทย"
-        disabled={isPending}
+        aria-label="TH ภาษาไทย"
+        aria-disabled={isPending}
+        aria-pressed={currentLang === "th"}
       >
-        <span className="flag">🇹🇭</span>
+        <span className="flag" aria-hidden="true">🇹🇭</span>
         <span className="lang-text">TH</span>
       </button>
     </div>

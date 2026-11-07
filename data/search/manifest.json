@@ -1,0 +1,155 @@
+{
+  "manifestVersion": "1.0",
+  "datasetId": "thailand-humanoid-atlas-seed",
+  "releaseId": "search-v1-keyword",
+  "generatedAt": "2026-11-07T07:43:21.739Z",
+  "counts": {
+    "totalEligible": 6746,
+    "byKind": {
+      "source": 6714,
+      "robot": 15,
+      "contribution": 3,
+      "perspective": 4,
+      "inventory": 0,
+      "relationship": 10,
+      "entity": 0
+    },
+    "byLanguage": {
+      "th": 18,
+      "en": 6583,
+      "mixed": 103,
+      "unknown": 42
+    },
+    "excluded": 3,
+    "emptyKinds": [
+      "inventory",
+      "entity"
+    ]
+  },
+  "policy": {
+    "permittedOrigins": [
+      "openalex",
+      "github",
+      "youtube",
+      "gdelt",
+      "rss",
+      "web",
+      "manual_social",
+      "seed",
+      "approved_community",
+      "public_catalog"
+    ],
+    "maxBodyCodePoints": 2000,
+    "omittedPlaceholders": [
+      "OpenAlex abstract metadata available.",
+      "Placeholder contribution for Thai human-robot interaction research.",
+      "Placeholder for reviewed field observation notes about hospital robot deployment.",
+      "Imported from labeled seed dataset.",
+      "Curated seed; verify against public CT Asia and media sources.",
+      "Curated seed; do not treat as exhaustive.",
+      "Imported platform seed; link to Thai deployment sources when verified.",
+      "Imported platform seed; needs Thai source evidence.",
+      "Academic paper about"
+    ],
+    "publicFieldsByKind": {
+      "source": [
+        "id",
+        "title",
+        "excerpt",
+        "author",
+        "platform",
+        "url",
+        "publishedAt"
+      ],
+      "robot": [
+        "id",
+        "canonicalName",
+        "description",
+        "manufacturer",
+        "developerOrg",
+        "countryOfOrigin",
+        "robotType",
+        "embodimentLevel",
+        "officialUrl",
+        "firstSeenYear"
+      ],
+      "contribution": [
+        "id",
+        "title",
+        "description",
+        "contributorName",
+        "organization",
+        "contributionType",
+        "license",
+        "sourceUrl"
+      ],
+      "perspective": [
+        "id",
+        "perspectiveTheme",
+        "targetEntity",
+        "stance",
+        "sentiment",
+        "evidenceExcerpt",
+        "method",
+        "sourceTitle",
+        "sourceUrl"
+      ],
+      "inventory": [
+        "id",
+        "displayName",
+        "ownershipStatus",
+        "conditionStatus",
+        "ownerOrg",
+        "robotModelName"
+      ],
+      "relationship": [
+        "id",
+        "subject",
+        "relation",
+        "object",
+        "confidence",
+        "sourceTitle",
+        "sourceUrl"
+      ],
+      "entity": [
+        "id",
+        "name",
+        "entityType",
+        "canonicalKey"
+      ]
+    },
+    "excludedFields": [
+      "users",
+      "private_inventory",
+      "custodian",
+      "locationLabel",
+      "serialNumber",
+      "rawMeta",
+      "sourceMeta",
+      "relevanceReason",
+      "reviewNotes",
+      "submitterContact",
+      "submitterName",
+      "notes",
+      "primaryUseCase",
+      "jobs",
+      "pipeline_records",
+      "caches"
+    ]
+  },
+  "files": {
+    "documents": "documents.json",
+    "probeSample128": "probe-128.json"
+  },
+  "recordsSha256": "84a65671821c3935645f29cf27ebc8ab250c95dadd06a83ea846f972b3de8417",
+  "fileChecksums": {
+    "documents.json": {
+      "sha256": "84a65671821c3935645f29cf27ebc8ab250c95dadd06a83ea846f972b3de8417",
+      "bytes": 9033556
+    },
+    "probe-128.json": {
+      "sha256": "01bb061ed42c6891710b68bb3169a5975b791dd4688096d0b8d844f5e360216d",
+      "bytes": 235578
+    }
+  }
+}

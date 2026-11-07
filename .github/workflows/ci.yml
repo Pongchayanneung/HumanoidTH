@@ -1,0 +1,110 @@
+# Minimal CI. Blocking: typecheck + unit tests. Advisory (reported, not blocking): the no-mock-data
+# scan (fails on main today, see issue #12 M7), Playwright e2e and the axe accessibility scan.
+# Not wired yet: pytest (tests/).
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # prisma generate (postinstall) only needs the variable to exist; nothing here connects to a database.
+  DATABASE_URL: postgresql://postgres@127.0.0.1:5432/ci
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      # pnpm 11 breaks `pnpm run` in this repo (ERR_PNPM_IGNORED_BUILDS); 9.15.9 is the version that works.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm run typecheck
+      - name: Unit tests
+        run: pnpm run test
+
+  no-mock-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Advisory: red on main today (flags "fallback" wording). Remove continue-on-error once main is clean.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: No-mock-data scan
+        run: pnpm run check:no-mock-data
+
+  # Advisory until it has a few green runs on main. Real Postgres, migrated and seeded, then the
+  # existing Playwright specs; the axe scan runs after as its own step so it is reported separately.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: atlas_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@127.0.0.1:5432/atlas_ci
+      # Throwaway operator config so /admin redirects to sign-in (smoke spec). The hash has a random salt
+      # and no known password; nothing here is a secret or reaches a real service.
+      OPERATOR_EMAIL: ci@example.com
+      OPERATOR_PASSWORD_HASH: scrypt$32768$8$3$700b42268ea42601b668a4ff2b03baae$46e3ae12976871ab6174f950a7d037afac9c3efbf647d670946d9aa66b9387838d54e8ec639f2405ac8339168735d2b0e26e2d748acdc47544699f845a6001d4
+      OPERATOR_AUTH_EPOCH: ci-throwaway
+      OPERATOR_APP_ORIGIN: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prisma migrate deploy
+      - name: Seed the disposable database
+        # Guarded seeding (PR #29) needs this opt-in; set only here, on a throwaway 127.0.0.1 database.
+        run: pnpm run db:seed
+        env:
+          ATLAS_ALLOW_SEED: "1"
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Playwright e2e (smoke and network)
+        run: pnpm exec playwright test tests-node/smoke.spec.ts tests-node/network.spec.ts --reporter=list
+      - name: axe accessibility scan (serious and critical, 390px and 1440px)
+        # Red on main today: color-contrast, link-name, label-content-name-mismatch and more.
+        # Remove continue-on-error once the findings are fixed.
+        continue-on-error: true
+        run: pnpm exec playwright test tests-node/a11y.spec.ts --reporter=list --retries=0

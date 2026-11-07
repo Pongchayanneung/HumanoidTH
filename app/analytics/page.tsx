@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation } from "@/lib/translations";
+import { PUBLIC_DATASET_SCOPE_LABEL } from "@/lib/public-projection";
 import AnalyticsPlayground from "./AnalyticsPlayground";
 import AnalyticsBpmn from "./AnalyticsBpmn";
 
@@ -54,10 +55,10 @@ export const metadata: Metadata = {
       sources,
       robots,
       contributions,
-      perspectives,
-      submissions
+      perspectives
     ] = await Promise.all([
       prisma.sourceRecord.findMany({
+        where: { relevanceStatus: "ACCEPTED" },
         select: {
           sourceType: true,
           relevanceStatus: true,
@@ -84,6 +85,7 @@ export const metadata: Metadata = {
         take: 5000
       }),
       prisma.contribution.findMany({
+        where: { visibility: "public", verificationStatus: "APPROVED" },
         select: {
           title: true,
           contributionType: true,
@@ -96,6 +98,7 @@ export const metadata: Metadata = {
         take: 5000
       }),
       prisma.perspectiveAnnotation.findMany({
+        where: { source: { relevanceStatus: "ACCEPTED" } },
         select: {
           perspectiveTheme: true,
           stance: true,
@@ -104,17 +107,6 @@ export const metadata: Metadata = {
           confidence: true,
           createdAt: true,
           evidenceExcerpt: true
-        },
-        orderBy: { createdAt: "desc" },
-        take: 5000
-      }),
-      prisma.submittedData.findMany({
-        select: {
-          submissionType: true,
-          status: true,
-          createdAt: true,
-          title: true,
-          submitterName: true
         },
         orderBy: { createdAt: "desc" },
         take: 5000
@@ -220,30 +212,6 @@ export const metadata: Metadata = {
         visibility: "unknown",
         countryOfOrigin: "unknown",
         ownerOrg: "unknown"
-      })),
-      ...submissions.map((item) => ({
-        scope: "submissions",
-        date: item.createdAt.toISOString(),
-        year: item.createdAt.getFullYear(),
-        monthKey: item.createdAt.toISOString().slice(0, 7),
-        label: item.title,
-        confidence: null,
-        eventType: "submission",
-        sourceType: "unknown",
-        relevanceStatus: "unknown",
-        platform: "unknown",
-        robotType: "unknown",
-        thailandStatus: "unknown",
-        contributionType: "unknown",
-        verificationStatus: "unknown",
-        perspectiveTheme: "unknown",
-        stance: "unknown",
-        sentiment: "unknown",
-        submissionType: item.submissionType,
-        status: item.status,
-        visibility: "unknown",
-        countryOfOrigin: "unknown",
-        ownerOrg: "unknown"
       }))
     ];
 
@@ -252,7 +220,7 @@ export const metadata: Metadata = {
       robotCount: robots.length,
       contributionCount: contributions.length,
       perspectiveCount: perspectives.length,
-      submissionCount: submissions.length,
+      submissionCount: 0,
       sourceConfidenceCount: sources.filter((item) => item.relevanceConfidence > 0).length
     };
   } catch (error) {
@@ -264,7 +232,9 @@ export const metadata: Metadata = {
     <>
       <h1>{t.analyticsTitle}</h1>
       <p className="muted" style={{ marginBottom: "18px" }}>{t.analyticsDesc}</p>
-      <div className="notice">This workspace uses live database rows only. No sample data is injected here.</div>
+      <div className="notice" style={{ background: "rgba(59, 130, 246, 0.08)", borderColor: "var(--accent)", marginBottom: "16px" }}>
+        <strong>Dataset Scope:</strong> {PUBLIC_DATASET_SCOPE_LABEL}. Analytics aggregate verified public records only. Pending submissions, private inventory, and unaccepted sources are strictly excluded.
+      </div>
       {dbOffline && (
         <div className="notice" style={{ marginBottom: 16 }}>
           Live analytics are unavailable. This page needs PostgreSQL to build the analysis workspace.

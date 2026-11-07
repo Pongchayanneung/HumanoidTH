@@ -42,8 +42,6 @@ jobs:
   no-mock-data:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Advisory: red on main today (flags "fallback" wording). Remove continue-on-error once main is clean.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

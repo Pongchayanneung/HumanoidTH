@@ -1,0 +1,37 @@
+import { test, expect } from "@playwright/test";
+import { pathToFileURL } from "node:url";
+import { resolve } from "node:path";
+
+test("search query and type survive navigation and URL restoration", async ({ page }) => {
+  const url = pathToFileURL(resolve("design/f7-search/wireframe.html")).href;
+  await page.goto(url);
+  const query = "หุ่นยนต์ & robot + care";
+  await page.locator("#search-input").fill(query);
+  await page.locator('[data-filter="1"]').click();
+  await expect(page.locator(".card")).toHaveCount(1);
+  await page.locator('.sidebar [data-lang="th"]').click();
+  await expect(page.locator('[data-filter="1"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#search-input")).toHaveValue(query);
+  await expect(page.locator(".card")).toHaveCount(1);
+  await page.locator("#vp").selectOption("390");
+  await page.locator("#state").selectOption("hybrid");
+  await expect(page.locator("#search-input")).toHaveValue(query);
+  await expect(page.locator('[data-filter="1"]')).toHaveAttribute("aria-pressed", "true");
+  const saved = page.url();
+  const hash = new URLSearchParams(new URL(saved).hash.slice(1));
+  expect(hash.get("query")).toBe(query);
+  expect(hash.get("type")).toBe("1");
+  await page.reload();
+  await expect(page.locator("#search-input")).toHaveValue(query);
+  await expect(page.locator('[data-filter="1"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".card")).toHaveCount(1);
+  await page.evaluate(() => { location.hash = 'lang=en&vp=1440&state=browse&query=other&type=5'; });
+  await expect(page.locator("#search-input")).toHaveValue("other");
+  await expect(page.locator('[data-filter="5"]')).toHaveAttribute("aria-pressed", "true");
+  await page.goto(saved);
+  await expect(page.locator("#search-input")).toHaveValue(query);
+  await expect(page.locator('[data-filter="1"]')).toHaveAttribute("aria-pressed", "true");
+  await page.locator(".clear-search").click();
+  await expect(page.locator("#search-input")).toHaveValue("");
+  expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get("query")).toBe("");
+});

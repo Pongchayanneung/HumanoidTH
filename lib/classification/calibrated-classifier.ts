@@ -100,8 +100,8 @@ const INDUSTRIAL_OUT_OF_SCOPE = [
 ];
 
 const THAI_INSTITUTIONS = [
-  /\b(?:chulalongkorn|mahidol|siriraj|ramathibodi|kasetsart|kmutt|fibo|kmitl|chiang mai university|cmu|prince of songkla|psu|nectec|nstda|ct asia robotics|dusit hotel)\b/i,
-  /(?:จุฬาลงกรณ์|จุฬาฯ|มหิดล|ศิริราช|รามาธิบดี|เกษตรศาสตร์|พระจอมเกล้า|สจล|มจธ|เนคเทค|สวทช|กสทช|ซีที เอเชีย)/i
+  /\b(?:chulalongkorn|mahidol|siriraj|ramathibodi|kasetsart|kmutt|fibo|kmitl|chiang mai university|cmu|prince of songkla|psu|nectec|nstda|ct asia robotics|ct asia|dinsaw|dinsaw mini|dusit hotel)\b/i,
+  /(?:จุฬาลงกรณ์|จุฬาฯ|มหิดล|ศิริราช|รามาธิบดี|เกษตรศาสตร์|พระจอมเกล้า|สจล|มจธ|เนคเทค|สวทช|กสทช|ซีที เอเชีย|หุ่นยนต์ดินสอ|ดินสอมินิ)/i
 ];
 
 const THAI_LOCATIONS = [

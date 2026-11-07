@@ -163,19 +163,31 @@ export async function saveSources(records: NormalizedSource[]) {
         }
       });
 
-      // Clean up stale machine-generated annotations and triplets on re-ingestion
-      // preserving any human-reviewed records (method === "human_review")
+      // Machine-generated annotation methods eligible for cleanup/refresh
+      const MACHINE_ANNOTATION_METHODS = ["gemini-1.5-flash", "rules_fallback", "rules_with_evidence"];
+
+      // Curated seed sources and records must never have their curated annotations or triplets deleted
+      const isCuratedSource =
+        source.sourceType === "SEED" ||
+        Boolean((source.rawMeta as any)?.category === "triplet_relation") ||
+        Boolean((source.rawMeta as any)?.source_id);
+
+      // Clean up stale machine-generated annotations only; NEVER delete human_review or seed_json records
       await tx.perspectiveAnnotation.deleteMany({
         where: {
           sourceId: source.id,
-          method: { not: "human_review" }
+          method: { in: MACHINE_ANNOTATION_METHODS }
         }
       });
-      await tx.triplet.deleteMany({
-        where: {
-          sourceId: source.id
-        }
-      });
+
+      // Never wipe out curated seed triplets. Only refresh machine triplets on dynamic sources when replacement triplets exist
+      if (!isCuratedSource && geminiResult?.triplets && geminiResult.triplets.length > 0) {
+        await tx.triplet.deleteMany({
+          where: {
+            sourceId: source.id
+          }
+        });
+      }
 
       if (relevance.relevanceStatus === "ACCEPTED" && annotation) {
         // Project schema fields strictly; omit non-schema fields like requiresHumanReview
@@ -202,11 +214,16 @@ export async function saveSources(records: NormalizedSource[]) {
           update: annotationPayload
         });
 
-        // Save extracted relationship triplets if available and meeting >= 0.80 threshold
+        // Save extracted relationship triplets if available and meeting strict runtime >= 0.80 threshold
         if (geminiResult?.triplets && geminiResult.triplets.length > 0) {
           for (const t of geminiResult.triplets) {
-            const tripletConfidence = t.confidence ?? 0.85;
-            if (tripletConfidence >= 0.80) {
+            // Strictly check confidence: must be a valid number >= 0.80 and <= 1.0 (no default 0.85 fallback)
+            const tripletConfidence =
+              typeof t?.confidence === "number" && !Number.isNaN(t.confidence)
+                ? t.confidence
+                : null;
+
+            if (tripletConfidence !== null && tripletConfidence >= 0.80 && tripletConfidence <= 1.0) {
               await tx.triplet.upsert({
                 where: {
                   subject_relation_object_sourceId: {

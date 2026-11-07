@@ -214,22 +214,81 @@ Please evaluate and classify this article. Set:
     throw new Error("Empty response from Gemini API");
   }
 
-  return JSON.parse(textResponse) as {
-    isRelevant: boolean;
-    relevanceReason: string;
-    relevanceConfidence: number;
-    theme: string;
-    stance: string;
-    sentiment: string;
-    targetEntity: string;
-    evidenceExcerpt: string;
+  return parseAndValidateGeminiResponse(textResponse);
+}
+
+export function parseAndValidateGeminiResponse(textResponse: string): {
+  isRelevant: boolean;
+  relevanceReason: string;
+  relevanceConfidence: number;
+  theme: string;
+  stance: string;
+  sentiment: string;
+  targetEntity: string;
+  evidenceExcerpt: string;
+  confidence: number;
+  triplets: Array<{
+    subject: string;
+    relation: string;
+    object: string;
     confidence: number;
-    triplets?: Array<{
-      subject: string;
-      relation: string;
-      object: string;
-      confidence: number;
-    }>;
+  }>;
+} {
+  const parsed = JSON.parse(textResponse);
+  if (typeof parsed !== "object" || parsed === null) {
+    throw new Error("Invalid response format from Gemini API");
+  }
+
+  // Validate triplets at runtime; reject missing, invalid, or out-of-range confidence
+  const validatedTriplets: Array<{
+    subject: string;
+    relation: string;
+    object: string;
+    confidence: number;
+  }> = [];
+
+  if (Array.isArray(parsed.triplets)) {
+    for (const t of parsed.triplets) {
+      if (
+        t &&
+        typeof t.subject === "string" &&
+        t.subject.trim() &&
+        typeof t.relation === "string" &&
+        t.relation.trim() &&
+        typeof t.object === "string" &&
+        t.object.trim() &&
+        typeof t.confidence === "number" &&
+        !Number.isNaN(t.confidence) &&
+        t.confidence >= 0 &&
+        t.confidence <= 1
+      ) {
+        validatedTriplets.push({
+          subject: t.subject.trim(),
+          relation: t.relation.trim(),
+          object: t.object.trim(),
+          confidence: t.confidence
+        });
+      }
+    }
+  }
+
+  return {
+    isRelevant: typeof parsed.isRelevant === "boolean" ? parsed.isRelevant : false,
+    relevanceReason: typeof parsed.relevanceReason === "string" ? parsed.relevanceReason : "Unknown",
+    relevanceConfidence:
+      typeof parsed.relevanceConfidence === "number" && !Number.isNaN(parsed.relevanceConfidence)
+        ? Math.max(0, Math.min(1, parsed.relevanceConfidence))
+        : 0,
+    theme: typeof parsed.theme === "string" ? parsed.theme : "unclear",
+    stance: typeof parsed.stance === "string" ? parsed.stance : "unclear",
+    sentiment: typeof parsed.sentiment === "string" ? parsed.sentiment : "unclear",
+    targetEntity: typeof parsed.targetEntity === "string" ? parsed.targetEntity : "humanoid/social robotics",
+    evidenceExcerpt: typeof parsed.evidenceExcerpt === "string" ? parsed.evidenceExcerpt : "",
+    confidence:
+      typeof parsed.confidence === "number" && !Number.isNaN(parsed.confidence)
+        ? Math.max(0, Math.min(1, parsed.confidence))
+        : 0,
+    triplets: validatedTriplets
   };
 }
 

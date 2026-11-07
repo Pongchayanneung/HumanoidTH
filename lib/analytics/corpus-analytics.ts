@@ -402,6 +402,11 @@ export async function loadWholeCorpusAnalytics(sampleLimit = DEFAULT_ANALYTICS_S
       perspectives
     });
 
+    const analyzedSourcesCount = events.filter((e) => e.scope === "sources").length;
+    const analyzedRobotsCount = events.filter((e) => e.scope === "robots").length;
+    const analyzedContributionsCount = events.filter((e) => e.scope === "contributions").length;
+    const analyzedPerspectivesCount = events.filter((e) => e.scope === "perspectives").length;
+
     const summary = buildCorpusAggregateSummary({
       totalSources,
       totalRobots,
@@ -410,10 +415,10 @@ export async function loadWholeCorpusAnalytics(sampleLimit = DEFAULT_ANALYTICS_S
       totalScoredSources,
       sourcesWithPubDate,
       robotsWithYear,
-      analyzedSourcesCount: sources.length,
-      analyzedRobotsCount: robots.length,
-      analyzedContributionsCount: contributions.length,
-      analyzedPerspectivesCount: perspectives.length,
+      analyzedSourcesCount,
+      analyzedRobotsCount,
+      analyzedContributionsCount,
+      analyzedPerspectivesCount,
       sampleLimit,
       events
     });

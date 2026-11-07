@@ -306,11 +306,10 @@ function sourceTypeToCategory(sourceType: string) {
   return "source_record";
 }
 
-export let lastPrismaGraphWarnings: string[] = [];
-
-export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
+export async function loadGraphRecordsFromPrismaWithWarnings(): Promise<{ records: AtlasRecord[]; warnings: string[] }> {
   const { prisma } = await import("@/lib/prisma");
   const records: AtlasRecord[] = [];
+  const warnings: string[] = [];
   // Public data projection (M3 / T03): Exclude private records and unapproved submissions
   const [robots, inventory, contributions, sources, perspectives, triplets] = await Promise.all([
     prisma.robotModel
@@ -347,13 +346,12 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
     })
   ]);
 
-  lastPrismaGraphWarnings = [];
-  if (robots.length >= 700) lastPrismaGraphWarnings.push("Robot models query reached loader cap (700); earlier records omitted.");
-  if (inventory.length >= 500) lastPrismaGraphWarnings.push("Inventory query reached loader cap (500); earlier records omitted.");
-  if (contributions.length >= 700) lastPrismaGraphWarnings.push("Contributions query reached loader cap (700); earlier records omitted.");
-  if (sources.length >= 1200) lastPrismaGraphWarnings.push("Source records query reached loader cap (1200); earlier records omitted.");
-  if (perspectives.length >= 800) lastPrismaGraphWarnings.push("Perspectives query reached loader cap (800); earlier records omitted.");
-  if (triplets.length >= 1400) lastPrismaGraphWarnings.push("Triplets query reached loader cap (1400); earlier records omitted.");
+  if (robots.length >= 700) warnings.push("Robot models query reached loader cap (700); earlier records omitted.");
+  if (inventory.length >= 500) warnings.push("Inventory query reached loader cap (500); earlier records omitted.");
+  if (contributions.length >= 700) warnings.push("Contributions query reached loader cap (700); earlier records omitted.");
+  if (sources.length >= 1200) warnings.push("Source records query reached loader cap (1200); earlier records omitted.");
+  if (perspectives.length >= 800) warnings.push("Perspectives query reached loader cap (800); earlier records omitted.");
+  if (triplets.length >= 1400) warnings.push("Triplets query reached loader cap (1400); earlier records omitted.");
 
   for (const item of robots) {
     records.push({
@@ -532,7 +530,12 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
     });
   }
 
-  return records;
+  return { records, warnings };
+}
+
+export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
+  const result = await loadGraphRecordsFromPrismaWithWarnings();
+  return result.records;
 }
 
 export const fileNetworkGraphSource: NetworkGraphSource = {
@@ -617,10 +620,11 @@ export async function loadGraphRecordsHybrid(): Promise<SourceLoadResult> {
   let dbRecords: AtlasRecord[] = [];
   let databaseOk = false;
   try {
-    dbRecords = await loadGraphRecordsFromPrisma();
+    const dbResult = await loadGraphRecordsFromPrismaWithWarnings();
+    dbRecords = dbResult.records;
     databaseOk = true;
-    if (lastPrismaGraphWarnings.length) {
-      warnings.push(...lastPrismaGraphWarnings);
+    if (dbResult.warnings.length) {
+      warnings.push(...dbResult.warnings);
     }
   } catch (error) {
     warnings.push(sanitizeError(error));
@@ -648,7 +652,8 @@ export async function loadGraphRecordsHybrid(): Promise<SourceLoadResult> {
 export async function loadGraphRecordsAuto(): Promise<SourceLoadResult> {
   const fileAvailable = existsSync(getNetworkImportFilePath());
   try {
-    return { records: await loadGraphRecordsFromPrisma(), resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: [...lastPrismaGraphWarnings] };
+    const dbResult = await loadGraphRecordsFromPrismaWithWarnings();
+    return { records: dbResult.records, resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: dbResult.warnings };
   } catch {
     if (!fileAvailable) {
       return { records: [], resolvedSource: "fallback_file", databaseAvailable: false, fileAvailable, warnings: [fallbackWarning, importFileWarning] };
@@ -671,7 +676,8 @@ export async function loadGraphRecords(mode: NetworkSourceMode): Promise<SourceL
 
   if (mode === "database") {
     try {
-      return { records: await loadGraphRecordsFromPrisma(), resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: [...lastPrismaGraphWarnings] };
+      const dbResult = await loadGraphRecordsFromPrismaWithWarnings();
+      return { records: dbResult.records, resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: dbResult.warnings };
     } catch (error) {
       throw new Error(sanitizeError(error));
     }

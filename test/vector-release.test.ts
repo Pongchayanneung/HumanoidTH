@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -11,6 +11,7 @@ import {
   computeRecordKeysHash,
   validateVectorRelease,
   calculateCompletionForecast,
+  readActiveReleasePointer,
   BYTES_PER_FLOAT32
 } from "../lib/search/vector-io";
 import {
@@ -19,9 +20,10 @@ import {
 } from "../lib/search/vector-builder";
 import {
   DEFAULT_MODEL_PROFILE,
+  MOCK_MODEL_PROFILE,
   type ModelProfile
 } from "../lib/search/vector-types";
-import type { SearchDocument } from "../lib/search/types";
+import type { SearchDocument, SearchExportManifest } from "../lib/search/types";
 
 function createDummyDocument(id: string, kind: string = "source", text: string = "dummy text"): SearchDocument {
   return {
@@ -122,76 +124,91 @@ test("F4 Vector IO: computeRecordKeysHash produces deterministic ordered hash", 
   assert.notEqual(hashA, hashMod);
 });
 
-test("F4 Release Validation: detects valid releases and rejects invalid ones", () => {
-  const dimensions = 1024;
-  const doc0 = createDummyDocument("0");
-  doc0.vectorRow = 0;
-  const doc1 = createDummyDocument("1");
-  doc1.vectorRow = 1;
+test("F4 Release Validation: detects valid releases, verifies every row without sampling (251-row test), and checks on-disk checksums", async () => {
+  const dimensions = 4;
+  const docs: SearchDocument[] = [];
+  const vecs: Float32Array[] = [];
 
-  const gen = new DeterministicMockEmbeddingGenerator(dimensions);
-  return gen.generateBatches(["text0", "text1"]).then((vecs) => {
-    const validBuffer = encodeVectorsToBuffer(vecs, dimensions);
+  // Create 251 rows to verify row 250 is tested and not skipped by sampling
+  for (let i = 0; i < 251; i++) {
+    const doc = createDummyDocument(`${i}`);
+    doc.vectorRow = i;
+    docs.push(doc);
+    vecs.push(l2Normalize(new Float32Array([0.5, 0.5, 0.5, 0.5])));
+  }
 
-    // 1. Valid release passes
-    const validResult = validateVectorRelease({
-      buffer: validBuffer,
-      documents: [doc0, doc1],
-      expectedDimensions: dimensions,
-      expectedVectorCount: 2
-    });
-    assert.equal(validResult.isValid, true);
-    assert.equal(validResult.errors.length, 0);
+  const validBuffer = encodeVectorsToBuffer(vecs, dimensions);
 
-    // 2. Reject mismatched buffer size
-    const truncatedBuffer = validBuffer.subarray(0, validBuffer.length - 10);
-    const sizeResult = validateVectorRelease({
-      buffer: truncatedBuffer,
-      documents: [doc0, doc1],
-      expectedDimensions: dimensions,
-      expectedVectorCount: 2
-    });
-    assert.equal(sizeResult.isValid, false);
-    assert.ok(sizeResult.errors.some((e) => e.includes("not aligned")));
-
-    // 3. Reject non-finite vector values (NaN)
-    const corruptedBuffer = Buffer.from(validBuffer);
-    corruptedBuffer.writeFloatLE(NaN, 0);
-    const nanResult = validateVectorRelease({
-      buffer: corruptedBuffer,
-      documents: [doc0, doc1],
-      expectedDimensions: dimensions,
-      expectedVectorCount: 2
-    });
-    assert.equal(nanResult.isValid, false);
-    assert.ok(nanResult.errors.some((e) => e.includes("non-finite")));
-
-    // 4. Reject un-normalized vectors
-    const unnormBuffer = Buffer.from(validBuffer);
-    unnormBuffer.writeFloatLE(100.0, 0);
-    const unnormResult = validateVectorRelease({
-      buffer: unnormBuffer,
-      documents: [doc0, doc1],
-      expectedDimensions: dimensions,
-      expectedVectorCount: 2
-    });
-    assert.equal(unnormResult.isValid, false);
-    assert.ok(unnormResult.errors.some((e) => e.includes("L2 normalization")));
-
-    // 5. Reject document row mapping mismatch
-    const badDoc1 = { ...doc1, vectorRow: 5 }; // row out of bounds
-    const mappingResult = validateVectorRelease({
-      buffer: validBuffer,
-      documents: [doc0, badDoc1],
-      expectedDimensions: dimensions,
-      expectedVectorCount: 2
-    });
-    assert.equal(mappingResult.isValid, false);
-    assert.ok(mappingResult.errors.some((e) => e.includes("mapping mismatch")));
+  // 1. Valid 251-row release passes
+  const validResult = validateVectorRelease({
+    buffer: validBuffer,
+    documents: docs,
+    expectedDimensions: dimensions,
+    expectedVectorCount: 251
   });
+  assert.equal(validResult.isValid, true);
+  assert.equal(validResult.errors.length, 0);
+
+  // 2. Corrupt row 250 (the 251st row) with NaN: MUST fail validation!
+  const corrupted251 = Buffer.from(validBuffer);
+  const row250Offset = 250 * dimensions * BYTES_PER_FLOAT32;
+  corrupted251.writeFloatLE(NaN, row250Offset);
+
+  const corruptedResult = validateVectorRelease({
+    buffer: corrupted251,
+    documents: docs,
+    expectedDimensions: dimensions,
+    expectedVectorCount: 251
+  });
+  assert.equal(corruptedResult.isValid, false);
+  assert.ok(corruptedResult.errors.some((e) => e.includes("Row 250") && e.includes("non-finite")));
+
+  // 3. Reject mismatched buffer size
+  const truncatedBuffer = validBuffer.subarray(0, validBuffer.length - 10);
+  const sizeResult = validateVectorRelease({
+    buffer: truncatedBuffer,
+    documents: docs,
+    expectedDimensions: dimensions,
+    expectedVectorCount: 251
+  });
+  assert.equal(sizeResult.isValid, false);
+  assert.ok(sizeResult.errors.some((e) => e.includes("not aligned")));
+
+  // 4. Reject document row mapping mismatch
+  const badDocs = [...docs];
+  badDocs[0] = { ...badDocs[0], vectorRow: 999 };
+  const mappingResult = validateVectorRelease({
+    buffer: validBuffer,
+    documents: badDocs,
+    expectedDimensions: dimensions,
+    expectedVectorCount: 251
+  });
+  assert.equal(mappingResult.isValid, false);
+  assert.ok(mappingResult.errors.some((e) => e.includes("mapping mismatch")));
 });
 
-test("F4 Resumable Checkpoint Builder: reuses matching checkpoints and rebuilds invalidated ones", async () => {
+test("F4 Model Profile & Generator Protection: rejects Qwen production profile with mock generator", () => {
+  const tempDir = mkdtempSync(join(tmpdir(), "f4-guard-test-"));
+  try {
+    const docs = [createDummyDocument("1")];
+    const documentsPath = join(tempDir, "documents.json");
+    writeFileSync(documentsPath, JSON.stringify(docs), "utf8");
+
+    // Attempting to use DeterministicMockEmbeddingGenerator with DEFAULT_MODEL_PROFILE (Qwen) must throw
+    assert.throws(() => {
+      new VectorReleaseBuilder({
+        documentsPath,
+        outputDir: tempDir,
+        profile: DEFAULT_MODEL_PROFILE, // provider: "tei"
+        embeddingGenerator: new DeterministicMockEmbeddingGenerator(1024)
+      });
+    }, /DeterministicMockEmbeddingGenerator cannot be labelled as production model profile/);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("F4 Resumable Checkpoint Builder: writes checkpoints per batch and reuses matching cache", async () => {
   const tempDir = mkdtempSync(join(tmpdir(), "f4-vector-test-"));
   try {
     const docsDir = join(tempDir, "data");
@@ -201,18 +218,19 @@ test("F4 Resumable Checkpoint Builder: reuses matching checkpoints and rebuilds 
     const docs = [
       createDummyDocument("1", "source", "Thai robotics research"),
       createDummyDocument("2", "robot", "Dinsaw healthcare robot"),
-      createDummyDocument("3", "contribution", "FIBO educational initiative")
+      createDummyDocument("3", "contribution", "FIBO educational initiative"),
+      createDummyDocument("4", "perspective", "Industry perspective")
     ];
 
     const documentsPath = join(tempDir, "documents.json");
     writeFileSync(documentsPath, JSON.stringify(docs), "utf8");
 
     const profileA: ModelProfile = {
-      ...DEFAULT_MODEL_PROFILE,
-      profileHash: "model-profile-test-a"
+      ...MOCK_MODEL_PROFILE,
+      profileHash: "mock-model-profile-test-a"
     };
 
-    // 1. Initial build: Generates all 3 vectors and writes checkpoints
+    // 1. Initial build: Generates all 4 vectors with batchSize=2 -> writes 2 batch checkpoints
     const builderA = new VectorReleaseBuilder({
       documentsPath,
       outputDir: docsDir,
@@ -224,18 +242,24 @@ test("F4 Resumable Checkpoint Builder: reuses matching checkpoints and rebuilds 
 
     const resultA = await builderA.build();
     assert.equal(resultA.coverage.status, "complete");
-    assert.equal(resultA.coverage.vectorCount, 3);
+    assert.equal(resultA.coverage.vectorCount, 4);
     assert.equal(resultA.coverage.overallCoveragePct, 100);
+
+    // Verify batch checkpoints exist on disk
+    const cp0 = join(checkpointDir, "checkpoint-mock-model-profile-test-a-batch-0.json");
+    const cp1 = join(checkpointDir, "checkpoint-mock-model-profile-test-a-batch-1.json");
+    assert.ok(existsSync(cp0), "batch 0 checkpoint must exist on disk");
+    assert.ok(existsSync(cp1), "batch 1 checkpoint must exist on disk");
 
     // 2. Second build with same profile: Reuses all cached checkpoints without error
     const resultA2 = await builderA.build();
     assert.equal(resultA2.coverage.status, "complete");
-    assert.equal(resultA2.coverage.vectorCount, 3);
+    assert.equal(resultA2.coverage.vectorCount, 4);
 
     // 3. Third build with DIFFERENT profile: Discards cache from profile A and recomputes for profile B
     const profileB: ModelProfile = {
-      ...DEFAULT_MODEL_PROFILE,
-      profileHash: "model-profile-test-b"
+      ...MOCK_MODEL_PROFILE,
+      profileHash: "mock-model-profile-test-b"
     };
 
     const builderB = new VectorReleaseBuilder({
@@ -248,8 +272,98 @@ test("F4 Resumable Checkpoint Builder: reuses matching checkpoints and rebuilds 
     });
 
     const resultB = await builderB.build();
-    assert.equal(resultB.manifest.modelProfile?.profileHash, "model-profile-test-b");
-    assert.equal(resultB.coverage.vectorCount, 3);
+    assert.equal(resultB.manifest.modelProfile?.profileHash, "mock-model-profile-test-b");
+    assert.equal(resultB.coverage.vectorCount, 4);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("F4 Atomic Promotion & Manifest Preservation: preserves F3 metadata and writes active-release pointer", async () => {
+  const tempDir = mkdtempSync(join(tmpdir(), "f4-promote-test-"));
+  try {
+    const docsDir = join(tempDir, "data");
+    const documentsPath = join(tempDir, "documents.json");
+    const manifestPath = join(docsDir, "manifest.json");
+
+    const docs = [createDummyDocument("1", "robot", "Atlas Test Robot")];
+    writeFileSync(documentsPath, JSON.stringify(docs), "utf8");
+
+    // Pre-populate base F3 manifest in docsDir
+    const baseManifest: SearchExportManifest = {
+      manifestVersion: "1.0",
+      datasetId: "thailand-humanoid-atlas",
+      releaseId: "f3-base-export",
+      generatedAt: "2026-11-07T00:00:00.000Z",
+      counts: {
+        totalEligible: 6746,
+        byKind: {
+          source: 6714,
+          robot: 15,
+          contribution: 3,
+          perspective: 4,
+          relationship: 10,
+          inventory: 0,
+          entity: 0
+        },
+        byLanguage: { th: 2000, en: 4500, mixed: 246, unknown: 0 },
+        excluded: 20,
+        emptyKinds: ["inventory", "entity"]
+      },
+      policy: {
+        permittedOrigins: ["web", "github"],
+        maxBodyCodePoints: 2000,
+        omittedPlaceholders: ["placeholder"],
+        publicFieldsByKind: {
+          source: ["title", "body"],
+          robot: ["title"],
+          contribution: ["title"],
+          perspective: ["title"],
+          relationship: ["title"],
+          inventory: [],
+          entity: []
+        },
+        excludedFields: ["email"]
+      },
+      files: {
+        documents: "documents.json",
+        probeSample128: "probe-128.json"
+      },
+      fileChecksums: {},
+      recordsSha256: "test-records-hash"
+    };
+
+    const { mkdirSync } = await import("node:fs");
+    mkdirSync(docsDir, { recursive: true });
+    writeFileSync(manifestPath, JSON.stringify(baseManifest, null, 2), "utf8");
+
+    // Build vector release
+    const builder = new VectorReleaseBuilder({
+      documentsPath,
+      outputDir: docsDir,
+      profile: MOCK_MODEL_PROFILE
+    });
+
+    const result = await builder.build();
+
+    // 1. Verify F3 metadata was preserved in manifest
+    assert.equal(result.manifest.datasetId, "thailand-humanoid-atlas");
+    assert.deepEqual(result.manifest.counts, baseManifest.counts);
+    assert.deepEqual(result.manifest.policy, baseManifest.policy);
+    assert.equal(result.manifest.manifestVersion, "2.0");
+
+    // 2. Verify active-release pointer exists in output directory
+    const pointer = readActiveReleasePointer(docsDir);
+    assert.ok(pointer !== null, "active-release.json pointer must exist");
+    assert.equal(pointer.releaseId, result.manifest.releaseId);
+    assert.equal(pointer.recordsSha256, result.manifest.recordsSha256);
+    assert.equal(pointer.modelProfileHash, MOCK_MODEL_PROFILE.profileHash);
+
+    // 3. Verify versioned release directory was created
+    const releaseDir = join(docsDir, "releases", result.manifest.releaseId);
+    assert.ok(existsSync(join(releaseDir, "documents.json")));
+    assert.ok(existsSync(join(releaseDir, "vectors.f32")));
+    assert.ok(existsSync(join(releaseDir, "manifest.json")));
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
@@ -274,6 +388,7 @@ test("F4 Semantic Coverage: correctly reports absent, partial, and complete rele
       outputDir: join(tempDir, "kw-out"),
       checkpointDir: join(tempDir, "kw-cp"),
       stagingDir: join(tempDir, "kw-st"),
+      profile: MOCK_MODEL_PROFILE,
       maxVectorsToGenerate: 0
     });
     const kwResult = await keywordBuilder.build();
@@ -288,6 +403,7 @@ test("F4 Semantic Coverage: correctly reports absent, partial, and complete rele
       outputDir: join(tempDir, "part-out"),
       checkpointDir: join(tempDir, "part-cp"),
       stagingDir: join(tempDir, "part-st"),
+      profile: MOCK_MODEL_PROFILE,
       maxVectorsToGenerate: 2
     });
     const partResult = await partialBuilder.build();
@@ -305,6 +421,7 @@ test("F4 Semantic Coverage: correctly reports absent, partial, and complete rele
       outputDir: join(tempDir, "comp-out"),
       checkpointDir: join(tempDir, "comp-cp"),
       stagingDir: join(tempDir, "comp-st"),
+      profile: MOCK_MODEL_PROFILE,
       maxVectorsToGenerate: 4
     });
     const compResult = await completeBuilder.build();
@@ -317,13 +434,6 @@ test("F4 Semantic Coverage: correctly reports absent, partial, and complete rele
 });
 
 test("F4 Hour 3 Completion Forecast: computes 50% contingency and gate verdict accurately", () => {
-  // Scenario 1: High throughput -> On track for Hour 4.5 gate
-  // 6,746 total docs, 5,000 completed at 3.0 hours (10,800 sec).
-  // Rate: 5,000 / 10,800 = 0.463 docs/sec.
-  // Remaining: 1,746 docs. Raw time = 1,746 / 0.463 = 3,771 sec (62.8 min).
-  // 50% contingency = 1,885 sec (31.4 min).
-  // Total forecast remaining = 5,656 sec (~1.57 hrs).
-  // Forecast finish = 3.0 + 1.57 = 4.57 hrs -> slightly over
   const forecastSlow = calculateCompletionForecast({
     totalDocuments: 6746,
     completedDocuments: 4000,
@@ -337,9 +447,6 @@ test("F4 Hour 3 Completion Forecast: computes 50% contingency and gate verdict a
   assert.equal(forecastSlow.meetsDeadline, false);
   assert.ok(forecastSlow.formattedSummary.includes("Fallback to Partial Semantic Release Required"));
 
-  // Scenario 2: Fast throughput -> Comfortably meets deadline
-  // 6,746 total docs, 6,000 completed at 3.0 hours
-  // Remaining: 746 docs.
   const forecastFast = calculateCompletionForecast({
     totalDocuments: 6746,
     completedDocuments: 6000,

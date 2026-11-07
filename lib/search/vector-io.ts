@@ -1,30 +1,33 @@
 import { createHash } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import type { SearchDocument } from "./types";
 import type {
   ModelProfile,
-  VectorValidationResult,
   VectorValidationCheck,
-  CompletionForecast
+  VectorValidationResult,
+  CompletionForecast,
+  VectorReleaseManifest,
+  ActiveVectorReleasePointer
 } from "./vector-types";
-import type { SearchDocument } from "./types";
 
 export const BYTES_PER_FLOAT32 = 4;
 
 /**
- * Normalizes a vector using L2 norm: v' = v / ||v||_2.
- * Returns the normalized Float32Array.
- * Throws an error if the vector is all zeros or non-finite.
+ * Normalizes a Float32Array to unit length using Euclidean (L2) norm.
+ * Throws if the vector has zero magnitude or non-finite numbers.
  */
 export function l2Normalize(vec: Float32Array): Float32Array {
-  let sumSq = 0;
+  let sumSquares = 0;
   for (let i = 0; i < vec.length; i++) {
     const val = vec[i];
     if (!Number.isFinite(val)) {
-      throw new Error(`Vector contains non-finite value at index ${i}: ${val}`);
+      throw new Error(`Vector contains non-finite element at index ${i}: ${val}`);
     }
-    sumSq += val * val;
+    sumSquares += val * val;
   }
 
-  const norm = Math.sqrt(sumSq);
+  const norm = Math.sqrt(sumSquares);
   if (norm < 1e-12) {
     throw new Error("Cannot normalize zero-magnitude vector");
   }
@@ -37,20 +40,22 @@ export function l2Normalize(vec: Float32Array): Float32Array {
 }
 
 /**
- * Encodes an array of Float32Array vectors into a contiguous little-endian binary Buffer.
+ * Encodes an array of normalized Float32 vectors into a contiguous little-endian binary buffer.
  */
-export function encodeVectorsToBuffer(vectors: Float32Array[], dimensions: number = 1024): Buffer {
-  const totalFloats = vectors.length * dimensions;
-  const buffer = Buffer.alloc(totalFloats * BYTES_PER_FLOAT32);
+export function encodeVectorsToBuffer(vectors: Float32Array[], dimensions: number): Buffer {
+  const totalBytes = vectors.length * dimensions * BYTES_PER_FLOAT32;
+  const buffer = Buffer.alloc(totalBytes);
 
   for (let r = 0; r < vectors.length; r++) {
     const vec = vectors[r];
     if (vec.length !== dimensions) {
-      throw new Error(`Vector at row ${r} has length ${vec.length}, expected ${dimensions}`);
+      throw new Error(
+        `Vector at row ${r} has invalid dimension ${vec.length} (expected ${dimensions})`
+      );
     }
-    const offset = r * dimensions * BYTES_PER_FLOAT32;
+    const byteOffset = r * dimensions * BYTES_PER_FLOAT32;
     for (let d = 0; d < dimensions; d++) {
-      buffer.writeFloatLE(vec[d], offset + d * BYTES_PER_FLOAT32);
+      buffer.writeFloatLE(vec[d], byteOffset + d * BYTES_PER_FLOAT32);
     }
   }
 
@@ -58,31 +63,28 @@ export function encodeVectorsToBuffer(vectors: Float32Array[], dimensions: numbe
 }
 
 /**
- * Reads a single vector from a binary Float32 buffer at the specified 0-indexed row.
+ * Reads a single vector at a given row index from a binary Float32 buffer.
  */
-export function readVectorAtRow(
-  buffer: Buffer,
-  row: number,
-  dimensions: number = 1024
-): Float32Array {
+export function readVectorAtRow(buffer: Buffer, rowIndex: number, dimensions: number): Float32Array {
   const rowBytes = dimensions * BYTES_PER_FLOAT32;
-  const offset = row * rowBytes;
+  const byteOffset = rowIndex * rowBytes;
 
-  if (offset + rowBytes > buffer.length) {
+  if (byteOffset + rowBytes > buffer.length || rowIndex < 0) {
     throw new RangeError(
-      `Row offset ${offset} + ${rowBytes} exceeds buffer length ${buffer.length}`
+      `Row ${rowIndex} out of bounds for buffer of size ${buffer.length} (${rowBytes} bytes/row)`
     );
   }
 
   const vec = new Float32Array(dimensions);
   for (let d = 0; d < dimensions; d++) {
-    vec[d] = buffer.readFloatLE(offset + d * BYTES_PER_FLOAT32);
+    vec[d] = buffer.readFloatLE(byteOffset + d * BYTES_PER_FLOAT32);
   }
   return vec;
 }
 
 /**
- * Computes cosine similarity between two normalized Float32Array vectors: dot(a, b).
+ * Computes cosine similarity between two unit-normalized Float32 vectors.
+ * Because vectors are L2-normalized, cosine similarity equals their dot product.
  */
 export function cosineSimilarity(a: Float32Array, b: Float32Array): number {
   if (a.length !== b.length) {
@@ -96,19 +98,25 @@ export function cosineSimilarity(a: Float32Array, b: Float32Array): number {
 }
 
 /**
- * Computes deterministic SHA-256 hash of ordered document typed IDs that have vector rows.
+ * Computes SHA-256 hash over ordered typedId entries mapped in vector rows.
+ * Validates that the sequence of vector rows corresponds exactly to the documents.
  */
 export function computeRecordKeysHash(documents: SearchDocument[]): string {
-  const vectorDocs = documents
+  const mapped = documents
     .filter((d) => d.vectorRow !== null && d.vectorRow !== undefined)
-    .sort((a, b) => (a.vectorRow ?? 0) - (b.vectorRow ?? 0));
+    .sort((a, b) => a.vectorRow! - b.vectorRow!);
 
-  const joined = vectorDocs.map((d) => `${d.vectorRow}:${d.typedId}:${d.contentHash}`).join("\n");
-  return createHash("sha256").update(joined).digest("hex");
+  const hasher = createHash("sha256");
+  for (const doc of mapped) {
+    hasher.update(`${doc.vectorRow}:${doc.typedId}:${doc.contentHash}\n`);
+  }
+  return hasher.digest("hex");
 }
 
 /**
- * Validates a staged or published vector release against all acceptance constraints.
+ * Validates a staged or active vector release binary against document indices and manifest.
+ * Strictly checks EVERY row in the buffer for finite numbers, non-zero norms, and L2 normalization.
+ * If manifest and manifestDir are provided, verifies complete on-disk file checksums.
  */
 export function validateVectorRelease(params: {
   buffer: Buffer;
@@ -116,8 +124,10 @@ export function validateVectorRelease(params: {
   expectedDimensions: number;
   expectedVectorCount?: number;
   profile?: ModelProfile | null;
+  manifest?: VectorReleaseManifest;
+  manifestDir?: string;
 }): VectorValidationResult {
-  const { buffer, documents, expectedDimensions, expectedVectorCount } = params;
+  const { buffer, documents, expectedDimensions, expectedVectorCount, manifest, manifestDir } = params;
   const checks: VectorValidationCheck[] = [];
   const errors: string[] = [];
 
@@ -139,18 +149,12 @@ export function validateVectorRelease(params: {
     );
   }
 
-  // 2. Vector content finite and L2-normalized checks
+  // 2. Vector content finite and L2-normalized checks across EVERY row (no sampling)
   let allFinite = true;
   let allNonZero = true;
   let allNormalized = true;
-  let sampleCount = Math.min(actualVectorCount, 250); // Sample up to 250 vectors for fast check
-  const sampleIndices = new Set<number>();
-  for (let i = 0; i < sampleCount; i++) {
-    sampleIndices.add(Math.floor((i / sampleCount) * actualVectorCount));
-  }
 
-  for (const row of sampleIndices) {
-    if (row >= actualVectorCount) continue;
+  for (let row = 0; row < actualVectorCount; row++) {
     try {
       const vec = readVectorAtRow(buffer, row, expectedDimensions);
       let sumSq = 0;
@@ -158,42 +162,55 @@ export function validateVectorRelease(params: {
         const val = vec[d];
         if (!Number.isFinite(val)) {
           allFinite = false;
+          errors.push(`Row ${row} dim ${d} contains non-finite value (${val})`);
           break;
         }
         sumSq += val * val;
       }
+      if (!allFinite) break;
+
       if (sumSq < 1e-12) {
         allNonZero = false;
+        errors.push(`Row ${row} has zero magnitude`);
+        break;
       }
+
       const norm = Math.sqrt(sumSq);
       if (Math.abs(norm - 1.0) > 0.05) {
         allNormalized = false;
+        errors.push(`Row ${row} fails L2 normalization (norm: ${norm.toFixed(4)})`);
+        break;
       }
-    } catch {
+    } catch (err: any) {
       allFinite = false;
+      errors.push(`Row ${row} read error: ${err.message}`);
+      break;
     }
   }
 
   checks.push({
     name: "finite_values",
     passed: allFinite,
-    detail: allFinite ? "All checked vector elements are finite IEEE-754 floats" : "Found NaN or Infinity"
+    detail: allFinite
+      ? `All ${actualVectorCount} vector rows contain strictly finite IEEE-754 floats`
+      : "Found non-finite values (NaN or Infinity)"
   });
-  if (!allFinite) errors.push("Vector elements contain non-finite numbers (NaN or Infinity)");
 
   checks.push({
     name: "nonzero_norms",
     passed: allNonZero,
-    detail: allNonZero ? "All checked vectors have non-zero norms" : "Found zero-magnitude vector"
+    detail: allNonZero
+      ? `All ${actualVectorCount} vector rows have non-zero norms`
+      : "Found zero-magnitude vector"
   });
-  if (!allNonZero) errors.push("Found zero-magnitude vector");
 
   checks.push({
     name: "l2_normalization",
     passed: allNormalized,
-    detail: allNormalized ? "Vectors are L2 normalized (||v|| ~ 1.0)" : "Vectors are not L2 normalized"
+    detail: allNormalized
+      ? `All ${actualVectorCount} vector rows are L2 normalized (||v|| ~ 1.0)`
+      : "Vector rows fail L2 normalization check"
   });
-  if (!allNormalized) errors.push("Vectors fail L2 normalization check");
 
   // 3. Document vectorRow mapping check
   const vectorDocs = documents.filter((d) => d.vectorRow !== null && d.vectorRow !== undefined);
@@ -220,6 +237,36 @@ export function validateVectorRelease(params: {
     );
   }
 
+  // 4. On-disk manifest and file checksum verification (if manifest & directory provided)
+  if (manifest && manifestDir) {
+    let filesValid = true;
+    for (const [filename, expected] of Object.entries(manifest.fileChecksums || {})) {
+      const filePath = join(manifestDir, filename);
+      if (!existsSync(filePath)) {
+        filesValid = false;
+        errors.push(`Manifest file missing on disk: ${filename}`);
+        continue;
+      }
+      const bytes = readFileSync(filePath);
+      if (bytes.length !== expected.bytes) {
+        filesValid = false;
+        errors.push(`File ${filename} byte mismatch: expected ${expected.bytes}, found ${bytes.length}`);
+      }
+      const actualSha256 = createHash("sha256").update(bytes).digest("hex");
+      if (actualSha256 !== expected.sha256) {
+        filesValid = false;
+        errors.push(`File ${filename} SHA-256 mismatch: expected ${expected.sha256}, found ${actualSha256}`);
+      }
+    }
+    checks.push({
+      name: "manifest_file_checksums",
+      passed: filesValid,
+      detail: filesValid
+        ? "All staged manifest files and SHA-256 checksums verified on disk"
+        : "Manifest checksum verification failed"
+    });
+  }
+
   return {
     isValid: errors.length === 0,
     dimensions: expectedDimensions,
@@ -229,6 +276,19 @@ export function validateVectorRelease(params: {
     checks,
     errors
   };
+}
+
+/**
+ * Reads the active release pointer from searchDir, returning null if absent or invalid.
+ */
+export function readActiveReleasePointer(searchDir: string): ActiveVectorReleasePointer | null {
+  const pointerPath = join(searchDir, "active-release.json");
+  if (!existsSync(pointerPath)) return null;
+  try {
+    return JSON.parse(readFileSync(pointerPath, "utf8"));
+  } catch {
+    return null;
+  }
 }
 
 /**

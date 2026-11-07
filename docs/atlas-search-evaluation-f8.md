@@ -49,7 +49,7 @@ These values are pinned so F5 (Ranking) and F6 (API) read the same numbers. "Fro
 | Policy Setting | Value | Rationale |
 | :--- | :--- | :--- |
 | **Policy Version** | `1.0-frozen` | Pinned parameter set, not a calibrated production policy |
-| **Bound Model Profile** | `qwen2-gte-1024-f32-l2-e085e72-v1` | Binds embedding runtime to `Alibaba-NLP/gte-Qwen2-1.5B-instruct` (1,024 dims, L2 normalized, commit pinned). Not run in this evaluation |
+| **Bound Model Profile** | `qwen3-embedding-0.6b-1024-f32-l2-97b0c61-v1` | Binds embedding runtime to `Qwen/Qwen3-Embedding-0.6B` (1,024 dims, L2 normalized, commit pinned; changed from `gte-Qwen2-1.5B-instruct` on 2026-11-08, see `atlas-search-vectors-f4.md`). Not run in this evaluation |
 | **Semantic Cutoff Threshold** | **`0.62`** (provisional, uncalibrated) | Placeholder with no measured support: the only semantic run used deterministic mock vectors, and it returned 1 result in 20 queries with semantic MRR and P@3 of 0. Must be re-derived on the dev split against the real embedding model before use |
 | **RRF Constant ($k$)** | **`60`** | Common default for reciprocal rank fusion ($1 / (60 + \text{rank})$); not tuned on this pilot |
 | **Lexical Weights** | Title: `4.0`, Body: `1.0` | Prioritizes title and canonical name matches over broad substantive excerpts; not tuned on this pilot |

@@ -37,14 +37,16 @@ Model configurations are explicitly pinned and bound to their generator implemen
 
 | Property | Production Qwen Profile | Deterministic Mock Profile |
 | :--- | :--- | :--- |
-| **Model ID** | `Alibaba-NLP/gte-Qwen2-1.5B-instruct` | `mock/deterministic-hash-128` |
-| **Revision** | `e085e72a818c399b19e0813958fbc8d8e58dfd27` (pinned commit) | `mock-v1` |
+| **Model ID** | `Qwen/Qwen3-Embedding-0.6B` | `mock/deterministic-hash-128` |
+| **Revision** | `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3` (pinned commit) | `mock-v1` |
 | **Dimensions** | `1024` | `1024` |
 | **Precision** | `float32` | `float32` |
 | **Pooling** | `last_token` | `last_token` |
 | **Normalization** | `L2 (Euclidean)` | `L2 (Euclidean)` |
 | **Provider** | `tei` | `mock` |
-| **Profile Hash** | `qwen2-gte-1024-f32-l2-e085e72-v1` | `mock-deterministic-hash-1024-v1` |
+| **Profile Hash** | `qwen3-embedding-0.6b-1024-f32-l2-97b0c61-v1` | `mock-deterministic-hash-1024-v1` |
+
+> **Profile change (2026-11-08).** The earlier pin, `Alibaba-NLP/gte-Qwen2-1.5B-instruct`, was never run, and its output size was unverified against the pinned 1,024 dimensions. `Qwen/Qwen3-Embedding-0.6B` was run through a text-embeddings-inference server (CPU image `cpu-1.9`): it returned 1,024-dimension vectors, rejected requests without the API key, and scored cos(Thai query, English paraphrase) = 0.83 against 0.16 for an unrelated query. Queries are sent as `Instruct: <task>\nQuery:<text>`; documents get no prefix. `TeiEmbeddingGenerator` now sends `Authorization: Bearer $EMBEDDING_SERVICE_API_KEY` and refuses any vector whose length differs from the profile.
 
 > [!IMPORTANT]
 > `VectorReleaseBuilder` strictly enforces model profile integrity. Attempting to use `DeterministicMockEmbeddingGenerator` with a production model profile (`DEFAULT_MODEL_PROFILE`) fails with a runtime error. Mock checkpoints cannot be reused by a production Qwen run because checkpoint cache matching requires an exact `modelProfileHash` match.

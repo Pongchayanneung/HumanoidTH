@@ -98,10 +98,16 @@ export class DeterministicMockEmbeddingGenerator implements EmbeddingGenerator {
 export class TeiEmbeddingGenerator implements EmbeddingGenerator {
   private endpoint: string;
   private dimensions: number;
+  private apiKey: string | undefined;
 
-  constructor(endpoint: string, dimensions: number = 1024) {
+  /**
+   * `apiKey` falls back to the EMBEDDING_SERVICE_API_KEY environment variable and is sent as a
+   * bearer token. It is never logged or placed in an error message.
+   */
+  constructor(endpoint: string, dimensions: number = 1024, apiKey?: string) {
     this.endpoint = endpoint.replace(/\/+$/, "");
     this.dimensions = dimensions;
+    this.apiKey = apiKey ?? process.env.EMBEDDING_SERVICE_API_KEY;
   }
 
   async generateBatches(
@@ -115,14 +121,24 @@ export class TeiEmbeddingGenerator implements EmbeddingGenerator {
       const chunk = texts.slice(i, i + batchSize);
       const res = await fetch(`${this.endpoint}/embed`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {})
+        },
         body: JSON.stringify({ inputs: chunk, normalize: true, truncate: true })
       });
       if (!res.ok) {
-        throw new Error(`Embedding service returned HTTP ${res.status}: ${await res.text()}`);
+        throw new Error(`Embedding service returned HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
       }
       const data = (await res.json()) as number[][];
+      if (!Array.isArray(data) || data.length !== chunk.length) {
+        throw new Error(`Embedding service returned ${Array.isArray(data) ? data.length : "no"} vectors for ${chunk.length} inputs`);
+      }
       for (const row of data) {
+        if (!Array.isArray(row) || row.length !== this.dimensions) {
+          // Never truncate or pad: a size mismatch means the model does not match the pinned profile.
+          throw new Error(`Embedding service returned a vector of length ${Array.isArray(row) ? row.length : "n/a"}, expected ${this.dimensions}`);
+        }
         const f32 = new Float32Array(row);
         results.push(l2Normalize(f32));
       }

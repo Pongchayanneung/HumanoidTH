@@ -113,7 +113,7 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://www.nationthailand.com/tech/30385613 (Nation Thailand tech coverage and Chulalongkorn Engineering press releases)."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from secondary source (news coverage) at https://www.nationthailand.com/tech/30385613 (Nation Thailand tech coverage and Chulalongkorn Engineering press releases)."
     },
     {
       "typedId": "robot_model:kaitomm-robot",
@@ -167,7 +167,7 @@
       "publicEligibility": true,
       "sourceType": "WEB",
       "origin": "Thailand",
-      "evidence": "Verified by Suk-Nsr (2026-11-07) from primary source at https://en.vietnamplus.vn/thailand-introduces-robot-assistants-at-hospital-post276507.vnp (VietnamPlus regional coverage of King Chulalongkorn Memorial Hospital robotic deployments)."
+      "evidence": "Verified by Suk-Nsr (2026-11-07) from secondary source (news coverage) at https://en.vietnamplus.vn/thailand-introduces-robot-assistants-at-hospital-post276507.vnp (VietnamPlus regional coverage of King Chulalongkorn Memorial Hospital robotic deployments)."
     },
     {
       "typedId": "robot_model:corgi-healthcare-robot",

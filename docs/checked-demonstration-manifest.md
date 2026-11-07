@@ -48,7 +48,7 @@ export interface CheckedRecord {
   checkedClaims: string[];   // Verified factual claims
   reviewer: string;          // Human reviewer ("Suk-Nsr")
   reviewedDate: string;      // ISO 8601 Date ("2026-11-07")
-  uncertainty: number;       // Calibrated uncertainty score (0.00 – 1.00) derived strictly as (1 - seedConfidence) from the underlying seed record
+  uncertainty: number;       // Calibrated uncertainty score (0.00 – 1.00) approximately (1 - seedConfidence); where the seed triplet carries its own confidence that value was used, so a few records differ by about 0.01
   publicEligibility: boolean;// true for public presentation
   sourceType: string;        // E.g. "WEB", "OPENALEX", "GDELT"
   origin: string;            // E.g. "Thailand"
@@ -111,3 +111,7 @@ export interface CheckedRecord {
 6. `robot_model:thai-university-social-robot-prototype`: Generic prototype placeholder.
 7. `submission:robo-buddy`: Pending submission requiring manual administrative enrichment before publication.
 8. `seed:source_record:dinsaw-mini-video-duplicate`: Duplicate video record in raw seed corpus excluded as redundant crawl duplicate.
+
+## Gate rule for M3
+
+M3 must gate with `isPublicCheckedRecord` (typed ID), never `isPublicCheckedUrl`: an excluded record can share a URL with an included one. No mapping from `typedId` to a database record exists yet; M3 must add it before it gates on this manifest.

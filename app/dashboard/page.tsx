@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { getTranslation, parseLanguage } from "@/lib/translations";
 import {
   publicContributionWhere,
+  publicRobotWhere,
   publicSourceRecordWhere,
   publicPerspectiveWhere
 } from "@/lib/public-projection";
@@ -52,10 +53,10 @@ export default async function DashboardPage() {
       medConfidenceSrc,
       lowConfidenceSrc
     ] = await Promise.all([
-      prisma.robotModel.groupBy({ by: ["countryOfOrigin"], _count: { _all: true } }),
-      prisma.robotModel.groupBy({ by: ["robotType"], _count: { _all: true } }),
+      prisma.robotModel.groupBy({ by: ["countryOfOrigin"], where: publicRobotWhere, _count: { _all: true } }),
+      prisma.robotModel.groupBy({ by: ["robotType"], where: publicRobotWhere, _count: { _all: true } }),
       prisma.sourceRecord.groupBy({ by: ["sourceType"], where: publicSourceRecordWhere, _count: { _all: true } }),
-      prisma.robotModel.groupBy({ by: ["embodimentLevel"], _count: { _all: true } }),
+      prisma.robotModel.groupBy({ by: ["embodimentLevel"], where: publicRobotWhere, _count: { _all: true } }),
       prisma.contribution.groupBy({ by: ["contributionType"], where: publicContributionWhere, _count: { _all: true } }),
       prisma.perspectiveAnnotation.groupBy({ by: ["perspectiveTheme"], where: publicPerspectiveWhere, _count: { _all: true } }),
       // Confidence buckets

@@ -260,7 +260,8 @@ export function exportSearchCorpusFromSeed(
 
     if (category === "robot_model") {
       const canonicalName = (r.canonical_name || r.title || "").trim();
-      if (!isEligiblePublicRobot(canonicalName)) {
+      const country = (r.country || "").trim();
+      if (!isEligiblePublicRobot(canonicalName) || (country && country.toLowerCase() !== "thailand")) {
         excludedCount++;
         continue;
       }

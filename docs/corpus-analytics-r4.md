@@ -83,24 +83,25 @@ const [
   sourcesWithPubDate,
   robotsWithYear
 ] = await Promise.all([
-  prisma.sourceRecord.count({ where: { relevanceStatus: "ACCEPTED" } }),
-  prisma.robotModel.count(),
-  prisma.contribution.count({ where: { visibility: "public", verificationStatus: "APPROVED" } }),
-  prisma.perspectiveAnnotation.count({ where: { source: { relevanceStatus: "ACCEPTED" } } }),
-  prisma.sourceRecord.count({ where: { relevanceStatus: "ACCEPTED", relevanceConfidence: { gt: 0 } } }),
-  prisma.sourceRecord.count({ where: { relevanceStatus: "ACCEPTED", publishedAt: { not: null } } }),
-  prisma.robotModel.count({ where: { firstSeenYear: { not: null } } })
+  prisma.sourceRecord.count({ where: publicSourceRecordWhere }),
+  prisma.robotModel.count({ where: publicRobotWhere }),
+  prisma.contribution.count({ where: publicContributionWhere }),
+  prisma.perspectiveAnnotation.count({ where: publicPerspectiveWhere }),
+  prisma.sourceRecord.count({ where: { ...publicSourceRecordWhere, relevanceConfidence: { gt: 0 } } }),
+  prisma.sourceRecord.count({ where: { ...publicSourceRecordWhere, publishedAt: { not: null } } }),
+  prisma.robotModel.count({ where: { ...publicRobotWhere, firstSeenYear: { not: null } } })
 ]);
 ```
 
-### 4.2 Explicit Sample Warning in UI
+### 4.2 Explicit Sample Warning and Date Disclosures in UI
 
 When `isSampleTruncated === true` (`analyzedCount < totalEligibleCount`):
 - Metric cards display true whole-corpus totals (`totalEligibleSources`).
 - BPMN pipeline lanes display true whole-corpus counts.
 - An alert banner is displayed:
   > **Sampled Visualization Active:** Charts plot a bounded sample of 5,000 records (74.8% coverage of 6,779 verified public records). Summary metric cards and BPMN pipeline lanes reflect the complete un-truncated corpus.
-- Date disclosures disclose the exact number and rate of missing dates (e.g. `714 missing publication dates, 10.6%`).
+- Date disclosures disclose the exact number and rate of missing dates on `app/analytics/page.tsx`:
+  > **Temporal Completeness:** 6,000 of 6,714 internet sources (89.4%) have explicit publication dates (714 undated, missing-date rate: 10.6%). 18 of 20 robots have verified observation years.
 
 ---
 
@@ -108,13 +109,15 @@ When `isSampleTruncated === true` (`analyzedCount < totalEligibleCount`):
 
 | Acceptance Check | Status | Verification Detail |
 | :--- | :--- | :--- |
-| **Aggregate complete defined eligible snapshot** | **PASSED** | Summary cards and BPMN lanes display whole-corpus counts via `prisma.*.count()`, not capped loader arrays. Verified in `test/corpus-analytics.test.ts`. |
-| **Distinguish publication, observation, and ingestion dates** | **PASSED** | `dateKind` and `datePrecision` keep event time strictly separated from `createdAt`. Changing ingestion time does not shift publication trends. |
-| **No artificial January spikes from year-only citations** | **PASSED** | In monthly view, year-only records are bucketed as `year_only`, eliminating the January spike flaw. |
-| **Rejected/private records stay excluded** | **PASSED** | Only `relevanceStatus: "ACCEPTED"` and `visibility: "public"` records are included. |
-| **Disclose snapshot/scope and missing data** | **PASSED** | UI displays scope notice, sample truncation warning, coverage percentage, and missing publication date rates. |
+| **Aggregate complete defined eligible snapshot** | **PASSED** | Summary cards and BPMN lanes display whole-corpus counts via `prisma.*.count()` with `public*Where` clauses, not capped loader arrays. Verified in `test/corpus-analytics.test.ts`. |
+| **Distinguish publication, observation, and ingestion dates** | **PASSED** | `dateKind` and `datePrecision` keep event time strictly separated from `createdAt`. Contributions and annotations leave `eventDate` null so they are not falsely bucketed into the publication timeline. |
+| **Explicit Day Precision Precedence** | **PASSED** | OpenAlex publications with explicit `publicationDatePrecision: "day"` retain daily precision on January 1st and monthly grouping, preventing false degradation to year-only. |
+| **Confidence Scatter Chart Precision** | **PASSED** | Year-only robot observation dates are excluded from the exact-date scatter axis under publication dimension, avoiding fake Jan 1 points, while year-only counts are disclosed in summary metrics. |
+| **Rejected/private records stay excluded** | **PASSED** | Counts, samples, and in-memory event builders enforce `publicRobotWhere`, `publicContributionWhere`, `publicSourceRecordWhere`, and `publicPerspectiveWhere`. |
+| **Hybrid Graph Warning Propagation** | **PASSED** | `loadGraphRecordsHybrid()` propagates Prisma loader cap warnings, ensuring `truncated: true` and warning banners are displayed when database queries hit row limits. |
+| **Disclose snapshot/scope and missing data** | **PASSED** | UI displays scope notice, sample truncation warning, coverage percentage, and missing publication date rate banner. |
 | **>5,000-row fixture reconciliation** | **PASSED** | Tested with 6,714-record fixture; produces full aggregates and `isSampleTruncated: true` warning. |
 
 ### Test Suite Execution
-- `pnpm test`: **70/70 tests passed** (including 8 comprehensive tests in `test/corpus-analytics.test.ts`).
+- `pnpm test`: **83/83 tests passed** (including 11 comprehensive tests in `test/corpus-analytics.test.ts`).
 - `pnpm typecheck`: **0 errors**.

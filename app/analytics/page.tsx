@@ -52,6 +52,10 @@ export default async function AnalyticsPage() {
         <strong>Dataset Scope:</strong> {PUBLIC_DATASET_SCOPE_LABEL}. Analytics aggregate verified public records only. Pending submissions, private inventory, and unaccepted sources are strictly excluded.
       </div>
 
+      <div className="notice" style={{ background: "rgba(100, 116, 139, 0.08)", borderColor: "#94a3b8", marginBottom: "16px" }}>
+        <strong>Temporal Completeness:</strong> {summary.dateDisclosures.sourcesWithPublicationDate.toLocaleString()} of {summary.totalEligibleSources.toLocaleString()} internet sources ({((1 - summary.dateDisclosures.sourcesMissingPublicationDateRate) * 100).toFixed(1)}%) have explicit publication dates ({summary.dateDisclosures.sourcesMissingPublicationDate.toLocaleString()} undated, missing-date rate: {(summary.dateDisclosures.sourcesMissingPublicationDateRate * 100).toFixed(1)}%). {summary.dateDisclosures.robotsWithFirstSeenYear} of {summary.totalEligibleRobots} robots have verified observation years.
+      </div>
+
       {summary.isSampleTruncated && (
         <div className="notice" style={{ background: "rgba(245, 158, 11, 0.08)", borderColor: "#f59e0b", marginBottom: "16px" }}>
           <strong>Sampled Visualization Active:</strong> Charts plot a bounded sample of {summary.totalAnalyzedEvents.toLocaleString()} records ({summary.coveragePercent}% coverage of {summary.totalVerifiedPublicRecords.toLocaleString()} verified public records). Summary metric cards and BPMN pipeline lanes reflect the complete un-truncated corpus.

@@ -615,6 +615,9 @@ export async function loadGraphRecordsHybrid(): Promise<SourceLoadResult> {
   try {
     dbRecords = await loadGraphRecordsFromPrisma();
     databaseOk = true;
+    if (lastPrismaGraphWarnings.length) {
+      warnings.push(...lastPrismaGraphWarnings);
+    }
   } catch (error) {
     warnings.push(sanitizeError(error));
   }

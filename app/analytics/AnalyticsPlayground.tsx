@@ -146,13 +146,24 @@ function topValues(events: CorpusAnalyticsEvent[], field: string, limit = 6) {
 }
 
 function toScatterPoint(event: CorpusAnalyticsEvent, dimension: DateDimension) {
+  // Exclude year-only points and undated records from exact-date scatter plot under publication dimension
+  if (dimension === "publication" && event.datePrecision !== "exact_date") {
+    return {
+      x: null,
+      y: event.confidence,
+      name: event.label,
+      scope: event.scope,
+      precision: event.datePrecision
+    };
+  }
   const rawDate = dimension === "ingestion" ? event.ingestionDate : event.eventDate;
   const date = rawDate ? new Date(rawDate) : null;
   return {
     x: date && !Number.isNaN(date.getTime()) ? date.getTime() : null,
     y: event.confidence,
     name: event.label,
-    scope: event.scope
+    scope: event.scope,
+    precision: dimension === "ingestion" ? "exact_date" : event.datePrecision
   };
 }
 
@@ -468,7 +479,11 @@ export default function AnalyticsPlayground({ events, summary: corpusSummary }: 
                     labelFormatter={(_, payload) => {
                       const point = payload?.[0]?.payload;
                       if (!point?.x) return "Confidence";
-                      return new Date(point.x).toLocaleString();
+                      const date = new Date(point.x);
+                      if (point.precision === "year_only") {
+                        return `${point.name} (${date.getUTCFullYear()} - Year Only)`;
+                      }
+                      return `${point.name} (${date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })})`;
                     }}
                   />
                   <Scatter data={confidenceSeries} fill="#19523c" isAnimationActive animationDuration={500} />

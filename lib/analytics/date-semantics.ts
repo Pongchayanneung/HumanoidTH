@@ -57,13 +57,21 @@ export function parseSourceDateSemantics(
   const month = pubDate.getUTCMonth(); // 0-indexed
   const day = pubDate.getUTCDate();
 
-  // Detect whether this date is known only by year
-  // (e.g. OpenAlex year-only citations stored as YYYY-01-01T00:00:00Z)
-  const isExplicitYearOnly = rawMeta?.publicationDatePrecision === "year";
+  // Detect date precision: explicit metadata has strict precedence over fallback heuristics
+  const explicitPrecision = rawMeta?.publicationDatePrecision;
   const isSyntheticJanFirst = month === 0 && day === 1 && pubDate.getUTCHours() === 0 && pubDate.getUTCMinutes() === 0;
-  const isYearOnly = isExplicitYearOnly || (Boolean(rawMeta?.openalexId) && isSyntheticJanFirst);
 
-  const precision: DatePrecision = isYearOnly ? "year_only" : "exact_date";
+  let precision: DatePrecision;
+  if (explicitPrecision === "year") {
+    precision = "year_only";
+  } else if (explicitPrecision === "day") {
+    precision = "exact_date";
+  } else if (Boolean(rawMeta?.openalexId) && isSyntheticJanFirst) {
+    // Fallback heuristic for legacy OpenAlex citations without explicit precision metadata
+    precision = "year_only";
+  } else {
+    precision = "exact_date";
+  }
   const monthKey = precision === "exact_date"
     ? `${year}-${String(month + 1).padStart(2, "0")}`
     : null; // Critical: Year-only records must not produce a January monthKey
@@ -114,23 +122,23 @@ export function parseRobotDateSemantics(
 
 /**
  * Parses date semantics for contributions and annotations (ingestion-time events).
+ * By policy, createdAt is strictly an ingestion/system timestamp. It must never
+ * be substituted as an eventDate or publication date in event timelines.
  */
 export function parseIngestionDateSemantics(
   createdAt: Date | string,
-  kind: DateKind = "ingestion"
+  kind: DateKind = "missing"
 ): DateSemantics {
   const ingestionDate = createdAt instanceof Date ? createdAt : new Date(createdAt);
-  const year = ingestionDate.getUTCFullYear();
-  const month = ingestionDate.getUTCMonth();
 
   return {
-    dateKind: kind,
-    datePrecision: "exact_date",
-    eventDate: ingestionDate,
+    dateKind: "missing",
+    datePrecision: "missing",
+    eventDate: null,
     ingestionDate,
-    displayYear: year,
-    monthKey: `${year}-${String(month + 1).padStart(2, "0")}`,
-    yearKey: String(year)
+    displayYear: null,
+    monthKey: null,
+    yearKey: null
   };
 }
 

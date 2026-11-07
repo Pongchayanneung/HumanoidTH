@@ -42,7 +42,7 @@ test("Date Semantics: distinguishes year-only citations from exact daily publica
   assert.equal(yearOnly.displayYear, 2021);
   assert.equal(yearOnly.monthKey, null); // Must be null to avoid fake January spike
 
-  // Real publication on January 1st with explicit daily precision
+  // Real publication on January 1st with explicit daily precision (without OpenAlex ID)
   const exactJanFirst = parseSourceDateSemantics(
     "2021-01-01T00:00:00.000Z",
     "2026-11-07T10:00:00.000Z",
@@ -50,6 +50,25 @@ test("Date Semantics: distinguishes year-only citations from exact daily publica
   );
   assert.equal(exactJanFirst.datePrecision, "exact_date");
   assert.equal(exactJanFirst.monthKey, "2021-01");
+
+  // OpenAlex publication on January 1st with explicit daily precision (OpenAlex adapter output shape)
+  // Must respect explicit day precision and NOT be overridden by the Jan 1 heuristic
+  const exactJanFirstWithOpenAlex = parseSourceDateSemantics(
+    "2021-01-01T00:00:00.000Z",
+    "2026-11-07T10:00:00.000Z",
+    { openalexId: "W987654", publicationDatePrecision: "day" }
+  );
+  assert.equal(exactJanFirstWithOpenAlex.datePrecision, "exact_date");
+  assert.equal(exactJanFirstWithOpenAlex.monthKey, "2021-01");
+
+  // Legacy OpenAlex citation on Jan 1 with NO explicit precision metadata: falls back to year_only
+  const legacyJanFirst = parseSourceDateSemantics(
+    "2021-01-01T00:00:00.000Z",
+    "2026-11-07T10:00:00.000Z",
+    { openalexId: "W111222" }
+  );
+  assert.equal(legacyJanFirst.datePrecision, "year_only");
+  assert.equal(legacyJanFirst.monthKey, null);
 });
 
 test("Date Semantics: robot firstSeenYear is treated as observation time with year-only precision", () => {
@@ -255,4 +274,183 @@ test("Policy Scoping: buildAnalyticsEvents excludes non-eligible fields and reta
   assert.equal(events[1].datePrecision, "year_only");
   assert.equal(events[2].scope, "contributions");
   assert.equal(events[3].scope, "perspectives");
+  // Contributions & perspectives must have null eventDate by policy
+  assert.equal(events[2].eventDate, null);
+  assert.equal(events[2].datePrecision, "missing");
+  assert.equal(events[3].eventDate, null);
+  assert.equal(events[3].datePrecision, "missing");
+});
+
+test("Date Semantics: contributions and perspectives preserve null event dates and only use createdAt for ingestion dimension", () => {
+  const semantics = parseIngestionDateSemantics("2026-11-07T12:00:00.000Z");
+  assert.equal(semantics.eventDate, null);
+  assert.equal(semantics.dateKind, "missing");
+  assert.equal(semantics.datePrecision, "missing");
+  assert.equal(semantics.displayYear, null);
+  assert.equal(semantics.monthKey, null);
+  assert.equal(semantics.yearKey, null);
+  assert.equal(semantics.ingestionDate.toISOString(), "2026-11-07T12:00:00.000Z");
+});
+
+test("Loader Filtering: buildAnalyticsEvents strictly filters unaccepted, placeholder, and excluded records", () => {
+  const events = buildAnalyticsEvents({
+    sources: [
+      {
+        sourceType: "WEB",
+        relevanceStatus: "ACCEPTED",
+        platform: "web",
+        publishedAt: new Date("2024-01-01"),
+        createdAt: new Date("2026-11-01"),
+        relevanceConfidence: 0.95,
+        title: "Eligible Robot News"
+      },
+      {
+        sourceType: "WEB",
+        relevanceStatus: "REJECTED", // Must be filtered out
+        platform: "web",
+        publishedAt: new Date("2024-01-01"),
+        createdAt: new Date("2026-11-01"),
+        relevanceConfidence: 0.1,
+        title: "Rejected Software News"
+      }
+    ],
+    robots: [
+      {
+        canonicalName: "Dinsaw 4", // Eligible
+        robotType: "social_service_robot",
+        thailandStatus: "commercial",
+        countryOfOrigin: "Thailand",
+        statusConfidence: 0.95,
+        firstSeenYear: 2021,
+        createdAt: new Date("2026-11-01")
+      },
+      {
+        canonicalName: "Hospital Delivery Service Robot", // Excluded placeholder bucket
+        robotType: "placeholder",
+        thailandStatus: "unknown",
+        countryOfOrigin: null,
+        statusConfidence: 0.1,
+        firstSeenYear: 2020,
+        createdAt: new Date("2026-11-01")
+      },
+      {
+        canonicalName: "Bumi Humanoid Robot", // Excluded out-of-scope foreign robot
+        robotType: "humanoid",
+        thailandStatus: "exhibited",
+        countryOfOrigin: "China",
+        statusConfidence: 0.5,
+        firstSeenYear: 2023,
+        createdAt: new Date("2026-11-01")
+      }
+    ],
+    contributions: [
+      {
+        title: "Eligible Public Contribution",
+        contributionType: "deployment",
+        verificationStatus: "APPROVED",
+        visibility: "public",
+        organization: "CU",
+        createdAt: new Date("2026-11-02"),
+        sourceUrl: "https://example.com/case-1"
+      },
+      {
+        title: "Excluded Placeholder Contribution",
+        contributionType: "deployment",
+        verificationStatus: "APPROVED",
+        visibility: "public",
+        organization: "CU",
+        createdAt: new Date("2026-11-02"),
+        sourceUrl: "seed:contribution:thai-hri-research" // Excluded
+      },
+      {
+        title: "Private Contribution",
+        contributionType: "dataset",
+        verificationStatus: "APPROVED",
+        visibility: "private", // Excluded
+        organization: "Internal",
+        createdAt: new Date("2026-11-02"),
+        sourceUrl: "https://example.com/internal"
+      },
+      {
+        title: "Unreviewed Contribution",
+        contributionType: "dataset",
+        verificationStatus: "NEEDS_REVIEW", // Excluded
+        visibility: "public",
+        organization: "External",
+        createdAt: new Date("2026-11-02"),
+        sourceUrl: "https://example.com/pending"
+      }
+    ],
+    perspectives: [
+      {
+        perspectiveTheme: "trust",
+        stance: "supportive",
+        sentiment: "positive",
+        targetEntity: "Dinsaw 4",
+        confidence: 0.9,
+        createdAt: new Date("2026-11-02"),
+        evidenceExcerpt: "Great results.",
+        source: { relevanceStatus: "ACCEPTED" } // Eligible parent
+      },
+      {
+        perspectiveTheme: "trust",
+        stance: "critical",
+        sentiment: "negative",
+        targetEntity: "Rejected Robot",
+        confidence: 0.8,
+        createdAt: new Date("2026-11-02"),
+        evidenceExcerpt: "Flawed.",
+        source: { relevanceStatus: "REJECTED" } // Ineligible parent -> must drop
+      }
+    ]
+  });
+
+  // Exactly 1 source, 1 robot, 1 contribution, 1 perspective must remain
+  assert.equal(events.length, 4);
+  assert.equal(events[0].label, "Eligible Robot News");
+  assert.equal(events[1].label, "Dinsaw 4");
+  assert.equal(events[2].label, "Eligible Public Contribution");
+  assert.equal(events[3].label, "trust");
+});
+
+test("Hybrid Graph: loadGraphRecordsHybrid propagates Prisma loader cap warnings", async () => {
+  const { prisma } = await import("../lib/prisma");
+  const origRobots = prisma.robotModel.findMany;
+  const origInventory = prisma.ownedInventory.findMany;
+  const origContributions = prisma.contribution.findMany;
+  const origSources = prisma.sourceRecord.findMany;
+  const origPerspectives = prisma.perspectiveAnnotation.findMany;
+  const origTriplets = prisma.triplet.findMany;
+
+  try {
+    // Mock 700 robots to simulate loader cap hit
+    (prisma.robotModel as any).findMany = async () => new Array(700).fill({
+      id: "mock",
+      canonicalName: "Mock Robot",
+      robotType: "humanoid",
+      thailandStatus: "commercial",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    (prisma.ownedInventory as any).findMany = async () => [];
+    (prisma.contribution as any).findMany = async () => [];
+    (prisma.sourceRecord as any).findMany = async () => [];
+    (prisma.perspectiveAnnotation as any).findMany = async () => [];
+    (prisma.triplet as any).findMany = async () => [];
+
+    const { loadGraphRecordsHybrid } = await import("../lib/network-graph");
+    const result = await loadGraphRecordsHybrid();
+    assert.ok(Array.isArray(result.warnings));
+    assert.ok(
+      result.warnings.some((w) => w.includes("Robot models query reached loader cap (700)")),
+      "Expected cap warning to be propagated through hybrid loader"
+    );
+  } finally {
+    prisma.robotModel.findMany = origRobots;
+    prisma.ownedInventory.findMany = origInventory;
+    prisma.contribution.findMany = origContributions;
+    prisma.sourceRecord.findMany = origSources;
+    prisma.perspectiveAnnotation.findMany = origPerspectives;
+    prisma.triplet.findMany = origTriplets;
+  }
 });

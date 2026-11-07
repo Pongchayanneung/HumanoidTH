@@ -2,6 +2,7 @@
   "name": "thailand-humanoid-atlas",
   "version": "0.2.0",
   "private": true,
+  "packageManager": "pnpm@9.15.9",
   "type": "module",
   "engines": {
     "node": ">=20.11"
@@ -30,7 +31,7 @@
     "test": "tsx --test test/*.test.ts"
   },
   "dependencies": {
-    "@next/env": "15.5.20",
+    "@next/env": "15.5.29",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^9.2.0",
@@ -46,8 +47,7 @@
     "react-dom": "^19.0.0",
     "recharts": "^3.9.1",
     "server-only": "0.0.1",
-    "three": "^0.185.1",
-    "zod": "^3.24.1"
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
@@ -62,5 +62,12 @@
     "prisma": "^6.1.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "next>postcss": "^8.5.32",
+      "next>sharp": "^0.35.5",
+      "@prisma/config>deepmerge-ts": "^8.0.2"
+    }
   }
 }

@@ -22,7 +22,7 @@ export default function LanguageSelector({ currentLang }: LanguageSelectorProps)
       <button
         onClick={() => handleLangChange("en")}
         className={currentLang === "en" ? "active" : ""}
-        aria-label="English"
+        aria-label="EN English"
         aria-disabled={isPending}
         aria-pressed={currentLang === "en"}
       >
@@ -32,7 +32,7 @@ export default function LanguageSelector({ currentLang }: LanguageSelectorProps)
       <button
         onClick={() => handleLangChange("th")}
         className={currentLang === "th" ? "active" : ""}
-        aria-label="ภาษาไทย"
+        aria-label="TH ภาษาไทย"
         aria-disabled={isPending}
         aria-pressed={currentLang === "th"}
       >

@@ -6,7 +6,15 @@
  */
 
 import { prisma } from "../prisma";
-import { PUBLIC_DATASET_SCOPE_LABEL } from "../public-projection";
+import {
+  PUBLIC_DATASET_SCOPE_LABEL,
+  publicContributionWhere,
+  publicRobotWhere,
+  publicSourceRecordWhere,
+  publicPerspectiveWhere,
+  isEligiblePublicRobot,
+  isEligiblePublicContribution
+} from "../public-projection";
 import {
   parseIngestionDateSemantics,
   parseRobotDateSemantics,
@@ -48,6 +56,7 @@ export interface RawAnalyticsContribution {
   visibility: string;
   organization: string | null;
   createdAt: Date;
+  sourceUrl?: string | null;
 }
 
 export interface RawAnalyticsPerspective {
@@ -58,11 +67,12 @@ export interface RawAnalyticsPerspective {
   confidence: number;
   createdAt: Date;
   evidenceExcerpt: string;
+  source?: { relevanceStatus?: string } | null;
 }
 
 /**
  * Transforms raw database models into normalized CorpusAnalyticsEvents
- * with explicit date semantics.
+ * with explicit date semantics. Enforces strict public eligibility filters.
  */
 export function buildAnalyticsEvents(params: {
   sources: RawAnalyticsSource[];
@@ -74,6 +84,7 @@ export function buildAnalyticsEvents(params: {
 
   // Sources (Publication event-time vs Ingestion system-time)
   for (const item of params.sources) {
+    if (item.relevanceStatus !== "ACCEPTED") continue;
     const dates = parseSourceDateSemantics(item.publishedAt, item.createdAt, item.rawMeta);
     events.push({
       scope: "sources",
@@ -107,6 +118,7 @@ export function buildAnalyticsEvents(params: {
 
   // Robots (First-seen observation year vs Ingestion system-time)
   for (const item of params.robots) {
+    if (!isEligiblePublicRobot(item.canonicalName)) continue;
     const dates = parseRobotDateSemantics(item.firstSeenYear, item.createdAt);
     events.push({
       scope: "robots",
@@ -140,6 +152,7 @@ export function buildAnalyticsEvents(params: {
 
   // Contributions (Public verified contributions)
   for (const item of params.contributions) {
+    if (!isEligiblePublicContribution(item)) continue;
     const dates = parseIngestionDateSemantics(item.createdAt, "ingestion");
     events.push({
       scope: "contributions",
@@ -173,6 +186,7 @@ export function buildAnalyticsEvents(params: {
 
   // Perspectives (Associated with accepted sources)
   for (const item of params.perspectives) {
+    if (item.source && item.source.relevanceStatus !== "ACCEPTED") continue;
     const dates = parseIngestionDateSemantics(item.createdAt, "ingestion");
     events.push({
       scope: "perspectives",
@@ -311,19 +325,19 @@ export async function loadWholeCorpusAnalytics(sampleLimit = DEFAULT_ANALYTICS_S
       sourcesWithPubDate,
       robotsWithYear
     ] = await Promise.all([
-      prisma.sourceRecord.count({ where: { relevanceStatus: "ACCEPTED" } }),
-      prisma.robotModel.count(),
-      prisma.contribution.count({ where: { visibility: "public", verificationStatus: "APPROVED" } }),
-      prisma.perspectiveAnnotation.count({ where: { source: { relevanceStatus: "ACCEPTED" } } }),
-      prisma.sourceRecord.count({ where: { relevanceStatus: "ACCEPTED", relevanceConfidence: { gt: 0 } } }),
-      prisma.sourceRecord.count({ where: { relevanceStatus: "ACCEPTED", publishedAt: { not: null } } }),
-      prisma.robotModel.count({ where: { firstSeenYear: { not: null } } })
+      prisma.sourceRecord.count({ where: publicSourceRecordWhere }),
+      prisma.robotModel.count({ where: publicRobotWhere }),
+      prisma.contribution.count({ where: publicContributionWhere }),
+      prisma.perspectiveAnnotation.count({ where: publicPerspectiveWhere }),
+      prisma.sourceRecord.count({ where: { ...publicSourceRecordWhere, relevanceConfidence: { gt: 0 } } }),
+      prisma.sourceRecord.count({ where: { ...publicSourceRecordWhere, publishedAt: { not: null } } }),
+      prisma.robotModel.count({ where: { ...publicRobotWhere, firstSeenYear: { not: null } } })
     ]);
 
     // 2. Fetch Sampled Events for Visualization (capped at sampleLimit per domain)
     const [sources, robots, contributions, perspectives] = await Promise.all([
       prisma.sourceRecord.findMany({
-        where: { relevanceStatus: "ACCEPTED" },
+        where: publicSourceRecordWhere,
         select: {
           sourceType: true,
           relevanceStatus: true,
@@ -338,6 +352,7 @@ export async function loadWholeCorpusAnalytics(sampleLimit = DEFAULT_ANALYTICS_S
         take: sampleLimit
       }),
       prisma.robotModel.findMany({
+        where: publicRobotWhere,
         select: {
           canonicalName: true,
           robotType: true,
@@ -351,20 +366,21 @@ export async function loadWholeCorpusAnalytics(sampleLimit = DEFAULT_ANALYTICS_S
         take: sampleLimit
       }),
       prisma.contribution.findMany({
-        where: { visibility: "public", verificationStatus: "APPROVED" },
+        where: publicContributionWhere,
         select: {
           title: true,
           contributionType: true,
           verificationStatus: true,
           visibility: true,
           organization: true,
-          createdAt: true
+          createdAt: true,
+          sourceUrl: true
         },
         orderBy: { createdAt: "desc" },
         take: sampleLimit
       }),
       prisma.perspectiveAnnotation.findMany({
-        where: { source: { relevanceStatus: "ACCEPTED" } },
+        where: publicPerspectiveWhere,
         select: {
           perspectiveTheme: true,
           stance: true,

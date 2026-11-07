@@ -39,6 +39,17 @@ test("a late member of an already-admitted group is kept after the limit is reac
   assert.equal(data.groups[0].results.length, 2);
 });
 
+test("a robot keeps its identity when a source links to its manufacturer or a contribution links to the robot", async () => {
+  const manufacturerUrl = "https://example.org/manufacturer";
+  const contributionUrl = "https://example.org/robot-contribution";
+  const robot = doc({ typedId: "robot:r", kind: "robot", title: "Robot model", url: manufacturerUrl, groupId: manufacturerUrl });
+  const article = doc({ typedId: "source:m", kind: "source", title: "Manufacturer article", url: manufacturerUrl, groupId: manufacturerUrl });
+  const contribution = doc({ typedId: "contribution:r", kind: "contribution", title: "Robot contribution", url: contributionUrl, groupId: contributionUrl, parentTypedId: robot.typedId });
+  const data = await search([robot, article, contribution], { query: "" });
+
+  assert.deepEqual(data.groups.map((group: { groupKey: string }) => group.groupKey), [robot.typedId, manufacturerUrl, contributionUrl]);
+});
+
 test("null-URL records stay typed singletons and similar titles never merge", async () => {
   const twins = [doc({ typedId: "source:n1", kind: "source", title: "Same title" }), doc({ typedId: "source:n2", kind: "source", title: "Same title" }), doc({ typedId: "robot:n3", kind: "robot", title: "Same title" })];
   const data = await search(twins, { query: "" });

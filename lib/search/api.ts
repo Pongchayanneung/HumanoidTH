@@ -23,9 +23,10 @@ function contentTypeFor(doc: SearchDocument): SearchContentType {
 // Group by canonical external identity (URL) or explicit parent-source association; records
 // without either stay typed singletons. Titles and empty URLs never merge records.
 function groupKeyFor(doc: SearchDocument, byId: Map<string, SearchDocument>): string {
-  const own = (item: SearchDocument) => (item.url ? item.groupId : item.typedId);
+  if (doc.kind === "robot") return doc.typedId;
   const parent = doc.parentTypedId ? byId.get(doc.parentTypedId) : undefined;
-  return own(parent ?? doc);
+  const identity = parent?.kind === "source" ? parent : doc;
+  return identity.url ? identity.groupId : identity.typedId;
 }
 function addToGroup<T extends SearchResult>(groups: Map<string, T[]>, limit: number, key: string, result: T) {
   const members = groups.get(key);

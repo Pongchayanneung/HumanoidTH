@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@next/env':
-        specifier: 15.5.20
-        version: 15.5.20
+        specifier: 15.5.29
+        version: 15.5.29
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.17)(react@19.2.7)

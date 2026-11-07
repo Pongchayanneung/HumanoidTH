@@ -30,7 +30,7 @@
     "test": "tsx --test test/*.test.ts"
   },
   "dependencies": {
-    "@next/env": "15.5.20",
+    "@next/env": "15.5.29",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^9.2.0",

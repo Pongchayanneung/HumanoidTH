@@ -55,12 +55,11 @@ jobs:
       - name: No-mock-data scan
         run: pnpm run check:no-mock-data
 
-  # Advisory until it has a few green runs on main. Real Postgres, migrated and seeded, then the
-  # existing Playwright specs; the axe scan runs after as its own step so it is reported separately.
+  # Real Postgres, migrated and seeded, then the Playwright specs;
+  # the axe scan runs after as its own step so it is reported separately.
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    continue-on-error: true
     services:
       postgres:
         image: postgres:16
@@ -100,7 +99,7 @@ jobs:
           ATLAS_ALLOW_SEED: "1"
       - run: pnpm exec playwright install --with-deps chromium
       - name: Playwright e2e (smoke and network)
-        run: pnpm exec playwright test tests-node/smoke.spec.ts tests-node/network.spec.ts --reporter=list
+        run: pnpm exec playwright test tests-node/smoke.spec.ts tests-node/network.spec.ts tests-node/m7-outcomes.spec.ts --reporter=list
       - name: axe accessibility scan (serious and critical, 390px and 1440px)
         # Red on main today: color-contrast, link-name, label-content-name-mismatch and more.
         # Remove continue-on-error once the findings are fixed.

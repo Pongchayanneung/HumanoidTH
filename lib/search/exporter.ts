@@ -91,13 +91,8 @@ export function createProbeSample(
     addDoc(mixedDocs[i]);
   }
 
-  // 4. Representative sample of Entities (up to 15)
-  const entityDocs = documents.filter((d) => d.kind === "entity");
-  for (let i = 0; i < entityDocs.length && i < 15; i++) {
-    addDoc(entityDocs[i]);
-  }
-
-  // 5. Representative Sources across diverse origins (web, news, gdelt, openalex, youtube, github)
+  // 4. Representative Sources across diverse origins proportional to corpus distribution
+  // (Corpus is ~52% OpenAlex, ~39% GitHub, ~5% YouTube, ~3% Web, plus all Thai & Mixed sources)
   const sourceDocs = documents.filter((d) => d.kind === "source");
   const byOrigin = new Map<string, SearchDocument[]>();
   for (const doc of sourceDocs) {
@@ -106,23 +101,32 @@ export function createProbeSample(
     byOrigin.set(doc.origin, list);
   }
 
-  let originIndex = 0;
-  let addedAny = true;
-  while (selected.size < targetCount && addedAny) {
-    addedAny = false;
-    for (const [, list] of byOrigin) {
-      if (originIndex < list.length && selected.size < targetCount) {
-        if (addDoc(list[originIndex])) {
-          addedAny = true;
-        }
-      }
-    }
-    originIndex++;
+  // Sort each origin list by retrievalText length descending to capture rich substantive text
+  for (const list of byOrigin.values()) {
+    list.sort((a, b) => b.retrievalText.length - a.retrievalText.length);
   }
 
-  // 6. Fill any remaining slots up to targetCount
+  // Quotas for balanced corpus representation without single-origin skew
+  const originQuotas: Record<string, number> = {
+    openalex: 38,
+    github: 32,
+    web: 16,
+    youtube: 10
+  };
+
+  for (const [origin, quota] of Object.entries(originQuotas)) {
+    const list = byOrigin.get(origin) || [];
+    for (let i = 0; i < list.length && i < quota && selected.size < targetCount; i++) {
+      addDoc(list[i]);
+    }
+  }
+
+  // 5. Fill any remaining slots with longest remaining documents across all kinds
   if (selected.size < targetCount) {
-    for (const doc of documents) {
+    const remaining = [...documents]
+      .filter((d) => !selected.has(d.typedId))
+      .sort((a, b) => b.retrievalText.length - a.retrievalText.length);
+    for (const doc of remaining) {
       addDoc(doc);
       if (selected.size >= targetCount) break;
     }
@@ -165,11 +169,8 @@ export function exportSearchCorpusFromSeed(
     unknown: 0
   };
 
-  // Map to collect verified public entities from organizations mentioned in seed
-  const verifiedEntities = new Map<
-    string,
-    { name: string; entityType: string; sourceUrl: string }
-  >();
+  // Map to resolve parent source URLs to stable source typed IDs
+  const urlToSourceTypedId = new Map<string, string>();
 
   for (let idx = 0; idx < rawRecords.length; idx++) {
     const r = rawRecords[idx];
@@ -194,6 +195,10 @@ export function exportSearchCorpusFromSeed(
       const url = r.url ? r.url.trim() : null;
       const typedId = `source:seed-${idx}`;
       const groupId = url || typedId;
+
+      if (url) {
+        urlToSourceTypedId.set(url, typedId);
+      }
 
       const metadata: Record<string, unknown> = {
         author: r.author || undefined,
@@ -250,17 +255,6 @@ export function exportSearchCorpusFromSeed(
       documents.push(doc);
       countsByKind.source++;
       countsByLanguage[language]++;
-
-      if (r.organization && url) {
-        const orgName = r.organization.trim();
-        if (!verifiedEntities.has(orgName)) {
-          verifiedEntities.set(orgName, {
-            name: orgName,
-            entityType: "organization",
-            sourceUrl: url
-          });
-        }
-      }
       continue;
     }
 
@@ -440,7 +434,7 @@ export function exportSearchCorpusFromSeed(
       const language = detectLanguage(fullTextForLang);
       const url = r.url ? r.url.trim() : null;
       const typedId = `perspective:seed-${idx}`;
-      const parentTypedId = url ? `source:${url}` : null;
+      const parentTypedId = (url && urlToSourceTypedId.get(url)) || null;
       const groupId = url || typedId;
 
       const metadata: Record<string, unknown> = {
@@ -460,7 +454,7 @@ export function exportSearchCorpusFromSeed(
         metadata
       });
 
-      const dependencyHash = computeDependencyHash(parentTypedId, "ACCEPTED");
+      const dependencyHash = computeDependencyHash(parentTypedId, parentTypedId ? "ACCEPTED" : "");
 
       const evidence: SearchEvidence[] = [
         createSearchEvidence({
@@ -527,7 +521,7 @@ export function exportSearchCorpusFromSeed(
       const language = detectLanguage(fullTextForLang);
       const url = r.url ? r.url.trim() : null;
       const typedId = `relationship:seed-${idx}`;
-      const parentTypedId = url ? `source:${url}` : null;
+      const parentTypedId = (url && urlToSourceTypedId.get(url)) || null;
       const groupId = url || typedId;
 
       const metadata: Record<string, unknown> = {
@@ -546,7 +540,7 @@ export function exportSearchCorpusFromSeed(
         metadata
       });
 
-      const dependencyHash = computeDependencyHash(parentTypedId, "ACCEPTED");
+      const dependencyHash = computeDependencyHash(parentTypedId, parentTypedId ? "ACCEPTED" : "");
 
       const evidence: SearchEvidence[] = [
         createSearchEvidence({
@@ -589,69 +583,7 @@ export function exportSearchCorpusFromSeed(
     excludedCount++;
   }
 
-  // Add verified entities discovered from authoritative seed relations
-  let entityIndex = 0;
-  for (const [name, ent] of verifiedEntities) {
-    entityIndex++;
-    const typedId = `entity:seed-${entityIndex}`;
-    const title = name;
-    const body = ent.entityType;
-    const fullTextForLang = `${title} ${body}`;
-    const language = detectLanguage(fullTextForLang);
-    const url = ent.sourceUrl;
-    const groupId = url || typedId;
-
-    const metadata: Record<string, unknown> = {
-      entityType: ent.entityType,
-      provenanceUrl: ent.sourceUrl
-    };
-
-    const contentHash = computeContentHash({
-      typedId,
-      title,
-      body,
-      url,
-      metadata
-    });
-
-    const dependencyHash = computeDependencyHash(null);
-
-    const evidence: SearchEvidence[] = [
-      createSearchEvidence({
-        fieldName: "name",
-        originalText: title,
-        label: "Verified Entity Name",
-        isTitleOnly: true,
-        isTruncated: false
-      })
-    ];
-
-    const doc: SearchDocument = {
-      typedId,
-      kind: "entity",
-      title,
-      body,
-      retrievalText: `${title} ${body}`,
-      url,
-      groupId,
-      origin: "seed",
-      language,
-      isTitleOnly: true,
-      isPartial: false,
-      parentTypedId: null,
-      contentHash,
-      dependencyHash,
-      vectorRow: null,
-      evidence,
-      metadata
-    };
-
-    documents.push(doc);
-    countsByKind.entity++;
-    countsByLanguage[language]++;
-  }
-
-  // Identify empty kinds
+  // Identify empty kinds (inventory and unverified entities are excluded from this release)
   const emptyKinds: SearchRecordKind[] = (
     Object.keys(countsByKind) as SearchRecordKind[]
   ).filter((kind) => countsByKind[kind] === 0);
@@ -1345,8 +1277,9 @@ export async function exportSearchCorpus(
         options.datasetId,
         options.releaseId
       );
-    } catch {
-      // Fallback to seed export
+    } catch (err) {
+      console.warn("Prisma database export unavailable, falling back to seed corpus:", err);
+      // Fallback to seed export when database is unavailable
     }
   }
 

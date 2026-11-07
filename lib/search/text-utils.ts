@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
 import type { LanguageTag, SearchEvidence } from "./types";
-import { MAX_BODY_CODE_POINTS, KNOWN_PLACEHOLDERS } from "./policy";
+import { MAX_BODY_CODE_POINTS, KNOWN_PLACEHOLDERS, isKnownPlaceholder } from "./policy";
 
-export { MAX_BODY_CODE_POINTS, KNOWN_PLACEHOLDERS };
+export { MAX_BODY_CODE_POINTS, KNOWN_PLACEHOLDERS, isKnownPlaceholder };
 
 /**
  * Cleans substantive excerpt text:
@@ -22,10 +22,8 @@ export function cleanSearchText(text: string | null | undefined): {
   const trimmed = text.trim();
 
   // Check if the text matches or begins with known placeholders
-  for (const placeholder of KNOWN_PLACEHOLDERS) {
-    if (trimmed === placeholder || trimmed.startsWith(placeholder)) {
-      return { cleanedText: "", isPlaceholderOmitted: true, isTruncated: false };
-    }
+  if (isKnownPlaceholder(trimmed)) {
+    return { cleanedText: "", isPlaceholderOmitted: true, isTruncated: false };
   }
 
   // Normalize excessive whitespace

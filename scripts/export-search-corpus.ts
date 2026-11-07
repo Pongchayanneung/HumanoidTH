@@ -1,5 +1,6 @@
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
+import { createHash } from "node:crypto";
 import { exportSearchCorpusFromSeed } from "../lib/search/exporter";
 
 async function main() {
@@ -15,13 +16,27 @@ async function main() {
   const probePath = resolve(outputDir, "probe-128.json");
 
   console.log(`Writing documents to ${documentsPath}...`);
-  writeFileSync(documentsPath, JSON.stringify(documents, null, 2), "utf8");
+  const docsJson = JSON.stringify(documents, null, 2);
+  writeFileSync(documentsPath, docsJson, "utf8");
+
+  console.log(`Writing probe sample to ${probePath}...`);
+  const probeJson = JSON.stringify(probe128, null, 2);
+  writeFileSync(probePath, probeJson, "utf8");
+
+  // Compute exact on-disk SHA256 and byte size of exported files
+  const docsSha256 = createHash("sha256").update(Buffer.from(docsJson, "utf8")).digest("hex");
+  const docsBytes = Buffer.byteLength(docsJson, "utf8");
+  const probeSha256 = createHash("sha256").update(Buffer.from(probeJson, "utf8")).digest("hex");
+  const probeBytes = Buffer.byteLength(probeJson, "utf8");
+
+  manifest.recordsSha256 = docsSha256;
+  manifest.fileChecksums = {
+    "documents.json": { sha256: docsSha256, bytes: docsBytes },
+    "probe-128.json": { sha256: probeSha256, bytes: probeBytes }
+  };
 
   console.log(`Writing manifest to ${manifestPath}...`);
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), "utf8");
-
-  console.log(`Writing probe sample to ${probePath}...`);
-  writeFileSync(probePath, JSON.stringify(probe128, null, 2), "utf8");
 
   console.log("\n=== Export Summary ===");
   console.log(`Total Eligible Documents: ${manifest.counts.totalEligible}`);
@@ -30,7 +45,7 @@ async function main() {
   console.log(`Excluded Records: ${manifest.counts.excluded}`);
   console.log("Empty Categories:", manifest.counts.emptyKinds);
   console.log(`Probe Sample Count: ${probe128.length}`);
-  console.log(`Records SHA-256: ${manifest.recordsSha256}`);
+  console.log(`Records SHA-256 (on disk): ${manifest.recordsSha256}`);
   console.log("=== Export Complete ===");
 }
 

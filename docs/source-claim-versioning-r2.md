@@ -46,6 +46,13 @@ Resolves **Issue #26** (`[R2] Version source claims and prevent stale conflictin
 - Enforces fail-closed authentication: calls require a valid `OperatorPrincipal` (`kind: "operator"`) or authenticated user session (`ADMIN` / `RESEARCHER`).
 - Unauthorized requests fail closed with `UNAUTHORIZED` before executing database queries or storage allocations.
 
+### 6. Round 2 behaviour and known limits
+- Snapshot parent hashes: conflict responses recompute `currentSnapshot` with the stored parent hash, so its `snapshotHash` equals the committed revision hash. The first edit of a record with no stored versioning chains to the baseline snapshot hash.
+- Evidence correction: when `patch.title` or `patch.excerpt` changes and the caller supplies no `perspectives` / `triplets`, machine-derived perspectives and all triplets are retired (they came from the superseded evidence). Human and seed perspectives are kept. Pass explicit arrays to re-assert claims. Patching other fields keeps existing assertions.
+- Ingestion vs reviewers: `saveSources` skips (and logs) a record whose last version was written by a human reviewer (`lastUpdatedBy` not `ingest`, `system` or `seed`). It does not merge crawler output into reviewed records; the reviewer re-ingests through `updateSourceClaim`.
+- Re-ingestion that reclassifies a curated (SEED / triplet_relation) record to a non-accepted status does not delete curated annotations or triplets (policy test in `classification-uncertainty.test.ts`). They are excluded from public views and search because eligibility is gated on the parent source being `ACCEPTED`, and search revalidation returns `STATUS_INELIGIBLE`.
+- Not delivered: `isAuthorizedOperator` checks the shape of the caller-supplied principal and does not verify a session or credential; `updateSourceClaim` has no production caller yet (no API route). These are open and must not be read as live editorial access.
+
 ## Test Verification
 
 Unit and integration tests are codified in `test/source-claim-versioning.test.ts`:
@@ -62,4 +69,4 @@ pnpm test
 pnpm run check:no-mock-data
 pnpm run typecheck
 ```
-All 264 test assertions pass; zero mock signals in web code; zero TypeScript diagnostics.
+Offline run (`DATABASE_URL` pointing at an unreachable host): tsc clean, `tsx --test test/*.test.ts` 305 pass, 0 fail, 6 skipped. No live PostgreSQL concurrency test was run.

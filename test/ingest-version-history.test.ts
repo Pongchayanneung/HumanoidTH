@@ -35,3 +35,25 @@ test("reingestion retains history and hashes the surviving assertions", async ()
     assert.ok(history.every((entry: any) => verifySnapshotIntegrity(entry.snapshot).isValid));
   } finally { (prisma as any).$transaction = original; }
 });
+
+test("reingestion skips a record last revised by a human reviewer", async () => {
+  const original = prisma.$transaction;
+  const source: any = { id: "s2", sourceType: "OPENALEX", title: "Reviewed", url: "https://example.org/reviewed", excerpt: "Editor text", author: null, platform: null, publishedAt: null, relevanceStatus: "ACCEPTED", relevanceReason: "review", relevanceConfidence: 1, createdAt: new Date(), updatedAt: new Date(), rawMeta: { _versioning: { version: 3, lastUpdatedBy: "reviewer@example.org", history: [] } } };
+  const writes: string[] = [];
+  const tx: any = { $queryRaw: async () => [], sourceRecord: {
+    findUnique: async () => ({ ...source, annotations: [], triplets: [] }),
+    upsert: async () => { writes.push("upsert"); return source; },
+    findUniqueOrThrow: async () => ({ ...source, annotations: [], triplets: [] }),
+    update: async () => { writes.push("update"); return source; }
+  }, perspectiveAnnotation: { deleteMany: async () => { writes.push("deleteMany"); }, upsert: async () => { writes.push("annotation"); } },
+  triplet: { deleteMany: async () => { writes.push("tripletDelete"); }, upsert: async () => {} } };
+  (prisma as any).$transaction = async (fn: any) => fn(tx);
+  const warn = console.warn;
+  console.warn = () => {};
+  try {
+    const saved = await saveSources([{ sourceType: "OPENALEX", title: "Crawler overwrite", url: source.url, excerpt: "Crawler text", publishedAt: new Date("2024-01-01"), rawMeta: { networkGeo: { geo: { latitude: 1, longitude: 1 } } } }]);
+    assert.equal(saved, 0);
+    assert.deepEqual(writes, []);
+    assert.equal(source.rawMeta._versioning.version, 3);
+  } finally { console.warn = warn; (prisma as any).$transaction = original; }
+});

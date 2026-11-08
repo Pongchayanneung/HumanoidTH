@@ -10,10 +10,14 @@ import {
 import { canonicalizeUrl } from "@/lib/url";
 import { enrichRawMetaWithNetworkGeo } from "@/lib/geo";
 import {
+  MACHINE_ANNOTATION_METHODS,
   buildSourceSnapshot,
   type SourceClaimRecord,
   type VersionHistoryEntry
 } from "@/lib/claim-versioning";
+
+// Actors that write versions without a human reviewer.
+const SYSTEM_ACTORS = ["ingest", "system", "seed"];
 
 export async function saveSources(records: NormalizedSource[]) {
   let saved = 0;
@@ -143,11 +147,19 @@ export async function saveSources(records: NormalizedSource[]) {
     }
 
     // Atomic write of source, verified perspective annotation, and relationship triplets
-    await prisma.$transaction(async (tx) => {
+    const written = await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${url}))`;
       await tx.$queryRaw`SELECT id FROM "SourceRecord" WHERE url = ${url} FOR UPDATE`;
       const previous = await tx.sourceRecord.findUnique({ where: { url }, include: { annotations: true, triplets: true } });
       const previousVersioning = (previous?.rawMeta as any)?._versioning ?? {};
+
+      // A record last revised by a human reviewer is never silently overwritten by a crawler run.
+      // Editorial updates go through updateSourceClaim with expectedVersion checks.
+      const lastEditor = previousVersioning.lastUpdatedBy;
+      if (previous && typeof lastEditor === "string" && !SYSTEM_ACTORS.includes(lastEditor)) {
+        console.warn(`Skipping re-ingestion of ${url}: version ${previousVersioning.version ?? 1} was revised by ${lastEditor}.`);
+        return false;
+      }
       const source = await tx.sourceRecord.upsert({
         where: { url },
         create: {
@@ -171,9 +183,6 @@ export async function saveSources(records: NormalizedSource[]) {
           ...relevance
         }
       });
-
-      // Machine-generated annotation methods eligible for cleanup/refresh
-      const MACHINE_ANNOTATION_METHODS = ["gemini-1.5-flash", "rules_fallback", "rules_with_evidence"];
 
       // Curated seed sources and records must never have their curated annotations or triplets deleted
       const isCuratedSource =
@@ -264,11 +273,13 @@ export async function saveSources(records: NormalizedSource[]) {
         where: { id: source.id }, include: { annotations: true, triplets: true }
       });
       const history: VersionHistoryEntry[] = [...(previousVersioning.history ?? [])];
+      let parentSnapshotHash: string | undefined = previousVersioning.snapshotHash;
       if (previous) {
         const oldVersion = previousVersioning.version ?? 1;
         const parent = history.find((entry) => entry.version === oldVersion - 1);
         const oldSnapshot = buildSourceSnapshot(previous as SourceClaimRecord, previous.annotations, previous.triplets,
           undefined, undefined, parent?.version, parent?.snapshotHash);
+        parentSnapshotHash ??= oldSnapshot.snapshotHash;
         const index = history.findIndex((entry) => entry.version === oldVersion);
         if (index >= 0) {
           if (!history[index].snapshot) history[index] = { ...history[index], snapshot: oldSnapshot };
@@ -284,7 +295,7 @@ export async function saveSources(records: NormalizedSource[]) {
       const snapshot = buildSourceSnapshot(
         { ...current, rawMeta: { _versioning: { version, updatedAt: timestamp } } } as SourceClaimRecord,
         current.annotations, current.triplets, "ingest", `Ingest batch import (${record.sourceType})`,
-        previous ? version - 1 : undefined, previousVersioning.snapshotHash
+        previous ? version - 1 : undefined, parentSnapshotHash
       );
       history.push({ version, snapshot, contentHash: snapshot.contentHash, assertionsHash: snapshot.assertionsHash,
         snapshotHash: snapshot.snapshotHash, relevanceStatus: snapshot.relevanceStatus, actor: "ingest",
@@ -295,9 +306,10 @@ export async function saveSources(records: NormalizedSource[]) {
           status: relevance.relevanceStatus === "ACCEPTED" ? "ACTIVE" : "RETIRED",
           lastUpdatedBy: "ingest", revisionReason: snapshot.metadata.reason, updatedAt: timestamp }
       })) } });
+      return true;
     });
 
-    saved += 1;
+    if (written !== false) saved += 1;
   }
 
   return saved;

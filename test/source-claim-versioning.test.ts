@@ -26,6 +26,7 @@ class InMemoryClaimRepository implements ClaimVersioningRepository {
   public perspectives = new Map<string, PerspectiveAssertionItem & { sourceId: string }>();
   public triplets = new Map<string, TripletAssertionItem & { sourceId: string }>();
   public shouldFailNextTransaction = false;
+  public mutatedBeforeFailure = false;
 
   constructor(
     initialSource?: SourceClaimRecord,
@@ -75,11 +76,6 @@ class InMemoryClaimRepository implements ClaimVersioningRepository {
       retireAllDerivedClaims?: boolean;
     }>
   ) {
-    if (this.shouldFailNextTransaction) {
-      this.shouldFailNextTransaction = false;
-      throw new Error("Simulated database constraint violation or network partition");
-    }
-
     const current = await this.findSourceWithClaims(sourceId);
     if (!current.source) {
       throw new Error(`Source ${sourceId} not found`);
@@ -157,6 +153,13 @@ class InMemoryClaimRepository implements ClaimVersioningRepository {
         updatedAt: new Date()
       };
       this.sources.set(sourceId, updated);
+
+      // Failure is injected AFTER every write so only a working rollback leaves the data intact.
+      if (this.shouldFailNextTransaction) {
+        this.shouldFailNextTransaction = false;
+        this.mutatedBeforeFailure = true;
+        throw new Error("Simulated database constraint violation or network partition");
+      }
 
       const finalClaims = await this.findSourceWithClaims(sourceId);
       return {
@@ -490,6 +493,9 @@ test("R2: Transaction failure rolls back completely and allows idempotent retry"
     { message: /Simulated database constraint violation/ }
   );
 
+  // The failure happened after the writes were applied, so the checks below prove rollback ran.
+  assert.equal(repo.mutatedBeforeFailure, true);
+
   // Verify all-or-nothing rollback: source remains at version 1 with original title and claims
   const checkAfterFailure = await repo.findSourceWithClaims(source.id);
   assert.equal(checkAfterFailure.source?.title, "Chula Unveils Healthcare Assistant Humanoid");
@@ -587,4 +593,64 @@ test("search suppresses cached source after an editorial update", async () => {
   const result = await updateSourceClaim({ sourceId: source.id, expectedVersion: 1, actor: { kind: "operator", email: "r@example.org" }, reason: "retire", patch: { relevanceStatus: "REJECTED" } }, repo);
   assert.equal(result.ok, true);
   assert.equal((await (await search(request())).json()).groups.length, 0);
+});
+
+test("R2: conflict response snapshot hash matches the committed revision hash", async () => {
+  const source = makeInitialSource();
+  const repo = new InMemoryClaimRepository(source, samplePerspectives, sampleTriplets);
+  const actor = { kind: "operator" as const, email: "reviewer@example.org" };
+  assert.equal((await updateSourceClaim({ sourceId: source.id, expectedVersion: 1, actor, reason: "one", patch: { title: "Two" } }, repo)).ok, true);
+  const second = await updateSourceClaim({ sourceId: source.id, expectedVersion: 2, actor, reason: "two", patch: { title: "Three" } }, repo);
+  assert.equal(second.ok, true);
+  const stale = await updateSourceClaim({ sourceId: source.id, expectedVersion: 1, actor, reason: "stale", patch: { title: "Late" } }, repo);
+  assert.equal(stale.ok, false);
+  if (stale.ok || stale.code !== "STALE_VERSION_CONFLICT") throw new Error("expected a stale version conflict");
+  const stored = await repo.findSourceWithClaims(source.id);
+  const versioning = stored.source!.rawMeta._versioning as any;
+  assert.equal(versioning.version, 3);
+  assert.equal(stale.currentSnapshot.snapshotHash, versioning.snapshotHash);
+  assert.equal(verifySnapshotIntegrity(stale.currentSnapshot).isValid, true);
+});
+
+test("R2: first edit of an unversioned record chains to the baseline snapshot hash", async () => {
+  const source = makeInitialSource({ rawMeta: {} });
+  const repo = new InMemoryClaimRepository(source, samplePerspectives, sampleTriplets);
+  const actor = { kind: "operator" as const, email: "reviewer@example.org" };
+  const result = await updateSourceClaim({ sourceId: source.id, expectedVersion: 1, actor, reason: "first", patch: { title: "Edited" } }, repo);
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  const history = ((await repo.findSourceWithClaims(source.id)).source!.rawMeta._versioning as any).history;
+  assert.equal(history.length, 2);
+  assert.ok(history[0].snapshotHash);
+  assert.equal(history[1].snapshot.metadata.parentSnapshotHash, history[0].snapshotHash);
+  assert.equal(result.snapshot.metadata.parentSnapshotHash, history[0].snapshotHash);
+  assert.equal(result.snapshotHash, result.snapshot.snapshotHash);
+  assert.ok(history.every((entry: any) => verifySnapshotIntegrity(entry.snapshot).isValid));
+});
+
+test("R2: correcting the excerpt without new assertions retires obsolete machine-derived claims", async () => {
+  const source = makeInitialSource();
+  const human: PerspectiveAssertionItem = { ...samplePerspectives[0], id: "pers_human", method: "human_review", perspectiveTheme: "human_note" };
+  const repo = new InMemoryClaimRepository(source, [...samplePerspectives, human], sampleTriplets);
+  const result = await updateSourceClaim({ sourceId: source.id, expectedVersion: 1,
+    actor: { kind: "operator", email: "reviewer@example.org" }, reason: "excerpt fix",
+    patch: { excerpt: "Corrected excerpt that no longer supports the old claims." } }, repo);
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  const claims = await repo.findSourceWithClaims(source.id);
+  assert.deepEqual(claims.perspectives.map((p) => p.id), ["pers_human"]);
+  assert.equal(claims.triplets.length, 0);
+  assert.equal(result.suppressedAssertionsCount, 2);
+});
+
+test("R2: patching a non-evidence field retains existing assertions", async () => {
+  const source = makeInitialSource();
+  const repo = new InMemoryClaimRepository(source, samplePerspectives, sampleTriplets);
+  const result = await updateSourceClaim({ sourceId: source.id, expectedVersion: 1,
+    actor: { kind: "operator", email: "reviewer@example.org" }, reason: "author",
+    patch: { author: "Dr. Somchai" } }, repo);
+  assert.equal(result.ok, true);
+  const claims = await repo.findSourceWithClaims(source.id);
+  assert.equal(claims.perspectives.length, 1);
+  assert.equal(claims.triplets.length, 1);
 });

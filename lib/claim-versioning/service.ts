@@ -240,6 +240,26 @@ export function verifySnapshotIntegrity(snapshot: ReproducibleSourceSnapshot): {
 }
 
 /**
+ * Annotation methods written by machine classification. Human and seed assertions use other methods.
+ */
+export const MACHINE_ANNOTATION_METHODS = ["gemini-1.5-flash", "rules_fallback", "rules_with_evidence"];
+
+/**
+ * Snapshot of a record as currently stored. The parent hash is read from the stored history so the
+ * recomputed snapshotHash equals the committed one for versions after the first.
+ */
+function snapshotOfStoredState(
+  source: SourceClaimRecord,
+  perspectives: PerspectiveAssertionItem[],
+  triplets: TripletAssertionItem[]
+): ReproducibleSourceSnapshot {
+  const versioning = (source.rawMeta?._versioning ?? {}) as Partial<SourceVersioningMeta>;
+  const version = versioning.version ?? 1;
+  const parent = (versioning.history ?? []).find((entry) => entry.version === version - 1);
+  return buildSourceSnapshot(source, perspectives, triplets, undefined, undefined, parent?.version, parent?.snapshotHash);
+}
+
+/**
  * Check if the actor is authorized to update editorial source claims.
  */
 export function isAuthorizedOperator(actor: unknown): boolean {
@@ -309,11 +329,7 @@ export async function updateSourceClaim(
 
   // 4. Optimistic Concurrency Control (OCC) Check
   if (currentVersion !== input.expectedVersion) {
-    const currentSnapshot = buildSourceSnapshot(
-      current.source,
-      current.perspectives,
-      current.triplets
-    );
+    const currentSnapshot = snapshotOfStoredState(current.source, current.perspectives, current.triplets);
     return {
       code: "STALE_VERSION_CONFLICT",
       currentContentHash,
@@ -326,11 +342,7 @@ export async function updateSourceClaim(
   }
 
   if (input.expectedContentHash && currentContentHash !== input.expectedContentHash) {
-    const currentSnapshot = buildSourceSnapshot(
-      current.source,
-      current.perspectives,
-      current.triplets
-    );
+    const currentSnapshot = snapshotOfStoredState(current.source, current.perspectives, current.triplets);
     return {
       code: "STALE_VERSION_CONFLICT",
       currentContentHash,
@@ -364,8 +376,20 @@ export async function updateSourceClaim(
     // If source is ACCEPTED, update assertions:
     // If explicit assertions provided in input, use them (superseding older assertions)
     // Otherwise retain current assertions
-    perspectivesToKeep = input.perspectives !== undefined ? input.perspectives : current.perspectives;
-    tripletsToKeep = input.triplets !== undefined ? input.triplets : current.triplets;
+    // Evidence correction: assertions derived from the superseded title/excerpt must not survive
+    // unless the editor re-asserts them. Human/seed perspectives are kept; machine-derived
+    // perspectives and triplets (which carry no provenance) are retired when not supplied.
+    const evidenceChanged =
+      (input.patch.excerpt !== undefined && input.patch.excerpt !== current.source.excerpt) ||
+      (input.patch.title !== undefined && input.patch.title !== current.source.title);
+    perspectivesToKeep =
+      input.perspectives !== undefined
+        ? input.perspectives
+        : evidenceChanged
+          ? current.perspectives.filter((p) => !MACHINE_ANNOTATION_METHODS.includes(p.method))
+          : current.perspectives;
+    tripletsToKeep =
+      input.triplets !== undefined ? input.triplets : evidenceChanged ? [] : current.triplets;
   }
 
   perspectivesToKeep = perspectivesToKeep.map((p) => ({ ...p, id: p.id && current.perspectives.some((old) => old.id === p.id) ? p.id : randomUUID() }));
@@ -379,13 +403,6 @@ export async function updateSourceClaim(
 
   const newContentHash = computeSourceContentHash(updatedSourceFields);
   const newAssertionsHash = computeAssertionsHash(perspectivesToKeep, tripletsToKeep);
-  const newSnapshotHash = computeSnapshotHash(
-    newContentHash,
-    newAssertionsHash,
-    newVersion,
-    currentVersioning.snapshotHash
-  );
-
   const existingHistory = currentVersioning.history ?? [
     {
       actor: currentVersioning.lastUpdatedBy ?? "system",
@@ -412,9 +429,12 @@ export async function updateSourceClaim(
       relevanceStatus: baseline.relevanceStatus, actor: baseline.metadata.actor,
       reason: baseline.metadata.reason, updatedAt: baseline.metadata.timestamp });
   }
+  // Parent of the new revision: the stored hash, or the baseline hash for a record never versioned before.
+  const parentSnapshotHash = currentVersioning.snapshotHash ?? baseline.snapshotHash;
+  const newSnapshotHash = computeSnapshotHash(newContentHash, newAssertionsHash, newVersion, parentSnapshotHash);
   const nextSnapshot = buildSourceSnapshot(
     { ...updatedSourceFields, rawMeta: { _versioning: { version: newVersion, updatedAt: nowIso } } },
-    perspectivesToKeep, tripletsToKeep, actorEmail, input.reason, currentVersion, currentVersioning.snapshotHash
+    perspectivesToKeep, tripletsToKeep, actorEmail, input.reason, currentVersion, parentSnapshotHash
   );
 
   const newHistoryEntry: VersionHistoryEntry = {
@@ -473,7 +493,7 @@ export async function updateSourceClaim(
       ok: false, code: "STALE_VERSION_CONFLICT", currentVersion,
       expectedVersion: input.expectedVersion, expectedContentHash: input.expectedContentHash,
       currentContentHash: computeSourceContentHash(locked.source),
-      currentSnapshot: buildSourceSnapshot(locked.source, locked.perspectives, locked.triplets),
+      currentSnapshot: snapshotOfStoredState(locked.source, locked.perspectives, locked.triplets),
       message: `Conflict detected: record changed while the edit was being saved.`
     };
   }
@@ -486,7 +506,7 @@ export async function updateSourceClaim(
     actorEmail,
     input.reason,
     currentVersion,
-    currentVersioning.snapshotHash
+    parentSnapshotHash
   );
 
   return {

@@ -1,13 +1,13 @@
 # UI/UX improvement: from an operator console to a search-first atlas
 
-HRI Hackathon Thailand 2026, submission item 6. Written 8 November 2026 (Asia/Bangkok) about draft PR [#79](https://github.com/Pongchayanneung/HumanoidTH/pull/79), branch `ui/atlas-revamp`.
+HRI Hackathon Thailand 2026, submission item 6. Written 8 November 2026 (Asia/Bangkok) about PR [#79](https://github.com/Pongchayanneung/HumanoidTH/pull/79), branch `ui/atlas-revamp`.
 
 **Links asked for in item 6**
 
 - **CI (continuous integration), green run on the UI branch:** [workflow run 42434199260, commit `5105feb`](https://github.com/Pongchayanneung/HumanoidTH/actions/runs/42434199260), conclusion success. The same checks (`checks`, `e2e`, `no-mock-data`) are green on `main` after search merged: [run 42434033111, commit `50c1ea4`](https://github.com/Pongchayanneung/HumanoidTH/actions/runs/42434033111).
 - **CI (corporate identity) and mood board:** [mood-board.md](design/mood-board.md): palette, typography, logo, references, before and after.
 
-Status you should know first: PR #79 is a **draft and not merged into `main`** at the time of writing. Until the team merges it, the revamp lives on the `ui/atlas-revamp` branch. Describe it as "implemented on the branch, verified by CI, awaiting merge" unless that changes.
+Status: PR #79 was **merged into `main` on 8 November 2026 at 09:54 (Asia/Bangkok), merge commit `1e2070f`**, after its CI run passed. The CI run linked above is the one on the branch just before the merge; the run on `main` after the merge is [42440485161](https://github.com/Pongchayanneung/HumanoidTH/actions/runs/42440485161), which was still running when this was written.
 
 ## The problem we found
 
@@ -52,4 +52,4 @@ Screenshots: [before and after in the mood board](design/mood-board.md#before-an
 
 ## Where this goes next
 
-Merge decision for #79 (owner), re-capture screenshots from the deployed site, restore the dropped keyboard assertions, add `/sources` and `/admin-login` to the axe scan, then run the first task test with five researchers or students. See the plan in the business model and next steps document.
+Re-capture screenshots from the deployed site, restore the dropped keyboard assertions, add `/sources` and `/admin-login` to the axe scan, then run the first task test with five researchers or students. See the plan in the business model and next steps document.

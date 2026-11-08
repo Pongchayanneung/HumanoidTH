@@ -129,14 +129,58 @@ export function validateVectorRelease(params: {
 }): VectorValidationResult {
   const { documents, expectedVectorCount, manifest, manifestDir } = params;
   const buf = params.buffer ?? Buffer.alloc(0);
-  const expectedDimensions = params.expectedDimensions ?? (manifest?.modelProfile?.dimensions || 1024);
   const checks: VectorValidationCheck[] = [];
   const errors: string[] = [];
+
+  // Reconcile and validate dimensions across params, profile, and manifest
+  const profileDims = params.profile?.dimensions;
+  const manifestDims = manifest?.modelProfile?.dimensions;
+  if (params.expectedDimensions !== undefined && profileDims !== undefined && params.expectedDimensions !== profileDims) {
+    errors.push(
+      `Conflicting dimensions: expectedDimensions (${params.expectedDimensions}) does not match profile dimensions (${profileDims})`
+    );
+  }
+  if (params.expectedDimensions !== undefined && manifestDims !== undefined && params.expectedDimensions !== manifestDims) {
+    errors.push(
+      `Conflicting dimensions: expectedDimensions (${params.expectedDimensions}) does not match manifest dimensions (${manifestDims})`
+    );
+  }
+  if (profileDims !== undefined && manifestDims !== undefined && profileDims !== manifestDims) {
+    errors.push(
+      `Conflicting dimensions: profile dimensions (${profileDims}) does not match manifest dimensions (${manifestDims})`
+    );
+  }
+  const expectedDimensions = params.expectedDimensions ?? profileDims ?? manifestDims ?? 1024;
 
   const rowBytes = expectedDimensions * BYTES_PER_FLOAT32;
   const actualVectorCount = buf.length === 0 ? 0 : buf.length / rowBytes;
   const isIntegerCount = Number.isInteger(actualVectorCount);
   const expectedBytes = (expectedVectorCount ?? actualVectorCount) * rowBytes;
+
+  // Validate buffer presence against declared vector coverage
+  const declaredVectorCount = manifest?.coverage?.vectorCount;
+  if (declaredVectorCount !== undefined) {
+    const countMatches = actualVectorCount === declaredVectorCount;
+    const bufferPresent = declaredVectorCount === 0 || (params.buffer !== null && params.buffer !== undefined);
+    checks.push({
+      name: "manifest_coverage_count",
+      passed: countMatches && bufferPresent,
+      detail: `Manifest declares ${declaredVectorCount} vectors; buffer has ${actualVectorCount} vectors`
+    });
+    if (!bufferPresent) {
+      errors.push(
+        `Missing vector buffer: manifest declares ${declaredVectorCount} vectors but buffer was omitted`
+      );
+    } else if (!countMatches) {
+      errors.push(
+        `Vector count mismatch: manifest declares ${declaredVectorCount} vectors but buffer has ${actualVectorCount}`
+      );
+    }
+  } else if (expectedVectorCount !== undefined && expectedVectorCount > 0 && (params.buffer === null || params.buffer === undefined)) {
+    errors.push(
+      `Missing vector buffer: expectedVectorCount is ${expectedVectorCount} but buffer was omitted`
+    );
+  }
 
   // 1. File size alignment check
   const sizeCheck = isIntegerCount && buf.length === expectedBytes;

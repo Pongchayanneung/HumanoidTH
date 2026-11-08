@@ -709,3 +709,31 @@ test("F4 Release Validation: safely handles keyword-only releases when buffer is
   assert.equal(result.vectorCount, 0);
   assert.equal(result.actualBytes, 0);
 });
+
+test("F4 Release Validation: rejects omitted buffer when manifest declares vector coverage", () => {
+  const docs = [createDummyDocument("a")];
+  docs[0].vectorRow = null;
+  const manifest: any = {
+    releaseId: "rel-1",
+    modelProfile: { dimensions: 1024, modelId: "test-model" },
+    coverage: { totalDocuments: 1, vectorCount: 1, keywordOnlyCount: 0, coverageRatio: 1 }
+  };
+  const result = validateVectorRelease({ documents: docs, manifest });
+  assert.equal(result.isValid, false);
+  assert.ok(result.errors.some(e => e.includes("Missing vector buffer")));
+});
+
+test("F4 Release Validation: respects profile dimensions and rejects conflicting metadata", () => {
+  const docs = [createDummyDocument("a")];
+  docs[0].vectorRow = null;
+  const profile: any = { dimensions: 2048, modelId: "high-dim-model" };
+
+  // Profile dimension is respected when expectedDimensions is omitted
+  const resProfile = validateVectorRelease({ documents: docs, profile });
+  assert.equal(resProfile.dimensions, 2048);
+
+  // Conflicting expectedDimensions and profile dimensions is rejected
+  const resConflict = validateVectorRelease({ documents: docs, expectedDimensions: 1024, profile });
+  assert.equal(resConflict.isValid, false);
+  assert.ok(resConflict.errors.some(e => e.includes("Conflicting dimensions")));
+});

@@ -13,6 +13,11 @@ const evidenceKindFor = (doc: SearchDocument, fieldName: string): SearchResultEv
   hasConstructedTitle(doc) && CONSTRUCTED_FIELDS.has(fieldName) ? "derived" : "source";
 
 const hostMatches = (host: string, domains: string[]) => domains.some((domain) => host === domain || host.endsWith(`.${domain}`));
+/** A stored vector the semantic branch can score: right length, finite, not all zero. Kept in one place so ranking and coverage agree. */
+function isUsableVector(vector: Float32Array | undefined, dimensions: number): boolean {
+  return vector?.length === dimensions && vector.every(Number.isFinite) && vector.some((n) => n !== 0);
+}
+
 function contentTypeFor(doc: SearchDocument): SearchContentType {
   if (doc.kind !== "source") return doc.kind;
   const platform = String(doc.metadata.platform ?? "").toLowerCase();
@@ -159,7 +164,7 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
         let queryVector: Float32Array | null = null;
         const indexed = selected.filter((doc) => {
           const v = doc.vectorRow === null ? undefined : rows.get(doc.vectorRow);
-          return v?.length === profile.dimensions && v.every(Number.isFinite) && v.some((n) => n !== 0);
+          return isUsableVector(v, profile.dimensions);
         }).length;
         common.coverage.indexed = indexed;
         if (isProfileCompatibleWithPolicy(profile, policy) && indexed < selected.length && options.requirePolicy) warnings.push("partial_vector_coverage");
@@ -190,9 +195,10 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
       const matchedGroups = new Map<string, SearchMatchedResult[]>();
       const demo = hybrid && policy.calibrationStatus === "demo_unvalidated";
       const groupOf = (docId: string) => groupKeyFor(byId.get(docId)!, byId);
+      // Same test as the `indexed` count and semanticRank: a record whose vector they would skip cannot be judged by the cutoff.
       const canScore = (id: string) => {
         const row = byId.get(id)?.vectorRow;
-        return row !== null && row !== undefined && Boolean(index.vectors?.rows.get(row));
+        return Boolean(index.vectors) && row !== null && row !== undefined && isUsableVector(index.vectors!.rows.get(row), index.vectors!.profile.dimensions);
       };
       for (const id of demo ? semanticFirstRanking(keyword, semanticIds, groupOf, canScore) : fuseRankings(keyword, semanticIds, policy, groupOf)) {
         const doc = byId.get(id)!;

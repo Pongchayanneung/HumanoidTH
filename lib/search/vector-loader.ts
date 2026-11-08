@@ -29,6 +29,7 @@ export interface ReleaseVectorLoaderOptions {
 }
 
 const DEFAULT_RETRY_AFTER_MS = 30_000;
+const MAX_RETRY_AFTER_MS = 300_000;
 
 interface LoadedRelease {
   key: string;
@@ -96,6 +97,7 @@ export function createReleaseVectorLoader(options: ReleaseVectorLoaderOptions): 
   let loadedPointerKey: string | null = null;
   let failure: Error | null = null;
   let failedAt = 0;
+  let consecutiveFailures = 0;
   const now = options.now ?? Date.now;
   const retryAfterMs = options.retryAfterMs ?? DEFAULT_RETRY_AFTER_MS;
   return async (index: SearchFixtureIndex): Promise<SearchSemanticVectors | null> => {
@@ -104,11 +106,15 @@ export function createReleaseVectorLoader(options: ReleaseVectorLoaderOptions): 
     // Remember a failure for this pointer so a bad release is not re-read and re-validated on every request,
     // but retry after a short delay: a read that failed once (a cold file, a half-written pointer) must not
     // pin the instance to keyword results until it restarts.
-    if (pointerKey !== loadedPointerKey || (failure && now() - failedAt >= retryAfterMs)) {
+    // The delay doubles after each consecutive failure (capped), so a permanently bad ~36 MB release is not
+    // re-read and re-validated every 30 s on a serving instance.
+    const retryDelay = Math.min(retryAfterMs * 2 ** Math.max(0, consecutiveFailures - 1), MAX_RETRY_AFTER_MS);
+    if (pointerKey !== loadedPointerKey || (failure && now() - failedAt >= retryDelay)) {
+      if (pointerKey !== loadedPointerKey) consecutiveFailures = 0;
       loadedPointerKey = pointerKey;
       loaded = null;
       failure = null;
-      try { loaded = readRelease(options.searchDir); } catch (error) { failure = error instanceof Error ? error : new Error("invalid vector release"); failedAt = now(); }
+      try { loaded = readRelease(options.searchDir); consecutiveFailures = 0; } catch (error) { failure = error instanceof Error ? error : new Error("invalid vector release"); failedAt = now(); consecutiveFailures++; }
     }
     if (failure) throw failure;
     if (!loaded) return null;

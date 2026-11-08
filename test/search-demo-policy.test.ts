@@ -73,6 +73,22 @@ test("demo keeps keyword hits for records with no vector, but still drops vector
   assert.deepEqual([...ids(suppressed)].sort(), keywordOnly.filter((id) => id !== scored).sort());
 });
 
+test("demo ranks semantic results first, then keyword hits of records with no usable vector (zero vector counts as none)", async () => {
+  const keywordOnly = ids(await run(setup({ policy: DEMO_SEMANTIC_POLICY }), "robot"));
+  const nonMatching = docs.find((d) => !keywordOnly.includes(d.typedId))!;
+  const goodRow = docs.findIndex((d) => d.typedId === nonMatching.typedId);
+  const zeroRow = docs.length;
+  const rows = new Map([...vectors.rows, [zeroRow, new Float32Array(profile.dimensions)]]);
+  const documents: SearchFixtureIndex["documents"] = docs.map((d) => ({ ...d, vectorRow: d.typedId === nonMatching.typedId ? goodRow : d.typedId === keywordOnly[0] ? zeroRow : null }));
+  const handler = setup({ loadCorpus: async () => ({ ...index(), documents }), loadVectors: async () => ({ profile, rows }), policy: DEMO_SEMANTIC_POLICY, embedQuery: async () => axis(goodRow) });
+  const data = await run(handler, "robot");
+  const out = ids(data);
+  assert.equal(data.policyStatus, "demo_unvalidated");
+  assert.equal(out[0], nonMatching.typedId, "the semantic hit comes first");
+  assert.ok(out.includes(keywordOnly[0]), "a record whose only vector is all-zero is not scorable, so its keyword hit stays");
+  assert.deepEqual([...out.slice(1)].sort(), [...keywordOnly].sort());
+});
+
 test("demo switch on but the embedder fails: keyword results with no demo label", async () => {
   for (const embedQuery of [async () => null, async () => { throw new Error("proxy down"); }]) {
     const data = await run(setup({ policy: DEMO_SEMANTIC_POLICY, embedQuery }), "robot");

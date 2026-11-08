@@ -31,6 +31,7 @@
     "test": "tsx --test test/*.test.ts",
     "search:export": "tsx scripts/export-search-corpus.ts",
     "search:vectors": "tsx scripts/build-vector-release.ts",
+    "search:vectors:rekey": "tsx scripts/rekey-search-release.ts",
     "search:eval": "tsx scripts/evaluate-retrieval.ts",
     "classification:eval": "tsx scripts/evaluate-classification.ts"
   },

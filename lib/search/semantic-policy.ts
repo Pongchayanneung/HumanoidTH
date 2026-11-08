@@ -11,8 +11,10 @@ export interface SemanticRetrievalPolicy {
   /**
    * "provisional_uncalibrated": the cutoff has no measured support. It must be re-derived
    * on the dev split against the real embedding model before it is relied on.
+   * "demo_unvalidated": the same unvalidated cutoff, but semantic-first ranking is switched on for a
+   * demo (ATLAS_SEMANTIC_DEMO=1). Results are labelled as an experiment; this is NOT a calibration.
    */
-  calibrationStatus: "provisional_uncalibrated" | "calibrated_on_dev_split";
+  calibrationStatus: "provisional_uncalibrated" | "calibrated_on_dev_split" | "demo_unvalidated";
   rrfConstantK: number;            // Constant k for Reciprocal Rank Fusion: 1 / (k + rank)
   lexicalWeights: {
     title: number;
@@ -60,6 +62,17 @@ export const FROZEN_SEMANTIC_POLICY: SemanticRetrievalPolicy = {
   createdAt: "2026-11-07T08:00:00.000Z",
   frozenAt: "2026-11-07T08:00:00.000Z",
   isFrozen: true
+};
+
+/**
+ * Demo policy: same pinned numbers as FROZEN_SEMANTIC_POLICY (cutoff 0.62 is still unvalidated),
+ * with a status that turns the semantic branch on in semantic-first order. Only
+ * createSemanticOptionsFromEnv selects it, and only when ATLAS_SEMANTIC_DEMO=1.
+ */
+export const DEMO_SEMANTIC_POLICY: SemanticRetrievalPolicy = {
+  ...FROZEN_SEMANTIC_POLICY,
+  policyVersion: "1.0-demo",
+  calibrationStatus: "demo_unvalidated"
 };
 
 /**

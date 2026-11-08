@@ -137,6 +137,8 @@ export interface SearchResultGroup<T extends SearchResult = SearchResult> { grou
 export type SearchResponse = {
   release: { id: string; generatedAt: string } | null;
   coverage: SearchCoverage; warnings: SearchWarning[];
+  /** Present only when semantic-first demo ranking produced these results; they are unvalidated. */
+  policyStatus?: "demo_unvalidated";
 } & (
   | { mode: "keyword" | "hybrid"; view: "browse"; groups: SearchResultGroup<SearchBrowseResult>[] }
   | { mode: "keyword" | "hybrid"; view: "results"; groups: SearchResultGroup<SearchMatchedResult>[] }

@@ -46,8 +46,21 @@ Model configurations are explicitly pinned and bound to their generator implemen
 | **Provider** | `tei` | `mock` |
 | **Profile Hash** | `qwen3-embedding-0.6b-1024-f32-l2-97b0c61-v1` | `mock-deterministic-hash-1024-v1` |
 
+> **Profile change (2026-11-08).** The earlier pin, `Alibaba-NLP/gte-Qwen2-1.5B-instruct`, was never run, and its output size was unverified against the pinned 1,024 dimensions. `Qwen/Qwen3-Embedding-0.6B` was run through a text-embeddings-inference server (CPU image `cpu-1.9`): it returned 1,024-dimension vectors, rejected requests without the API key, and scored cos(Thai query, English paraphrase) = 0.83 against 0.16 for an unrelated query. Queries are sent as `Instruct: <task>\nQuery:<text>`; documents get no prefix. `TeiEmbeddingGenerator` now sends `Authorization: Bearer $EMBEDDING_SERVICE_API_KEY` and refuses any vector whose length differs from the profile.
+>
+> **Embedding service environment.** `EMBEDDING_SERVICE_API_KEY` is the canonical bearer key; `EMBEDDING_SERVICE_KEY` is accepted as a legacy alias (the canonical name wins). Both the builder and the website read it through `lib/search/embedding-env.ts`. `EMBEDDING_SERVICE_PROTOCOL` selects the website's query wire format: `proxy` (default) posts `{"inputs":[text],"kind":"query"}` to the authenticated GPU proxy, which adds the `Instruct:` prefix itself and answers `{"vectors":[[...]]}`; `tei` posts the client-prefixed text to a direct TEI server and reads a bare `[[...]]`. `TeiEmbeddingGenerator` (document embedding) and `scripts/evaluate-retrieval.ts` always speak direct TEI, so point them at TEI, not at the proxy.
+
 > [!IMPORTANT]
 > `VectorReleaseBuilder` strictly enforces model profile integrity. Attempting to use `DeterministicMockEmbeddingGenerator` with a production model profile (`DEFAULT_MODEL_PROFILE`) fails with a runtime error. Mock checkpoints cannot be reused by a production Qwen run because checkpoint cache matching requires an exact `modelProfileHash` match.
+
+---
+
+## Vectors must match the database that is served
+
+A vector attaches to a served record only when its `typedId` **and** `contentHash` match the record the service exports from its own database. Two consequences:
+
+- **Build or re-key the release from the database that is actually served.** `scripts/export-search-corpus.ts` and the seed-file exporter key records `source:seed-N`, while the live service exports from the database with its row ids (`source:<cuid>`). A release built from the seed file attaches to **0%** of a database-backed service. Re-key an existing release onto a database with `DATABASE_URL=... pnpm run search:vectors:rekey -- --source <release dir> --out <dir outside git> [--release-id id] [--min-coverage 0.95]`. It matches by record kind plus identical `retrievalText` (a stored vector depends only on that text; `contentHash` cannot be used because it covers the id), validates the source release first, never calls an embedding service, reads the database only (`findMany`), regenerates `probe-128.json`, recomputes every checksum with the normal builder, prints coverage per kind and up to 20 unmatched ids (ids only), and refuses to write under the minimum coverage (default 95%).
+- **A later edit changes `contentHash`.** Editing a record, or reloading the database with different ids, drops that record's vector (it is served in keyword mode) until the release is rebuilt or re-keyed. Coverage is reported on every response (`coverage.indexed / eligible`).
 
 ---
 

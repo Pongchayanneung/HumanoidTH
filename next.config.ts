@@ -7,7 +7,9 @@ const nextConfig: NextConfig = {
   // Shared Server Actions can reach the lazily loaded auth client on any page.
   // Include its native runtime in each route's serverless deployment trace.
   outputFileTracingIncludes: {
-    "/**": ["./generated/prisma/**/*"]
+    "/**": ["./generated/prisma/**/*"],
+    // The search route reads the active vector release at request time; trace it into the deployment.
+    "/api/search": ["./data/search/active-release.json", "./data/search/releases/**/*"]
   }
 };
 

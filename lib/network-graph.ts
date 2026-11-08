@@ -194,9 +194,13 @@ function sanitizeError(error: unknown) {
   return "Database unavailable.";
 }
 
+// 16 hex chars = 64 bits of the SHA-256 of the full normalized label. 8 chars (32 bits) was shown to
+// collide for two distinct organization names sharing a 50-character slug prefix.
+const ID_HASH_LENGTH = 16;
+
 function slugify(value: string) {
   const cleanValue = (value || "").trim().normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
-  const hash = createHash("sha256").update(cleanValue.toLowerCase()).digest("hex").slice(0, 8);
+  const hash = createHash("sha256").update(cleanValue.toLowerCase()).digest("hex").slice(0, ID_HASH_LENGTH);
   const slug = cleanValue
     .toLowerCase()
     .replace(/[^\p{L}\p{M}\p{N}]+/gu, "_")
@@ -209,7 +213,7 @@ export function stableTypedId(type: string, label: string): string {
   const cleanLabel = (label || "").trim().normalize("NFC");
   if (!cleanLabel) return `${type}:unknown`;
   const normalized = cleanLabel.toLowerCase();
-  const hash = createHash("sha256").update(normalized).digest("hex").slice(0, 8);
+  const hash = createHash("sha256").update(normalized).digest("hex").slice(0, ID_HASH_LENGTH);
   const slug = normalized
     .replace(/[^\p{L}\p{M}\p{N}]+/gu, "_")
     .replace(/^_+|_+$/g, "")
@@ -587,7 +591,7 @@ export const databaseNetworkGraphSource: NetworkGraphSource = {
   loadRecords: loadGraphRecordsFromPrisma
 };
 
-function dedupeKey(record: AtlasRecord) {
+export function dedupeKey(record: AtlasRecord) {
   const category = record.category ?? "unknown";
   if (category === "triplet_relation") {
     return `triplet:${slugify(record.subject ?? "")}:${slugify(record.relation ?? "")}:${slugify(record.object ?? "")}:${slugify(record.url ?? "")}`;
@@ -598,7 +602,7 @@ function dedupeKey(record: AtlasRecord) {
   return `${category}:${slugify(record.canonical_name ?? record.title ?? record.id)}`;
 }
 
-function mergeRecords(databaseRecords: AtlasRecord[], fileRecords: AtlasRecord[]) {
+export function mergeRecords(databaseRecords: AtlasRecord[], fileRecords: AtlasRecord[]) {
   const merged = new Map<string, AtlasRecord & { sourceIds?: string[]; importIds?: string[] }>();
   for (const record of [...databaseRecords, ...fileRecords]) {
     const key = dedupeKey(record);
@@ -765,11 +769,20 @@ function mergeEdge(edges: Map<string, NetworkEdge>, edge: NetworkEdge) {
   existing.weight += edge.weight || 1;
   existing.confidence = Math.max(existing.confidence, edge.confidence);
   existing.is_low_confidence = existing.is_low_confidence && edge.is_low_confidence;
+  const incomingReviewedOverInferred = Boolean(edge.is_reviewed) && !existing.is_reviewed;
   existing.is_reviewed = Boolean(existing.is_reviewed || edge.is_reviewed);
-  existing.review_status ||= edge.review_status;
-  existing.evidence_kind ||= edge.evidence_kind;
+  if (incomingReviewedOverInferred) {
+    // Reviewed evidence replaces the inferred status, kind and excerpt as one unit, so a "Reviewed
+    // assertion" is never shown with a machine-inferred excerpt.
+    existing.review_status = edge.review_status ?? existing.review_status;
+    existing.evidence_kind = edge.evidence_kind ?? existing.evidence_kind;
+    existing.evidence_excerpt = edge.evidence_excerpt ?? null;
+  } else {
+    existing.review_status ||= edge.review_status;
+    existing.evidence_kind ||= edge.evidence_kind;
+    existing.evidence_excerpt ||= edge.evidence_excerpt;
+  }
   existing.data_origin = mergeOrigins(existing.data_origin, edge.data_origin);
-  existing.evidence_excerpt ||= edge.evidence_excerpt;
   existing.url ||= edge.url;
   existing.source_platform ||= edge.source_platform;
   existing.published_at ||= edge.published_at;
@@ -1003,10 +1016,12 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
   const edges = new Map<string, NetworkEdge>();
   const recordNodeByName = new Map<string, string>();
   const robotNodeByName = new Map<string, string>();
+  const nodeIdByRecord = new Map<AtlasRecord, string>();
 
   for (const record of source.records) {
     if (record.category === "triplet_relation") continue;
     const id = addRecordNode(nodes, record);
+    nodeIdByRecord.set(record, id);
     const label = record.canonical_name || record.title;
     if (label) recordNodeByName.set(label.toLowerCase(), id);
     if (record.title) recordNodeByName.set(record.title.toLowerCase(), id);
@@ -1015,7 +1030,8 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
 
   for (const record of source.records) {
     if (record.category === "triplet_relation") continue;
-    const currentId = recordNodeByName.get((record.canonical_name || record.title || "").toLowerCase());
+    // Per-record lookup: a name shared across record types must not move edges to another type's node.
+    const currentId = nodeIdByRecord.get(record);
     if (!currentId) continue;
     const ids = recordOriginIds(record);
 

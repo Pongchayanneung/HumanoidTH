@@ -4,6 +4,7 @@ import {
   stableTypedId,
   buildNetworkGraph,
   loadGraphRecordsFromFile,
+  mergeRecords,
   normalizeFileRecord,
   filterGraph,
   type AtlasRecord,
@@ -17,8 +18,8 @@ test("stableTypedId: preserves distinct Thai entity names without collisions (Fi
   const vistecId = stableTypedId("organization", "สถาบันวิทยสิริเมธี (VISTEC)");
 
   // Assert Thai characters are preserved in the slug portion
-  assert.match(chulaId, /^organization:จุฬาลงกรณ์มหาวิทยาลัย_[a-f0-9]{8}$/);
-  assert.match(kuId, /^organization:มหาวิทยาลัยเกษตรศาสตร์_[a-f0-9]{8}$/);
+  assert.match(chulaId, /^organization:จุฬาลงกรณ์มหาวิทยาลัย_[a-f0-9]{16}$/);
+  assert.match(kuId, /^organization:มหาวิทยาลัยเกษตรศาสตร์_[a-f0-9]{16}$/);
 
   // Assert distinct Thai entities NEVER collide
   assert.notEqual(chulaId, kuId);
@@ -807,12 +808,80 @@ test("hybrid deduplication: long entity records sharing 80-character prefix neve
     data_origin: "import_file"
   };
 
-  const graph = await buildNetworkGraph({ records: [recA, recB], sourceMode: "file" });
+  // Go through the real hybrid merge/dedupe path (database + import file), then build the graph from it.
+  const merged = mergeRecords([recA], [{ ...recB, data_origin: "import_file" }]);
+  assert.equal(merged.length, 2, "dedupeKey/mergeRecords must keep the two distinct long records apart");
+  const graph = await buildNetworkGraph({ records: merged, sourceMode: "file" });
   assert.equal(
     graph.nodes.filter((n) => n.type === "contribution").length,
     2,
     "Distinct long entity records must not collide into a single node during hybrid merge"
   );
+});
+
+test("hybrid deduplication: the same record from database and import file merges into one node", async () => {
+  const base: AtlasRecord = {
+    id: "dup_db", category: "contribution", title: "Shared Contribution", canonical_name: "Shared Contribution",
+    description: null, organization: null, country: null, robot_type: null, embodiment_level: null,
+    contribution_type: null, stance: null, sentiment: null, perspective_theme: null, relation: null,
+    subject: null, object: null, url: "https://example.org/shared", source_platform: null, published_at: null,
+    author: null, confidence: 0.8, evidence_excerpt: null, notes: null, data_origin: "database"
+  };
+  const merged = mergeRecords([base], [{ ...base, id: "dup_file", data_origin: "import_file" }]);
+  assert.equal(merged.length, 1);
+  assert.equal(merged[0].data_origin, "merged");
+  assert.deepEqual(merged[0].source_record_ids, ["dup_db"]);
+  assert.deepEqual(merged[0].import_record_ids, ["dup_file"]);
+  const graph = await buildNetworkGraph({ records: merged, sourceMode: "file" });
+  assert.equal(graph.nodes.filter((n) => n.type === "contribution").length, 1);
+});
+
+test("stableTypedId: names sharing a 50-char slug prefix and a 32-bit hash prefix stay distinct (Finding 1, round 2)", () => {
+  // Found by search: both labels share the first 8 hex chars of their SHA-256 (82cd1245).
+  const a = stableTypedId("organization", "laboratory of autonomous humanoid robotics and systems research 6620");
+  const b = stableTypedId("organization", "laboratory of autonomous humanoid robotics and systems research 18466");
+  assert.notEqual(a, b);
+});
+
+test("graph semantics: a name shared by two record types keeps each record's own edges (Finding 2, round 2)", async () => {
+  const mk = (id: string, category: string, extra: Partial<AtlasRecord>): AtlasRecord => ({
+    id, category, title: "Shared", canonical_name: "Shared", description: null, organization: null, country: null,
+    robot_type: null, embodiment_level: null, contribution_type: null, stance: null, sentiment: null,
+    perspective_theme: null, relation: null, subject: null, object: null, url: null, source_platform: null,
+    published_at: null, author: null, confidence: 0.9, evidence_excerpt: null, notes: null, data_origin: "import_file",
+    ...extra
+  });
+  const robot = mk("r1", "robot_model", { organization: "Maker Lab", country: "Thailand" });
+  const contribution = mk("c1", "contribution", {});
+  const graph = await buildNetworkGraph({ records: [robot, contribution], sourceMode: "file" });
+  const robotNode = graph.nodes.find((n) => n.type === "robot_model" && n.label === "Shared");
+  const contributionNode = graph.nodes.find((n) => n.type === "contribution" && n.label === "Shared");
+  assert.ok(robotNode && contributionNode && robotNode.id !== contributionNode.id);
+  const developedBy = graph.edges.filter((e) => e.relation === "developed_by");
+  assert.ok(developedBy.length > 0, "robot has a developed_by edge");
+  for (const edge of developedBy) assert.equal(edge.source, robotNode.id, "developed_by must start at the robot, not the contribution");
+  assert.ok(!graph.edges.some((e) => e.source === contributionNode.id && e.relation === "developed_by"));
+});
+
+test("graph semantics: a reviewed edge merged over an inferred one never keeps the inferred excerpt (Finding 3, round 2)", async () => {
+  const mk = (id: string, reviewed: boolean, excerpt: string): AtlasRecord => ({
+    id, category: "robot_model", title: "Merge Bot", canonical_name: "Merge Bot", description: null,
+    organization: "Merge Org", country: null, robot_type: null, embodiment_level: null, contribution_type: null,
+    stance: null, sentiment: null, perspective_theme: null, relation: null, subject: null, object: null,
+    url: "https://example.org/merge", source_platform: null, published_at: null, author: null, confidence: 0.9,
+    evidence_excerpt: excerpt, notes: null, data_origin: "import_file",
+    is_reviewed: reviewed, verification_status: reviewed ? "APPROVED" : null
+  });
+  for (const order of [["inferred", "reviewed"], ["reviewed", "inferred"]] as const) {
+    const recs = order.map((k, i) => (k === "reviewed" ? mk(`m${i}`, true, "VERIFIED EXCERPT") : mk(`m${i}`, false, "MACHINE EXCERPT")));
+    // Distinct ids/dedupe keys are irrelevant here: both records yield the same developed_by edge id.
+    const graph = await buildNetworkGraph({ records: recs, sourceMode: "file" });
+    const edges = graph.edges.filter((e) => e.relation === "developed_by");
+    assert.equal(edges.length, 1, `order ${order.join("->")}: one merged edge`);
+    assert.equal(edges[0].is_reviewed, true);
+    assert.equal(edges[0].evidence_kind, "reviewed_assertion");
+    assert.equal(edges[0].evidence_excerpt, "VERIFIED EXCERPT");
+  }
 });
 
 test("graph file loader: loads public records while preserving M3 privacy and excluding Bumi", async () => {

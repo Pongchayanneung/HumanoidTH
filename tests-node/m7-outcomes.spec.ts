@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
@@ -156,9 +157,19 @@ async function postAction(request: APIRequestContext, id: string, body: string |
   return request.post("/", { multipart: { 0: '["$K1"]', ...body }, headers });
 }
 
-function slug(value: string): string {
-  // Mirrors slugify() in lib/network-graph.ts, so probes use the real node id format.
-  return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+// Mirrors stableTypedId() in lib/network-graph.ts (NFC + lowercase slug, 50 chars, plus a 16-hex SHA-256 of
+// the full label), so probes use the real node id format.
+function typedNodeId(type: string, label: string): string {
+  const normalized = label.trim().normalize("NFC").toLowerCase();
+  const hash = createHash("sha256").update(normalized).digest("hex").slice(0, 16);
+  const slug = normalized.replace(/[^\p{L}\p{M}\p{N}]+/gu, "_").replace(/^_+|_+$/g, "").slice(0, 50);
+  return slug ? `${type}:${slug}_${hash}` : `${type}:id_${hash}`;
+}
+
+// Mirrors edgeId() in lib/network-graph.ts.
+function graphEdgeId(source: string, relation: string, target: string, url?: string | null): string {
+  const hash = createHash("sha256").update(`${source}:${relation}:${target}:${url || ""}`).digest("hex").slice(0, 10);
+  return `edge:${relation}_${hash}`;
 }
 
 const forgedCookieHeader = FORGED_COOKIES.map(({ name, value }) => `${name}=${value}`).join("; ");
@@ -369,10 +380,10 @@ test.describe("database-backed outcomes (denial, privacy, map cold read)", () =>
 
   test("2c privacy: the network graph, node and edge APIs expose the public unit only, with no private or pending data", async ({ request }) => {
     const markers = [...PENDING_MARKERS, ...PRIVATE_UNIT.fields, ...PUBLIC_UNIT.masked];
-    const publicNodeId = `owned_inventory:${slug(PUBLIC_UNIT.name)}`;
-    const privateNodeId = `owned_inventory:${slug(PRIVATE_UNIT.name)}`;
-    const pendingNodeId = "contribution:thai_hri_research_seed";
-    type Graph = { nodes: { id: string; label: string; type: string; is_private: boolean }[]; edges: { id: string; source: string; target: string }[] };
+    const publicNodeId = typedNodeId("owned_inventory", PUBLIC_UNIT.name);
+    const privateNodeId = typedNodeId("owned_inventory", PRIVATE_UNIT.name);
+    const pendingNodeIds = ["contribution:thai_hri_research_seed", typedNodeId("contribution", "Thai HRI research seed")];
+    type Graph = { nodes: { id: string; label: string; type: string; is_private: boolean }[]; edges: { id: string; source: string; target: string; relation: string; url: string | null }[] };
 
     // The server caches a built graph for 60 s per option set, so wait until it reflects the fixtures. Only
     // inventory nodes are requested: the full graph is cut at 1000 nodes by rank and could drop the unit.
@@ -386,7 +397,7 @@ test.describe("database-backed outcomes (denial, privacy, map cold read)", () =>
     }, { message: "public unit in the database graph", timeout: 75_000, intervals: [2_000] }).toContain(publicNodeId);
     expect(inventoryNodeIds, "only the public unit is an inventory node").toEqual([publicNodeId]);
 
-    let publicEdgeIds: string[] = [];
+    let publicEdges: Graph["edges"] = [];
     for (const source of ["database", "auto", "hybrid", "file"]) {
       // A unique edge limit gives each request its own cache slot, so it is never a pre-fixture graph.
       const response = await request.get(`/api/network/graph?source=${source}&limitNodes=1000&limitEdges=${2400 + Math.floor(Math.random() * 90)}&includePrivate=true`);
@@ -396,9 +407,9 @@ test.describe("database-backed outcomes (denial, privacy, map cold read)", () =>
       expect(leaked(text, markers), `graph source=${source}`).toEqual([]);
       expect(graph.nodes.filter((node) => node.is_private), `private nodes, source=${source}`).toEqual([]);
       expect(graph.nodes.map((node) => node.id), `source=${source}`).not.toContain(privateNodeId);
-      expect(graph.nodes.map((node) => node.id), `source=${source}`).not.toContain(pendingNodeId);
+      for (const pendingNodeId of pendingNodeIds) expect(graph.nodes.map((node) => node.id), `source=${source}`).not.toContain(pendingNodeId);
       if (source === "database") {
-        publicEdgeIds = graph.edges.filter((edge) => edge.source === publicNodeId || edge.target === publicNodeId).map((edge) => edge.id);
+        publicEdges = graph.edges.filter((edge) => edge.source === publicNodeId || edge.target === publicNodeId);
       }
     }
 
@@ -408,13 +419,17 @@ test.describe("database-backed outcomes (denial, privacy, map cold read)", () =>
     const detail = await request.get(`/api/network/node/${encodeURIComponent(publicNodeId)}?source=database`);
     if (detail.status() === 200) expect(leaked(await detail.text(), markers), "public unit node detail").toEqual([]);
     else test.info().annotations.push({ type: "note", description: "public unit is outside the 1000-node detail window; detail positive control skipped" });
-    const privateEdgeIds = publicEdgeIds.map((id) => id.replaceAll(slug(PUBLIC_UNIT.name), slug(PRIVATE_UNIT.name)));
+    const publicEdgeIds = publicEdges.map((edge) => edge.id);
+    // The private unit's edges are the public unit's edges with the endpoint swapped, under the app's real edge id.
+    const swap = (id: string) => (id === publicNodeId ? privateNodeId : id);
+    const privateEdgeIds = publicEdges.map((edge) => graphEdgeId(swap(edge.source), edge.relation, swap(edge.target), edge.url));
+    expect(privateEdgeIds.filter((id) => publicEdgeIds.includes(id)), "private edge probes must differ from public edge ids").toEqual([]);
     for (const id of publicEdgeIds) {
       const edge = await request.get(`/api/network/edge/${encodeURIComponent(id)}?source=database`);
       if (edge.status() === 200) expect(leaked(await edge.text(), markers), "public unit edge detail").toEqual([]);
     }
     for (const mode of ["database", "auto", "hybrid", "file"]) {
-      const probes: [string, string][] = [["node", privateNodeId], ["node", pendingNodeId], ...privateEdgeIds.map((id): [string, string] => ["edge", id])];
+      const probes: [string, string][] = [["node", privateNodeId], ...pendingNodeIds.map((id): [string, string] => ["node", id]), ...privateEdgeIds.map((id): [string, string] => ["edge", id])];
       for (const [kind, id] of probes) {
         const probe = await request.get(`/api/network/${kind}/${encodeURIComponent(id)}?source=${mode}&includePrivate=true`);
         expect(probe.status(), `${kind} ${id} source=${mode}`).toBe(404);

@@ -55,6 +55,15 @@ Model configurations are explicitly pinned and bound to their generator implemen
 
 ---
 
+## Vectors must match the database that is served
+
+A vector attaches to a served record only when its `typedId` **and** `contentHash` match the record the service exports from its own database. Two consequences:
+
+- **Build or re-key the release from the database that is actually served.** `scripts/export-search-corpus.ts` and the seed-file exporter key records `source:seed-N`, while the live service exports from the database with its row ids (`source:<cuid>`). A release built from the seed file attaches to **0%** of a database-backed service. Re-key an existing release onto a database with `DATABASE_URL=... pnpm run search:vectors:rekey -- --source <release dir> --out <dir outside git> [--release-id id] [--min-coverage 0.95]`. It matches by record kind plus identical `retrievalText` (a stored vector depends only on that text; `contentHash` cannot be used because it covers the id), validates the source release first, never calls an embedding service, reads the database only (`findMany`), regenerates `probe-128.json`, recomputes every checksum with the normal builder, prints coverage per kind and up to 20 unmatched ids (ids only), and refuses to write under the minimum coverage (default 95%).
+- **A later edit changes `contentHash`.** Editing a record, or reloading the database with different ids, drops that record's vector (it is served in keyword mode) until the release is rebuilt or re-keyed. Coverage is reported on every response (`coverage.indexed / eligible`).
+
+---
+
 ## 3. Resumable Checkpoint Architecture
 
 To protect against process crashes, timeouts, or GPU disconnections during long indexing runs:

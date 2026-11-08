@@ -346,9 +346,10 @@ function sourceTypeToCategory(sourceType: string) {
   return "source_record";
 }
 
-export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
+export async function loadGraphRecordsFromPrismaWithWarnings(): Promise<{ records: AtlasRecord[]; warnings: string[] }> {
   const { prisma } = await import("@/lib/prisma");
   const records: AtlasRecord[] = [];
+  const warnings: string[] = [];
   // Public data projection (M3 / T03): Exclude private records and unapproved submissions
   const [robots, inventory, contributions, sources, perspectives, triplets] = await Promise.all([
     prisma.robotModel
@@ -384,6 +385,13 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
       orderBy: { confidence: "desc" }
     })
   ]);
+
+  if (robots.length >= 700) warnings.push("Robot models query reached loader cap (700); earlier records omitted.");
+  if (inventory.length >= 500) warnings.push("Inventory query reached loader cap (500); earlier records omitted.");
+  if (contributions.length >= 700) warnings.push("Contributions query reached loader cap (700); earlier records omitted.");
+  if (sources.length >= 1200) warnings.push("Source records query reached loader cap (1200); earlier records omitted.");
+  if (perspectives.length >= 800) warnings.push("Perspectives query reached loader cap (800); earlier records omitted.");
+  if (triplets.length >= 1400) warnings.push("Triplets query reached loader cap (1400); earlier records omitted.");
 
   for (const item of robots) {
     const isReviewed = Boolean(item.lastVerifiedAt);
@@ -574,7 +582,12 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
     });
   }
 
-  return records;
+  return { records, warnings };
+}
+
+export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
+  const result = await loadGraphRecordsFromPrismaWithWarnings();
+  return result.records;
 }
 
 export const fileNetworkGraphSource: NetworkGraphSource = {
@@ -659,8 +672,12 @@ export async function loadGraphRecordsHybrid(): Promise<SourceLoadResult> {
   let dbRecords: AtlasRecord[] = [];
   let databaseOk = false;
   try {
-    dbRecords = await loadGraphRecordsFromPrisma();
+    const dbResult = await loadGraphRecordsFromPrismaWithWarnings();
+    dbRecords = dbResult.records;
     databaseOk = true;
+    if (dbResult.warnings.length) {
+      warnings.push(...dbResult.warnings);
+    }
   } catch (error) {
     warnings.push(sanitizeError(error));
   }
@@ -687,7 +704,8 @@ export async function loadGraphRecordsHybrid(): Promise<SourceLoadResult> {
 export async function loadGraphRecordsAuto(): Promise<SourceLoadResult> {
   const fileAvailable = existsSync(getNetworkImportFilePath());
   try {
-    return { records: await loadGraphRecordsFromPrisma(), resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: [] };
+    const dbResult = await loadGraphRecordsFromPrismaWithWarnings();
+    return { records: dbResult.records, resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: dbResult.warnings };
   } catch {
     if (!fileAvailable) {
       return { records: [], resolvedSource: "fallback_file", databaseAvailable: false, fileAvailable, warnings: [fallbackWarning, importFileWarning] };
@@ -710,7 +728,8 @@ export async function loadGraphRecords(mode: NetworkSourceMode): Promise<SourceL
 
   if (mode === "database") {
     try {
-      return { records: await loadGraphRecordsFromPrisma(), resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: [] };
+      const dbResult = await loadGraphRecordsFromPrismaWithWarnings();
+      return { records: dbResult.records, resolvedSource: "database", databaseAvailable: true, fileAvailable, warnings: dbResult.warnings };
     } catch (error) {
       throw new Error(sanitizeError(error));
     }
@@ -1449,7 +1468,7 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
   const allNodes = [...nodes.values()];
   const allEdges = [...edges.values()].filter((edge) => nodes.has(edge.source) && nodes.has(edge.target));
   const filtered = filterBuiltGraph(allNodes, allEdges, options);
-  const truncated = filtered.nodes.length > maxNodes || filtered.edges.length > maxEdges;
+  const truncated = filtered.nodes.length > maxNodes || filtered.edges.length > maxEdges || source.warnings.length > 0;
   const limited = limitGraph(filtered.nodes, filtered.edges, maxNodes, maxEdges);
   applyDegrees(new Map(limited.nodes.map((node) => [node.id, node])), new Map(limited.edges.map((edge) => [edge.id, edge])));
 

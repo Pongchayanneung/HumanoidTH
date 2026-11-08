@@ -155,3 +155,39 @@ export function isEligiblePublicContribution(item: {
   if (lowerUrl?.includes("placeholder")) return false;
   return true;
 }
+
+/**
+ * Verifies whether a perspective annotation is fresh and consistent with its parent source.
+ * Excludes stale annotations whose evidence excerpts are no longer present in re-ingested source text,
+ * or whose parent source is no longer ACCEPTED.
+ */
+export function isFreshPerspectiveAnnotation(
+  annotation: {
+    evidenceExcerpt?: string | null;
+    createdAt?: Date | string | null;
+    method?: string | null;
+  },
+  source?: {
+    title?: string | null;
+    excerpt?: string | null;
+    relevanceStatus?: string | null;
+    updatedAt?: Date | string | null;
+  } | null
+): boolean {
+  if (!source) return true;
+  if (source.relevanceStatus && source.relevanceStatus !== "ACCEPTED") return false;
+
+  // If parent source text is present, verify evidence excerpt containment
+  if (source.title !== undefined || source.excerpt !== undefined) {
+    const excerpt = annotation.evidenceExcerpt?.trim();
+    if (excerpt && excerpt.length >= 10) {
+      const parentText = `${source.title ?? ""} ${source.excerpt ?? ""}`.toLowerCase();
+      if (!parentText.includes(excerpt.toLowerCase())) {
+        // Evidence excerpt was removed or changed in re-ingested source: stale
+        return false;
+      }
+    }
+  }
+
+  return true;
+}

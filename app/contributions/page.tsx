@@ -153,7 +153,8 @@ export default async function ContributionsPage({ searchParams }: { searchParams
       thLicense: "License",
       thStatus: "Status",
       thDescription: "Abstract / Description",
-      thLastUpdated: "Last Updated"
+      thLastUpdated: "Last Updated",
+      approved: "Approved"
     },
     th: {
       statusNoticeTitle: "การแจ้งเตือนสถานะ",
@@ -177,7 +178,8 @@ export default async function ContributionsPage({ searchParams }: { searchParams
       thLicense: "สัญญาอนุญาต",
       thStatus: "สถานะ",
       thDescription: "บทคัดย่อ / คำอธิบาย",
-      thLastUpdated: "อัปเดตล่าสุด"
+      thLastUpdated: "อัปเดตล่าสุด",
+      approved: "อนุมัติแล้ว"
     }
   }[lang];
 
@@ -231,6 +233,15 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           align-items: end;
           margin-bottom: 16px;
         }
+        .filter-form label,
+        .filter-form input,
+        .filter-form select {
+          min-width: 0;
+        }
+        .filter-form input,
+        .filter-form select {
+          width: 100%;
+        }
         @media (max-width: 860px) {
           .filter-form {
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -242,19 +253,35 @@ export default async function ContributionsPage({ searchParams }: { searchParams
         }
         @media (max-width: 480px) {
           .filter-form {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
           }
         }
-        .type-badge {
-          border-radius: 4px !important;
+        .contributions-table thead th {
+          overflow-wrap: normal;
+        }
+        .contributions-table .license-cell {
+          overflow-wrap: break-word;
+        }
+        .contributions-table .status-cell,
+        .contributions-table .updated-cell {
+          white-space: nowrap;
+        }
+        .contributions-table .updated-cell {
+          font-size: 12px;
+          font-variant-numeric: tabular-nums;
+        }
+        .contributions-table .contribution-badge {
+          border-radius: 4px;
           font-size: 11px;
           font-weight: 700;
+          line-height: 1.4;
           padding: 3px 7px;
-          background: rgba(74, 124, 89, 0.12) !important;
-          color: var(--accent-strong) !important;
-          border: 1px solid rgba(74, 124, 89, 0.3) !important;
+        }
+        .contributions-table .type-badge {
+          background: rgba(74, 124, 89, 0.12);
+          color: var(--accent-strong);
+          border-color: rgba(74, 124, 89, 0.3);
           text-transform: capitalize;
-          display: inline-block;
         }
       `}} />
 
@@ -308,7 +335,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
 
       {/* Contributions Table */}
       <div className="table-wrap">
-        <table>
+        <table className="contributions-table">
           <caption className="atlas-table-caption">{lang === "th" ? "ผลงานที่เผยแพร่แล้ว" : "Published contributions"}</caption>
           <thead>
             <tr>
@@ -333,18 +360,18 @@ export default async function ContributionsPage({ searchParams }: { searchParams
                   </span>
                 </td>
                 <td>
-                  <span className="badge type-badge">
+                  <span className="badge contribution-badge type-badge">
                     {item.contributionType.replace(/_/g, " ")}
                   </span>
                 </td>
                 <td>{item.organization || "N/A"}</td>
                 <td>{item.relatedRobotModel?.canonicalName || "General / None"}</td>
-                <td>
+                <td className="license-cell">
                   <code>{item.license || "N/A"}</code>
                 </td>
-                <td>
-                  <span className="badge ok">
-                    {item.verificationStatus}
+                <td className="status-cell">
+                  <span className="badge ok contribution-badge">
+                    {localT.approved}
                   </span>
                 </td>
                 <td style={{ maxWidth: "300px", fontSize: "12px" }}>
@@ -357,7 +384,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
                     </div>
                   )}
                 </td>
-                <td style={{ fontSize: "12px" }}>
+                <td className="updated-cell">
                   {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : "-"}
                 </td>
               </tr>

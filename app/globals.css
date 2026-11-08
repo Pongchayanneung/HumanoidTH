@@ -119,6 +119,10 @@ body:has(#atlas-navigation[open]) { overflow: hidden; }
 .atlas-coverage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px 28px; margin-block: 24px; }
 .atlas-chart { border-top: 1px solid #c7cfc3; padding-top: 14px; min-width: 0; }
 .atlas-chart caption { text-align: left; color: var(--text-secondary); padding-bottom: 8px; }
+.atlas-chart table { min-width: 0; table-layout: fixed; }
+.atlas-chart tbody th { text-transform: none; }
+.atlas-chart tr > :last-child { width: 6rem; text-align: end; font-variant-numeric: tabular-nums; }
+.atlas-chart tbody tr:hover { transform: none; }
 .atlas-table-caption { text-align: left; color: var(--text-secondary); padding: 10px 12px; }
 .atlas-bar-track { display: block; height: 5px; margin-top: 5px; background: var(--surface-muted); }
 .atlas-bar-track span { display: block; height: 100%; background: var(--accent-strong); }

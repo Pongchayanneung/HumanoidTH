@@ -119,33 +119,79 @@ export function computeRecordKeysHash(documents: SearchDocument[]): string {
  * If manifest and manifestDir are provided, verifies complete on-disk file checksums.
  */
 export function validateVectorRelease(params: {
-  buffer: Buffer;
+  buffer?: Buffer | null;
   documents: SearchDocument[];
-  expectedDimensions: number;
+  expectedDimensions?: number;
   expectedVectorCount?: number;
   profile?: ModelProfile | null;
   manifest?: VectorReleaseManifest;
   manifestDir?: string;
 }): VectorValidationResult {
-  const { buffer, documents, expectedDimensions, expectedVectorCount, manifest, manifestDir } = params;
+  const { documents, expectedVectorCount, manifest, manifestDir } = params;
+  const buf = params.buffer ?? Buffer.alloc(0);
   const checks: VectorValidationCheck[] = [];
   const errors: string[] = [];
 
+  // Reconcile and validate dimensions across params, profile, and manifest
+  const profileDims = params.profile?.dimensions;
+  const manifestDims = manifest?.modelProfile?.dimensions;
+  if (params.expectedDimensions !== undefined && profileDims !== undefined && params.expectedDimensions !== profileDims) {
+    errors.push(
+      `Conflicting dimensions: expectedDimensions (${params.expectedDimensions}) does not match profile dimensions (${profileDims})`
+    );
+  }
+  if (params.expectedDimensions !== undefined && manifestDims !== undefined && params.expectedDimensions !== manifestDims) {
+    errors.push(
+      `Conflicting dimensions: expectedDimensions (${params.expectedDimensions}) does not match manifest dimensions (${manifestDims})`
+    );
+  }
+  if (profileDims !== undefined && manifestDims !== undefined && profileDims !== manifestDims) {
+    errors.push(
+      `Conflicting dimensions: profile dimensions (${profileDims}) does not match manifest dimensions (${manifestDims})`
+    );
+  }
+  const expectedDimensions = params.expectedDimensions ?? profileDims ?? manifestDims ?? 1024;
+
   const rowBytes = expectedDimensions * BYTES_PER_FLOAT32;
-  const actualVectorCount = buffer.length === 0 ? 0 : buffer.length / rowBytes;
+  const actualVectorCount = buf.length === 0 ? 0 : buf.length / rowBytes;
   const isIntegerCount = Number.isInteger(actualVectorCount);
   const expectedBytes = (expectedVectorCount ?? actualVectorCount) * rowBytes;
 
+  // Validate buffer presence against declared vector coverage
+  const declaredVectorCount = manifest?.coverage?.vectorCount;
+  if (declaredVectorCount !== undefined) {
+    const countMatches = actualVectorCount === declaredVectorCount;
+    const bufferPresent = declaredVectorCount === 0 || (params.buffer !== null && params.buffer !== undefined);
+    checks.push({
+      name: "manifest_coverage_count",
+      passed: countMatches && bufferPresent,
+      detail: `Manifest declares ${declaredVectorCount} vectors; buffer has ${actualVectorCount} vectors`
+    });
+    if (!bufferPresent) {
+      errors.push(
+        `Missing vector buffer: manifest declares ${declaredVectorCount} vectors but buffer was omitted`
+      );
+    } else if (!countMatches) {
+      errors.push(
+        `Vector count mismatch: manifest declares ${declaredVectorCount} vectors but buffer has ${actualVectorCount}`
+      );
+    }
+  } else if (expectedVectorCount !== undefined && expectedVectorCount > 0 && (params.buffer === null || params.buffer === undefined)) {
+    errors.push(
+      `Missing vector buffer: expectedVectorCount is ${expectedVectorCount} but buffer was omitted`
+    );
+  }
+
   // 1. File size alignment check
-  const sizeCheck = isIntegerCount && buffer.length === expectedBytes;
+  const sizeCheck = isIntegerCount && buf.length === expectedBytes;
   checks.push({
     name: "file_size_alignment",
     passed: sizeCheck,
-    detail: `Buffer size is ${buffer.length} bytes for ${actualVectorCount} vectors of ${expectedDimensions} dims`
+    detail: `Buffer size is ${buf.length} bytes for ${actualVectorCount} vectors of ${expectedDimensions} dims`
   });
   if (!sizeCheck) {
     errors.push(
-      `Buffer length ${buffer.length} is not aligned to ${rowBytes} bytes/row (expected ${expectedBytes})`
+      `Buffer length ${buf.length} is not aligned to ${rowBytes} bytes/row (expected ${expectedBytes})`
     );
   }
 
@@ -156,7 +202,7 @@ export function validateVectorRelease(params: {
 
   for (let row = 0; row < actualVectorCount; row++) {
     try {
-      const vec = readVectorAtRow(buffer, row, expectedDimensions);
+      const vec = readVectorAtRow(buf, row, expectedDimensions);
       let sumSq = 0;
       for (let d = 0; d < vec.length; d++) {
         const val = vec[d];
@@ -272,7 +318,7 @@ export function validateVectorRelease(params: {
     dimensions: expectedDimensions,
     vectorCount: actualVectorCount,
     expectedBytes,
-    actualBytes: buffer.length,
+    actualBytes: buf.length,
     checks,
     errors
   };

@@ -110,6 +110,15 @@ test("isEligiblePublicRobot filters unverified foreign robots, mixed-case placeh
   }
 });
 
+test("public robot queries exclude mixed-case placeholders and out-of-scope names", () => {
+  assert.equal(isEligiblePublicRobot("Mixed-case pLaCeHoLdEr"), false);
+  assert.equal(isEligiblePublicRobot("BuMI HuMANoID RoBOt"), false);
+
+  for (const { canonicalName } of publicRobotWhere.NOT) {
+    assert.equal("mode" in canonicalName && canonicalName.mode, "insensitive");
+  }
+});
+
 test("isEligiblePublicContribution rejects private, unapproved, or placeholder records", () => {
   // Valid public approved contribution
   assert.equal(

@@ -9,6 +9,15 @@ import {
 } from "@/lib/classifiers";
 import { canonicalizeUrl } from "@/lib/url";
 import { enrichRawMetaWithNetworkGeo } from "@/lib/geo";
+import {
+  MACHINE_ANNOTATION_METHODS,
+  buildSourceSnapshot,
+  type SourceClaimRecord,
+  type VersionHistoryEntry
+} from "@/lib/claim-versioning";
+
+// Actors that write versions without a human reviewer.
+const SYSTEM_ACTORS = ["ingest", "system", "seed"];
 
 export async function saveSources(records: NormalizedSource[]) {
   let saved = 0;
@@ -138,7 +147,19 @@ export async function saveSources(records: NormalizedSource[]) {
     }
 
     // Atomic write of source, verified perspective annotation, and relationship triplets
-    await prisma.$transaction(async (tx) => {
+    const written = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${url}))`;
+      await tx.$queryRaw`SELECT id FROM "SourceRecord" WHERE url = ${url} FOR UPDATE`;
+      const previous = await tx.sourceRecord.findUnique({ where: { url }, include: { annotations: true, triplets: true } });
+      const previousVersioning = (previous?.rawMeta as any)?._versioning ?? {};
+
+      // A record last revised by a human reviewer is never silently overwritten by a crawler run.
+      // Editorial updates go through updateSourceClaim with expectedVersion checks.
+      const lastEditor = previousVersioning.lastUpdatedBy;
+      if (previous && typeof lastEditor === "string" && !SYSTEM_ACTORS.includes(lastEditor)) {
+        console.warn(`Skipping re-ingestion of ${url}: version ${previousVersioning.version ?? 1} was revised by ${lastEditor}.`);
+        return false;
+      }
       const source = await tx.sourceRecord.upsert({
         where: { url },
         create: {
@@ -163,14 +184,13 @@ export async function saveSources(records: NormalizedSource[]) {
         }
       });
 
-      // Machine-generated annotation methods eligible for cleanup/refresh
-      const MACHINE_ANNOTATION_METHODS = ["gemini-1.5-flash", "rules_fallback", "rules_with_evidence"];
-
       // Curated seed sources and records must never have their curated annotations or triplets deleted
       const isCuratedSource =
         source.sourceType === "SEED" ||
         Boolean((source.rawMeta as any)?.category === "triplet_relation") ||
-        Boolean((source.rawMeta as any)?.source_id);
+        Boolean((source.rawMeta as any)?.source_id) ||
+        Boolean((previous?.rawMeta as any)?.category === "triplet_relation") ||
+        Boolean((previous?.rawMeta as any)?.source_id);
 
       // Clean up stale machine-generated annotations only; NEVER delete human_review or seed_json records
       await tx.perspectiveAnnotation.deleteMany({
@@ -180,8 +200,8 @@ export async function saveSources(records: NormalizedSource[]) {
         }
       });
 
-      // Never wipe out curated seed triplets. Only refresh machine triplets on dynamic sources when replacement triplets exist
-      if (!isCuratedSource && geminiResult?.triplets && geminiResult.triplets.length > 0) {
+      // Never wipe out curated seed triplets; refresh dynamic-source triplets.
+      if (!isCuratedSource) {
         await tx.triplet.deleteMany({
           where: {
             sourceId: source.id
@@ -248,9 +268,48 @@ export async function saveSources(records: NormalizedSource[]) {
           }
         }
       }
+
+      const current = await tx.sourceRecord.findUniqueOrThrow({
+        where: { id: source.id }, include: { annotations: true, triplets: true }
+      });
+      const history: VersionHistoryEntry[] = [...(previousVersioning.history ?? [])];
+      let parentSnapshotHash: string | undefined = previousVersioning.snapshotHash;
+      if (previous) {
+        const oldVersion = previousVersioning.version ?? 1;
+        const parent = history.find((entry) => entry.version === oldVersion - 1);
+        const oldSnapshot = buildSourceSnapshot(previous as SourceClaimRecord, previous.annotations, previous.triplets,
+          undefined, undefined, parent?.version, parent?.snapshotHash);
+        parentSnapshotHash ??= oldSnapshot.snapshotHash;
+        const index = history.findIndex((entry) => entry.version === oldVersion);
+        if (index >= 0) {
+          if (!history[index].snapshot) history[index] = { ...history[index], snapshot: oldSnapshot };
+        } else {
+          history.push({ version: oldVersion, snapshot: oldSnapshot, contentHash: oldSnapshot.contentHash,
+            assertionsHash: oldSnapshot.assertionsHash, snapshotHash: oldSnapshot.snapshotHash,
+            relevanceStatus: oldSnapshot.relevanceStatus, actor: oldSnapshot.metadata.actor,
+            reason: oldSnapshot.metadata.reason, updatedAt: oldSnapshot.metadata.timestamp });
+        }
+      }
+      const version = previous ? (previousVersioning.version ?? 1) + 1 : 1;
+      const timestamp = new Date().toISOString();
+      const snapshot = buildSourceSnapshot(
+        { ...current, rawMeta: { _versioning: { version, updatedAt: timestamp } } } as SourceClaimRecord,
+        current.annotations, current.triplets, "ingest", `Ingest batch import (${record.sourceType})`,
+        previous ? version - 1 : undefined, parentSnapshotHash
+      );
+      history.push({ version, snapshot, contentHash: snapshot.contentHash, assertionsHash: snapshot.assertionsHash,
+        snapshotHash: snapshot.snapshotHash, relevanceStatus: snapshot.relevanceStatus, actor: "ingest",
+        reason: snapshot.metadata.reason, updatedAt: timestamp });
+      await tx.sourceRecord.update({ where: { id: source.id }, data: { rawMeta: JSON.parse(JSON.stringify({
+        ...rawMeta, _versioning: { version, history, contentHash: snapshot.contentHash,
+          assertionsHash: snapshot.assertionsHash, snapshotHash: snapshot.snapshotHash,
+          status: relevance.relevanceStatus === "ACCEPTED" ? "ACTIVE" : "RETIRED",
+          lastUpdatedBy: "ingest", revisionReason: snapshot.metadata.reason, updatedAt: timestamp }
+      })) } });
+      return true;
     });
 
-    saved += 1;
+    if (written !== false) saved += 1;
   }
 
   return saved;

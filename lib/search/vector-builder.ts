@@ -10,6 +10,7 @@ import {
 } from "node:fs";
 import { resolve, join } from "node:path";
 import { createHash } from "node:crypto";
+import { embeddingHeaders, resolveEmbeddingApiKey } from "./embedding-env";
 import type { SearchDocument, SearchExportManifest, SearchRecordKind, LanguageTag } from "./types";
 import {
   DEFAULT_MODEL_PROFILE,
@@ -99,6 +100,10 @@ export class TeiEmbeddingGenerator implements EmbeddingGenerator {
   private endpoint: string;
   private dimensions: number;
 
+  /**
+   * Speaks the direct TEI wire format. The bearer key comes from embeddingHeaders()
+   * (EMBEDDING_SERVICE_API_KEY, legacy alias EMBEDDING_SERVICE_KEY) and is never logged.
+   */
   constructor(endpoint: string, dimensions: number = 1024) {
     this.endpoint = endpoint.replace(/\/+$/, "");
     this.dimensions = dimensions;
@@ -115,14 +120,21 @@ export class TeiEmbeddingGenerator implements EmbeddingGenerator {
       const chunk = texts.slice(i, i + batchSize);
       const res = await fetch(`${this.endpoint}/embed`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: embeddingHeaders(resolveEmbeddingApiKey()),
         body: JSON.stringify({ inputs: chunk, normalize: true, truncate: true })
       });
       if (!res.ok) {
-        throw new Error(`Embedding service returned HTTP ${res.status}: ${await res.text()}`);
+        throw new Error(`Embedding service returned HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
       }
       const data = (await res.json()) as number[][];
+      if (!Array.isArray(data) || data.length !== chunk.length) {
+        throw new Error(`Embedding service returned ${Array.isArray(data) ? data.length : "no"} vectors for ${chunk.length} inputs`);
+      }
       for (const row of data) {
+        if (!Array.isArray(row) || row.length !== this.dimensions) {
+          // Never truncate or pad: a size mismatch means the model does not match the pinned profile.
+          throw new Error(`Embedding service returned a vector of length ${Array.isArray(row) ? row.length : "n/a"}, expected ${this.dimensions}`);
+        }
         const f32 = new Float32Array(row);
         results.push(l2Normalize(f32));
       }

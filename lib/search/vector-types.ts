@@ -32,18 +32,22 @@ export const MOCK_MODEL_PROFILE: ModelProfile = {
 };
 
 /**
- * Pinned model profile for production Qwen-compatible embedding service.
- * Pinned to explicit commit revision e085e72a818c399b19e0813958fbc8d8e58dfd27.
+ * Pinned model profile for the production embedding service.
+ * Qwen3-Embedding-0.6B emits 1,024-dimension vectors (verified through a running
+ * text-embeddings-inference server on 2026-11-08) and uses last-token pooling.
+ * Pinned to explicit commit revision 97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3.
+ * Queries are sent as `Instruct: <queryInstructionTask>\nQuery:<text>`; documents get no prefix.
+ * Replaces the earlier Alibaba-NLP/gte-Qwen2-1.5B-instruct pin, whose output size was never verified.
  */
 export const DEFAULT_MODEL_PROFILE: ModelProfile = {
-  modelId: "Alibaba-NLP/gte-Qwen2-1.5B-instruct",
-  revision: "e085e72a818c399b19e0813958fbc8d8e58dfd27",
+  modelId: "Qwen/Qwen3-Embedding-0.6B",
+  revision: "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
   dimensions: 1024,
   precision: "float32",
   pooling: "last_token",
   normalized: true,
   queryInstructionTask: "Given a Thai or English robotics information request, retrieve relevant public atlas records.",
-  profileHash: "qwen2-gte-1024-f32-l2-e085e72-v1",
+  profileHash: "qwen3-embedding-0.6b-1024-f32-l2-97b0c61-v1",
   provider: "tei"
 };
 

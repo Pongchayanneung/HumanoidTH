@@ -14,7 +14,9 @@ import {
   DeterministicMockEmbeddingGenerator,
   TeiEmbeddingGenerator
 } from "../lib/search/vector-builder";
-import type { EmbeddingGenerator } from "../lib/search/vector-types";
+import { DEFAULT_MODEL_PROFILE, type EmbeddingGenerator } from "../lib/search/vector-types";
+import { formatQueryForEmbedding } from "../lib/search/query-embedder";
+import { prepareQuery } from "../lib/search/ranking";
 
 async function main() {
   const args = process.argv.slice(2);
@@ -110,8 +112,9 @@ async function main() {
     }
   }
 
-  const instruction = FROZEN_SEMANTIC_POLICY.queryInstructionTask;
-  const queryTexts = allQueries.map((q) => `${instruction} ${q.queryText}`);
+  // Identical to what the website sends: the prepared (NFKC, case-folded) request with the
+  // instruction prefix. Documents are embedded without any prefix.
+  const queryTexts = allQueries.map((q) => formatQueryForEmbedding(DEFAULT_MODEL_PROFILE, prepareQuery(q.queryText).embeddingText));
   if (queryGen) {
     const queryVectors = await queryGen.generateBatches(queryTexts);
     for (let i = 0; i < allQueries.length; i++) {

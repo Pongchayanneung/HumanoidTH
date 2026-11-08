@@ -1,6 +1,12 @@
 import { createDatabaseSearchService } from "../../../lib/search/database-service";
+import { createSemanticOptionsFromEnv } from "../../../lib/search/semantic-config";
 
-const searchService = createDatabaseSearchService(async () => (await import("../../../lib/prisma")).prisma);
+// Semantic dependencies come from the environment (ATLAS_SEMANTIC, EMBEDDING_SERVICE_URL,
+// EMBEDDING_SERVICE_API_KEY, EMBEDDING_SERVICE_PROTOCOL). Without them this is the keyword-only service it always was.
+const searchService = createDatabaseSearchService(
+  async () => (await import("../../../lib/prisma")).prisma,
+  createSemanticOptionsFromEnv(),
+);
 
 export function POST(request: Request): Promise<Response> {
   return searchService(request);

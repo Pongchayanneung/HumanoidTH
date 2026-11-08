@@ -24,6 +24,7 @@ Results are related records with their original evidence. A request such as "hum
 
 - **No real-vector semantic run.** All semantic tests use synthetic unit vectors. No embedding model was run, no real vector release was queried, and no semantic quality is claimed.
 - **The 0.62 cutoff is provisional and uncalibrated** (`calibrationStatus: "provisional_uncalibrated"`). It is honoured, not endorsed. Final hybrid admission needs F8's frozen, profile-compatible semantic policy, calibrated on the dev split with the real model and confirmed on the reserved split.
+- With `ATLAS_SEMANTIC_DEMO=1` the API uses `DEMO_SEMANTIC_POLICY` (`demo_unvalidated`) and ranks semantic-first instead of RRF; see `atlas-search-evaluation-f8.md`.
 - RRF `k`, lexical weights and the candidate cap are the pinned design values, not tuned.
 - The semantic branch runs with the pinned policy as given, including the provisional cutoff, whenever a caller injects `embedQuery` and compatible vectors. Nothing in this module treats that as calibrated; gating production use on a calibrated policy is F8/F6 work.
 - Fuzzy matching (one edit for Latin words of five or more letters) is not implemented; Thai fuzzy expansion is deferred by the design.

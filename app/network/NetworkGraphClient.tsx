@@ -20,6 +20,9 @@ type NetworkNode = {
   degree: number;
   is_private: boolean;
   is_low_confidence: boolean;
+  is_reviewed?: boolean;
+  review_status?: string | null;
+  evidence_kind?: string | null;
   url: string | null;
   evidence_excerpt: string | null;
   data_origin: "database" | "import_file" | "merged";
@@ -42,10 +45,12 @@ type NetworkEdge = {
   source_platform: string | null;
   published_at: string | null;
   is_low_confidence: boolean;
+  is_reviewed?: boolean;
   data_origin: "database" | "import_file" | "merged";
   source_record_ids: string[];
   import_record_ids: string[];
   review_status?: string | null;
+  evidence_kind?: string | null;
 };
 
 type NetworkGraph = {
@@ -249,7 +254,7 @@ function toElements(graph: NetworkGraph): ElementDefinition[] {
   ];
 }
 
-function filterGraph(
+export function filterGraph(
   graph: NetworkGraph,
   filters: Record<string, string>,
   toggles: {
@@ -268,7 +273,7 @@ function filterGraph(
     if (!toggles.showOwned && node.type === "owned_inventory") return false;
     if (!toggles.showMedia && (node.type === "perspective_annotation" || node.type === "perspective_theme" || node.cluster === "media_perspectives")) return false;
     if (!toggles.showAcademic && node.cluster === "research_and_academic_contributions") return false;
-    if (toggles.onlyReviewed && node.confidence < 0.7) return false;
+    if (toggles.onlyReviewed && !node.is_reviewed && node.review_status !== "APPROVED") return false;
     if (node.confidence < confidenceMin) return false;
     if (filters.nodeType !== allOption && node.type !== filters.nodeType) return false;
     if (filters.cluster !== allOption && node.cluster !== filters.cluster) return false;
@@ -284,7 +289,7 @@ function filterGraph(
   const edges = graph.edges.filter((edge) => {
     if (!allowedNodes.has(edge.source) || !allowedNodes.has(edge.target)) return false;
     if (!toggles.showLowConfidence && edge.is_low_confidence) return false;
-    if (toggles.onlyReviewed && edge.confidence < 0.7) return false;
+    if (toggles.onlyReviewed && !edge.is_reviewed && edge.review_status !== "APPROVED") return false;
     if (edge.confidence < confidenceMin) return false;
     if (filters.relation !== allOption && edge.relation !== filters.relation) return false;
     if (filters.sourcePlatform !== allOption && edge.source_platform !== filters.sourcePlatform) return false;
@@ -889,7 +894,12 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
               <div className={styles.detailBlock}><strong>{localT[lang].directionLabel}</strong>{detail.edge.source} {"->"} {detail.edge.target}</div>
               <div className={styles.detailBlock}><strong>{localT[lang].excerptLabel}</strong>{detail.edge.evidence_excerpt || (lang === "th" ? "ไม่มีข้อความอ้างอิง" : "No excerpt.")}</div>
               <div className={styles.detailBlock}><strong>{localT[lang].sourcePlatformDate}</strong>{detail.edge.source_platform || "N/A"} / {detail.edge.published_at ? new Date(detail.edge.published_at).toLocaleDateString() : "N/A"}</div>
-              <div className={styles.detailBlock}><strong>{localT[lang].reviewStatusLabel}</strong>{detail.edge.review_status || (detail.edge.is_low_confidence ? (lang === "th" ? "ประเมินโดยระบบอัตโนมัติ (ความมั่นใจต่ำ)" : "Low-confidence inferred") : (lang === "th" ? "ตรวจสอบแล้วหรือมีความมั่นใจสูง" : "Reviewed or high-confidence"))}</div>
+              <div className={styles.detailBlock}>
+                <strong>{localT[lang].reviewStatusLabel}</strong>
+                {detail.edge.is_reviewed || detail.edge.review_status === "APPROVED"
+                  ? (lang === "th" ? "ข้อเท็จจริงที่ผ่านการตรวจสอบ (Reviewed assertion)" : "Reviewed assertion")
+                  : (lang === "th" ? "ความสัมพันธ์ที่ประเมินโดยอัตโนมัติ (Inferred relation)" : "Inferred relation")}
+              </div>
               <div className={styles.detailBlock}><strong>{localT[lang].evidenceUrlLabel}</strong>{detail.edge.url ? <a href={detail.edge.url} target="_blank" rel="noreferrer">{detail.edge.url}</a> : localT[lang].generatedInternally}</div>
             </>
           )}

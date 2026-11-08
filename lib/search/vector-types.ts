@@ -32,8 +32,12 @@ export const MOCK_MODEL_PROFILE: ModelProfile = {
 };
 
 /**
- * Pinned model profile for production Qwen-compatible embedding service.
+ * Pinned model profile for the production embedding service.
+ * Qwen3-Embedding-0.6B emits 1,024-dimension vectors (verified through a running
+ * text-embeddings-inference server on 2026-11-08) and uses last-token pooling.
  * Pinned to explicit commit revision 97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3.
+ * Queries are sent as `Instruct: <queryInstructionTask>\nQuery:<text>`; documents get no prefix.
+ * Replaces the earlier Alibaba-NLP/gte-Qwen2-1.5B-instruct pin, whose output size was never verified.
  */
 export const DEFAULT_MODEL_PROFILE: ModelProfile = {
   modelId: "Qwen/Qwen3-Embedding-0.6B",

@@ -730,6 +730,32 @@ function graphNodeType(record: AtlasRecord) {
   return category;
 }
 
+type ReviewEvidence = {
+  is_reviewed?: boolean;
+  review_status?: string | null;
+  evidence_kind?: string | null;
+  evidence_excerpt?: string | null;
+};
+
+/**
+ * Merge review status, evidence kind and excerpt as one unit. Reviewed evidence supersedes inferred
+ * evidence in either arrival order, and an unreviewed record never supplies the excerpt of a reviewed one.
+ */
+export function mergeReviewEvidence(existing: ReviewEvidence, incoming: ReviewEvidence) {
+  const wasReviewed = Boolean(existing.is_reviewed);
+  const incomingReviewed = Boolean(incoming.is_reviewed);
+  existing.is_reviewed = wasReviewed || incomingReviewed;
+  if (incomingReviewed && !wasReviewed) {
+    existing.review_status = incoming.review_status ?? existing.review_status;
+    existing.evidence_kind = incoming.evidence_kind ?? existing.evidence_kind;
+    existing.evidence_excerpt = incoming.evidence_excerpt ?? null;
+  } else if (!wasReviewed || incomingReviewed) {
+    existing.review_status ||= incoming.review_status;
+    existing.evidence_kind ||= incoming.evidence_kind;
+    existing.evidence_excerpt ||= incoming.evidence_excerpt;
+  }
+}
+
 function mergeNode(nodes: Map<string, NetworkNode>, node: Omit<NetworkNode, "degree">) {
   const existing = nodes.get(node.id);
   if (!existing) {
@@ -739,15 +765,12 @@ function mergeNode(nodes: Map<string, NetworkNode>, node: Omit<NetworkNode, "deg
   existing.confidence = Math.max(existing.confidence, node.confidence);
   existing.source_count = Math.max(existing.source_count, node.source_count);
   existing.is_low_confidence = existing.is_low_confidence && node.is_low_confidence;
-  existing.is_reviewed = Boolean(existing.is_reviewed || node.is_reviewed);
-  existing.review_status ||= node.review_status;
-  existing.evidence_kind ||= node.evidence_kind;
+  mergeReviewEvidence(existing, node);
   existing.data_origin = mergeOrigins(existing.data_origin, node.data_origin);
   existing.description ||= node.description;
   existing.organization ||= node.organization;
   existing.country ||= node.country;
   existing.url ||= node.url;
-  existing.evidence_excerpt ||= node.evidence_excerpt;
   existing.record_id ||= node.record_id;
   existing.source_record_ids = [...new Set([...existing.source_record_ids, ...node.source_record_ids])];
   existing.import_record_ids = [...new Set([...existing.import_record_ids, ...node.import_record_ids])];
@@ -769,19 +792,7 @@ function mergeEdge(edges: Map<string, NetworkEdge>, edge: NetworkEdge) {
   existing.weight += edge.weight || 1;
   existing.confidence = Math.max(existing.confidence, edge.confidence);
   existing.is_low_confidence = existing.is_low_confidence && edge.is_low_confidence;
-  const incomingReviewedOverInferred = Boolean(edge.is_reviewed) && !existing.is_reviewed;
-  existing.is_reviewed = Boolean(existing.is_reviewed || edge.is_reviewed);
-  if (incomingReviewedOverInferred) {
-    // Reviewed evidence replaces the inferred status, kind and excerpt as one unit, so a "Reviewed
-    // assertion" is never shown with a machine-inferred excerpt.
-    existing.review_status = edge.review_status ?? existing.review_status;
-    existing.evidence_kind = edge.evidence_kind ?? existing.evidence_kind;
-    existing.evidence_excerpt = edge.evidence_excerpt ?? null;
-  } else {
-    existing.review_status ||= edge.review_status;
-    existing.evidence_kind ||= edge.evidence_kind;
-    existing.evidence_excerpt ||= edge.evidence_excerpt;
-  }
+  mergeReviewEvidence(existing, edge);
   existing.data_origin = mergeOrigins(existing.data_origin, edge.data_origin);
   existing.url ||= edge.url;
   existing.source_platform ||= edge.source_platform;

@@ -894,3 +894,86 @@ test("graph file loader: loads public records while preserving M3 privacy and ex
   assert.ok(!records.some((r) => r.category === "submission_record"));
   assert.ok(!records.some((r) => r.category === "source_pull_job"));
 });
+
+test("mergeReviewEvidence: reviewed evidence wins in either arrival order and an unreviewed record never supplies a reviewed excerpt (round 2)", async () => {
+  const { mergeReviewEvidence } = await import("../lib/network-graph");
+  const reviewed = { is_reviewed: true, review_status: "APPROVED", evidence_kind: "reviewed_assertion", evidence_excerpt: null as string | null };
+  const inferred = { is_reviewed: false, review_status: "inferred", evidence_kind: "inferred_relation", evidence_excerpt: "machine excerpt" as string | null };
+
+  // reviewed first, inferred second: the machine excerpt must not attach to the reviewed assertion
+  const a = { ...reviewed };
+  mergeReviewEvidence(a, inferred);
+  assert.deepEqual(a, reviewed);
+
+  // inferred first, reviewed second: reviewed status, kind and (empty) excerpt replace the inferred unit
+  const b = { ...inferred };
+  mergeReviewEvidence(b, reviewed);
+  assert.deepEqual(b, reviewed);
+
+  // two unreviewed records still fill gaps
+  const c = { ...inferred, evidence_excerpt: null as string | null };
+  mergeReviewEvidence(c, inferred);
+  assert.equal(c.evidence_excerpt, "machine excerpt");
+  assert.equal(c.is_reviewed, false);
+});
+
+test("graph detail APIs return the reviewed node and edge with traceable evidence (round 2)", async () => {
+  const { getNetworkNode, getNetworkEdge } = await import("../lib/network-graph");
+  const rec = (id: string, category: string, extra: Partial<AtlasRecord>): AtlasRecord => ({
+    id, category, title: id, canonical_name: id, description: null, organization: null, country: null,
+    robot_type: null, embodiment_level: null, contribution_type: null, stance: null, sentiment: null,
+    perspective_theme: null, relation: null, subject: null, object: null, url: null, source_platform: null,
+    published_at: null, author: null, confidence: 0.9, evidence_excerpt: null, notes: null, data_origin: "import_file",
+    ...extra
+  });
+  const robot = rec("Detail Robot", "robot_model", { organization: "Detail Lab", is_reviewed: true, review_status: "APPROVED", evidence_kind: "reviewed_assertion", evidence_excerpt: "Verified description" } as Partial<AtlasRecord>);
+  const graph = await buildNetworkGraph({ records: [robot], sourceMode: "file" });
+  const node = graph.nodes.find((n) => n.type === "robot_model");
+  const edge = graph.edges.find((e) => e.relation === "developed_by");
+  assert.ok(node && edge);
+  const nodeDetail = await getNetworkNode(node.id, { records: [robot], sourceMode: "file" });
+  assert.equal(nodeDetail?.node.is_reviewed, true);
+  assert.equal(nodeDetail?.node.evidence_excerpt, "Verified description");
+  assert.ok(nodeDetail && nodeDetail.outgoing.some((e) => e.id === edge.id));
+  const edgeDetail = await getNetworkEdge(edge.id, { records: [robot], sourceMode: "file" });
+  assert.equal(edgeDetail?.subject?.id, node.id);
+  assert.equal(edgeDetail?.edge.relation, "developed_by");
+  assert.equal(await getNetworkNode("robot_model:missing", { records: [robot], sourceMode: "file" }), null);
+});
+
+test("database and hybrid source modes build reviewed graph semantics from loader rows (round 2)", async () => {
+  const { prisma } = await import("../lib/prisma");
+  const { loadGraphRecords } = await import("../lib/network-graph");
+  const delegates = ["robotModel", "ownedInventory", "contribution", "sourceRecord", "perspectiveAnnotation", "triplet"] as const;
+  const originals = delegates.map((name) => (prisma as any)[name].findMany);
+  const robotRow = {
+    id: "db_robot_1", canonicalName: "Database Humanoid One", description: "Verified by the lab", developerOrg: "DB Lab",
+    manufacturer: null, countryOfOrigin: "Thailand", robotType: "humanoid", embodimentLevel: "full", primaryUseCase: "care",
+    officialUrl: "https://example.org/db-humanoid", lastVerifiedAt: new Date("2026-10-01T00:00:00Z"), statusConfidence: 0.9
+  };
+  try {
+    for (const name of delegates) {
+      (prisma as any)[name].findMany = async () => (name === "robotModel" ? [robotRow] : []);
+    }
+    const dbOnly = await loadGraphRecords("database");
+    assert.equal(dbOnly.resolvedSource, "database");
+    assert.equal(dbOnly.records.length, 1);
+    assert.equal(dbOnly.records[0].is_reviewed, true);
+    assert.equal(dbOnly.records[0].evidence_kind, "reviewed_assertion");
+
+    const hybrid = await loadGraphRecords("hybrid");
+    assert.equal(hybrid.databaseAvailable, true);
+    assert.ok(["hybrid", "database"].includes(hybrid.resolvedSource));
+    const dbRecord = hybrid.records.find((r) => r.canonical_name === "Database Humanoid One");
+    assert.ok(dbRecord, "database row survives the hybrid merge");
+    assert.equal(dbRecord.is_reviewed, true);
+
+    const graph = await buildNetworkGraph({ sourceMode: "database", maxNodes: 123 });
+    const node = graph.nodes.find((n) => n.label === "Database Humanoid One");
+    assert.ok(node);
+    assert.equal(node.is_reviewed, true);
+    assert.equal(node.evidence_excerpt, "Verified by the lab");
+  } finally {
+    delegates.forEach((name, index) => { (prisma as any)[name].findMany = originals[index]; });
+  }
+});

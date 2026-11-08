@@ -283,9 +283,14 @@ test("saveSources re-ingestion cleanup preserves curated seed annotations and se
 
   try {
     (prisma as any).$transaction = async (callback: any) => {
+      let stored: any;
       const txMock = {
+        $queryRaw: async () => [],
         sourceRecord: {
-          upsert: async (args: any) => ({
+          findUnique: async () => null,
+          findUniqueOrThrow: async () => ({ ...stored, annotations: [], triplets: [] }),
+          update: async () => ({}),
+          upsert: async (args: any) => (stored = { ...args.create, createdAt: new Date(), updatedAt: new Date(),
             id: "src-seed-001",
             sourceType: args.create.sourceType,
             rawMeta: args.create.rawMeta
@@ -320,7 +325,7 @@ test("saveSources re-ingestion cleanup preserves curated seed annotations and se
         url: "https://www.dinsaw.com/en/home-english/",
         excerpt: "Dinsaw Robot is an artificial intelligence or AI developed by CT Asia Robotics in Thailand.",
         publishedAt: new Date("2024-01-01"),
-        rawMeta: { source_id: "seed-dinsaw-01", category: "triplet_relation" }
+        rawMeta: { source_id: "seed-dinsaw-01", category: "triplet_relation", networkGeo: { geo: { latitude: 1, longitude: 1 } } }
       }
     ]);
 
@@ -346,9 +351,14 @@ test("re-ingestion of uncertain/placeholder records suppresses auto-publication 
 
   try {
     (prisma as any).$transaction = async (callback: any) => {
+      let stored: any;
       const txMock = {
+        $queryRaw: async () => [],
         sourceRecord: {
-          upsert: async (args: any) => ({
+          findUnique: async () => null,
+          findUniqueOrThrow: async () => ({ ...stored, annotations: [], triplets: [] }),
+          update: async () => ({}),
+          upsert: async (args: any) => (stored = { ...args.create, createdAt: new Date(), updatedAt: new Date(),
             id: "src-uncertain-001",
             sourceType: args.create.sourceType,
             rawMeta: args.create.rawMeta,
@@ -378,7 +388,7 @@ test("re-ingestion of uncertain/placeholder records suppresses auto-publication 
         url: "https://openalex.org/W999999999",
         excerpt: "Academic paper about thailand robot indexed on OpenAlex.",
         publishedAt: new Date("2024-01-01"),
-        rawMeta: {}
+        rawMeta: { networkGeo: { geo: { latitude: 1, longitude: 1 } } }
       }
     ]);
 

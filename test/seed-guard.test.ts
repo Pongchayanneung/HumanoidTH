@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { assertSeedAllowed } from "../lib/seed-guard";
+import { assertM7Disposable } from "../lib/m7-test-guard";
 import { loadEnvFile } from "../lib/load-env";
 
 const ON = { ATLAS_ALLOW_SEED: "1" };
@@ -177,5 +178,43 @@ test("a differently-cased flag spelling in an env file is not copied either", ()
       false,
       `flag spelling copied from file: ${Object.keys(env).join(", ")}`
     );
+  });
+});
+
+test("neither flag loads from an env file, while a process-provided confirmation remains usable", () => {
+  withEnvFile(
+    "ATLAS_ALLOW_SEED=1\natlas_allow_seed=1\nM7_DISPOSABLE_DATABASE=yes\nm7_disposable_database=yes\nM1_SENTINEL=loaded\n",
+    (path) => {
+      const env: Record<string, string | undefined> = {};
+      loadEnvFile(env, path);
+      assert.equal(env.M1_SENTINEL, "loaded", "env file was not read");
+      assert.equal(env.ATLAS_ALLOW_SEED, undefined);
+      assert.equal(env.M7_DISPOSABLE_DATABASE, undefined);
+      assert.equal(
+        Object.keys(env).some(
+          (key) => key.toUpperCase() === "ATLAS_ALLOW_SEED" || key.toUpperCase() === "M7_DISPOSABLE_DATABASE"
+        ),
+        false,
+        `flag spelling copied from file: ${Object.keys(env).join(", ")}`
+      );
+      assert.throws(() => assertSeedAllowed(LOCAL, env), /ATLAS_ALLOW_SEED=1/);
+      assert.throws(
+        () => assertM7Disposable("postgresql://localhost/m7_disposable_123", env),
+        /M7_DISPOSABLE_DATABASE=yes/
+      );
+    }
+  );
+
+  withEnvFile("ATLAS_ALLOW_SEED=0\nM7_DISPOSABLE_DATABASE=no\nM1_SENTINEL=loaded\n", (path) => {
+    const env: Record<string, string | undefined> = {
+      ATLAS_ALLOW_SEED: "1",
+      M7_DISPOSABLE_DATABASE: "yes"
+    };
+    loadEnvFile(env, path);
+    assert.equal(env.M1_SENTINEL, "loaded", "env file was not read");
+    assert.equal(env.ATLAS_ALLOW_SEED, "1");
+    assert.equal(env.M7_DISPOSABLE_DATABASE, "yes");
+    assert.doesNotThrow(() => assertSeedAllowed(LOCAL, env));
+    assert.doesNotThrow(() => assertM7Disposable("postgresql://localhost/m7_disposable_123", env));
   });
 });

@@ -97,6 +97,32 @@ test("graph semantics: borrowed or leased inventory never gets an owned_by claim
       data_origin: "database"
     },
     {
+      id: "inv_deployed",
+      category: "owned_inventory",
+      title: "Unit Deployed in Hospital",
+      canonical_name: "Unit Deployed",
+      description: "Field deployment unit",
+      organization: "Siriraj Hospital",
+      country: null,
+      robot_type: "humanoid",
+      embodiment_level: null,
+      contribution_type: "deployed", // unmodeled status
+      stance: null,
+      sentiment: null,
+      perspective_theme: null,
+      relation: "instance_of",
+      subject: "Unit Deployed in Hospital",
+      object: "Dinsaw",
+      url: null,
+      source_platform: "owned_inventory",
+      published_at: null,
+      author: null,
+      confidence: 0.85,
+      evidence_excerpt: null,
+      notes: null,
+      data_origin: "database"
+    },
+    {
       id: "inv_owned",
       category: "owned_inventory",
       title: "Dinsaw Unit Owned",
@@ -132,7 +158,8 @@ test("graph semantics: borrowed or leased inventory never gets an owned_by claim
     !borrowedEdges.some((e) => e.relation === "owned_by"),
     "Borrowed inventory must never receive an owned_by relationship"
   );
-  assert.ok(borrowedEdges.some((e) => e.relation === "borrowed_by"));
+  assert.ok(borrowedEdges.some((e) => e.relation === "borrowed_from"), "Borrowed inventory must use borrowed_from relationship");
+  assert.match(borrowedEdges.find((e) => e.relation === "borrowed_from")!.description, /borrowed from KMUTT FIBO/);
 
   const leasedEdges = graph.edges.filter((e) => e.description.includes("leased for mall trial"));
   assert.ok(leasedEdges.length > 0);
@@ -140,11 +167,226 @@ test("graph semantics: borrowed or leased inventory never gets an owned_by claim
     !leasedEdges.some((e) => e.relation === "owned_by"),
     "Leased inventory must never receive an owned_by relationship"
   );
-  assert.ok(leasedEdges.some((e) => e.relation === "leased_by"));
+  assert.ok(leasedEdges.some((e) => e.relation === "leased_from"), "Leased inventory must use leased_from relationship");
+  assert.match(leasedEdges.find((e) => e.relation === "leased_from")!.description, /leased from Retail Corp/);
+
+  const deployedEdges = graph.edges.filter((e) => e.description.includes("Unit Deployed in Hospital"));
+  assert.ok(deployedEdges.length > 0);
+  assert.ok(
+    !deployedEdges.some((e) => e.relation === "owned_by"),
+    "Deployed inventory must never collapse to owned_by relationship"
+  );
+  assert.ok(
+    deployedEdges.some((e) => e.relation === "held_by"),
+    "Unmodeled inventory status must use held_by relationship fallback"
+  );
+  assert.match(deployedEdges.find((e) => e.relation === "held_by")!.description, /is held by Siriraj Hospital/);
 
   const ownedEdges = graph.edges.filter((e) => e.description.includes("Dinsaw Unit Owned"));
   assert.ok(ownedEdges.length > 0);
   assert.ok(ownedEdges.some((e) => e.relation === "owned_by"));
+  assert.match(ownedEdges.find((e) => e.relation === "owned_by")!.description, /is owned by CT Asia Robotics/);
+});
+
+test("graph semantics: unreviewed entities do not fabricate reviewed assertions and are excluded by onlyReviewed (Finding 1)", async () => {
+  // 1. normalizeFileRecord does not fabricate reviewed assertions for unreviewed entities
+  const unreviewedFileRobot = normalizeFileRecord({
+    id: "file_robot_pending",
+    category: "robot_model",
+    title: "Unreviewed File Robot",
+    verification_status: "PENDING",
+    is_reviewed: false
+  }, 0);
+  assert.equal(unreviewedFileRobot.is_reviewed, false, "normalizeFileRecord must preserve is_reviewed=false");
+  assert.equal(unreviewedFileRobot.verification_status, "PENDING");
+  assert.equal(unreviewedFileRobot.evidence_kind, "inferred_relation", "normalizeFileRecord must not fabricate reviewed_assertion");
+
+  const unreviewedFileInv = normalizeFileRecord({
+    id: "file_inv_unreviewed",
+    category: "owned_inventory",
+    title: "Unreviewed File Inventory",
+    contribution_type: "deployed"
+  }, 1);
+  assert.equal(unreviewedFileInv.is_reviewed, false, "normalizeFileRecord must not default inventory to reviewed");
+  assert.equal(unreviewedFileInv.evidence_kind, "inferred_relation");
+
+  // 2. buildNetworkGraph preserves unreviewed status for robot models, inventory, developer edges, and country edges
+  const records: AtlasRecord[] = [
+    {
+      id: "robot_unreviewed",
+      category: "robot_model",
+      title: "Prototype Robot X",
+      canonical_name: "Prototype Robot X",
+      description: "Unverified robot prototype",
+      organization: "Emerging Robotics Lab",
+      country: "Thailand",
+      robot_type: "humanoid",
+      embodiment_level: null,
+      contribution_type: null,
+      stance: null,
+      sentiment: null,
+      perspective_theme: null,
+      relation: null,
+      subject: null,
+      object: null,
+      url: null,
+      source_platform: null,
+      published_at: null,
+      author: null,
+      confidence: 0.65,
+      evidence_excerpt: null,
+      notes: null,
+      verification_status: "PENDING",
+      is_reviewed: false,
+      evidence_kind: "inferred_relation",
+      data_origin: "database"
+    },
+    {
+      id: "inv_unreviewed",
+      category: "owned_inventory",
+      title: "Prototype Unit #01",
+      canonical_name: "Prototype Unit #01",
+      description: "Field prototype unit",
+      organization: "FIBO Testbed",
+      country: null,
+      robot_type: "humanoid",
+      embodiment_level: null,
+      contribution_type: "evaluation",
+      stance: null,
+      sentiment: null,
+      perspective_theme: null,
+      relation: "instance_of",
+      subject: "Prototype Unit #01",
+      object: "Prototype Robot X",
+      url: null,
+      source_platform: "owned_inventory",
+      published_at: null,
+      author: null,
+      confidence: 0.65,
+      evidence_excerpt: null,
+      notes: null,
+      verification_status: "PENDING",
+      is_reviewed: false,
+      evidence_kind: "inferred_relation",
+      data_origin: "database"
+    },
+    {
+      id: "robot_approved",
+      category: "robot_model",
+      title: "Curated Robot Pro",
+      canonical_name: "Curated Robot Pro",
+      description: "Peer-verified robot model",
+      organization: "Verified Systems Inc",
+      country: "Japan",
+      robot_type: "humanoid",
+      embodiment_level: null,
+      contribution_type: null,
+      stance: null,
+      sentiment: null,
+      perspective_theme: null,
+      relation: null,
+      subject: null,
+      object: null,
+      url: "https://example.com/robot-pro",
+      source_platform: "curated_catalog",
+      published_at: null,
+      author: null,
+      confidence: 0.95,
+      evidence_excerpt: null,
+      notes: "APPROVED",
+      verification_status: "APPROVED",
+      is_reviewed: true,
+      evidence_kind: "reviewed_assertion",
+      data_origin: "database"
+    }
+  ];
+
+  const graph = await buildNetworkGraph({ records, sourceMode: "file" });
+
+  // Assert unreviewed robot node semantics
+  const unreviewedNode = graph.nodes.find((n) => n.label === "Prototype Robot X");
+  assert.ok(unreviewedNode, "Unreviewed robot node must exist");
+  assert.equal(unreviewedNode.is_reviewed, false, "Unreviewed robot node must have is_reviewed=false");
+  assert.equal(unreviewedNode.review_status, "PENDING");
+  assert.equal(unreviewedNode.evidence_kind, "inferred_relation", "Unreviewed robot node must have evidence_kind=inferred_relation");
+
+  // Assert unreviewed developer edge semantics
+  const unreviewedDevEdge = graph.edges.find((e) => e.relation === "developed_by" && e.source === unreviewedNode.id);
+  assert.ok(unreviewedDevEdge, "developed_by edge for unreviewed robot must exist");
+  assert.equal(unreviewedDevEdge.is_reviewed, false, "developed_by edge for unreviewed robot must have is_reviewed=false");
+  assert.equal(unreviewedDevEdge.review_status, "PENDING");
+  assert.equal(unreviewedDevEdge.evidence_kind, "inferred_relation", "developed_by edge for unreviewed robot must have evidence_kind=inferred_relation");
+
+  // Assert unreviewed origin_country edge semantics
+  const unreviewedCountryEdge = graph.edges.find((e) => e.relation === "origin_country" && e.source === unreviewedNode.id);
+  assert.ok(unreviewedCountryEdge, "origin_country edge for unreviewed robot must exist");
+  assert.equal(unreviewedCountryEdge.is_reviewed, false, "origin_country edge for unreviewed robot must have is_reviewed=false");
+  assert.equal(unreviewedCountryEdge.evidence_kind, "inferred_relation", "origin_country edge for unreviewed robot must have evidence_kind=inferred_relation");
+
+  // Assert unreviewed inventory node and edges semantics
+  const unreviewedInvNode = graph.nodes.find((n) => n.label === "Prototype Unit #01");
+  assert.ok(unreviewedInvNode, "Unreviewed inventory node must exist");
+  assert.equal(unreviewedInvNode.is_reviewed, false, "Unreviewed inventory node must have is_reviewed=false");
+  assert.equal(unreviewedInvNode.evidence_kind, "inferred_relation");
+
+  const invInstanceOfEdge = graph.edges.find((e) => e.relation === "instance_of" && e.source === unreviewedInvNode.id);
+  assert.ok(invInstanceOfEdge, "instance_of edge for unreviewed inventory must exist");
+  assert.equal(invInstanceOfEdge.is_reviewed, false, "instance_of edge for unreviewed inventory must have is_reviewed=false");
+  assert.equal(invInstanceOfEdge.evidence_kind, "inferred_relation");
+
+  const invHolderEdge = graph.edges.find((e) => e.source === unreviewedInvNode.id && e.relation === "held_by");
+  assert.ok(invHolderEdge, "held_by edge for unreviewed inventory must exist");
+  assert.equal(invHolderEdge.is_reviewed, false, "held_by edge for unreviewed inventory must have is_reviewed=false");
+  assert.equal(invHolderEdge.evidence_kind, "inferred_relation");
+
+  // Assert approved robot model retains reviewed assertion
+  const approvedNode = graph.nodes.find((n) => n.label === "Curated Robot Pro");
+  assert.ok(approvedNode);
+  assert.equal(approvedNode.is_reviewed, true);
+  assert.equal(approvedNode.review_status, "APPROVED");
+  assert.equal(approvedNode.evidence_kind, "reviewed_assertion");
+
+  const approvedDevEdge = graph.edges.find((e) => e.relation === "developed_by" && e.source === approvedNode.id);
+  assert.ok(approvedDevEdge);
+  assert.equal(approvedDevEdge.is_reviewed, true);
+  assert.equal(approvedDevEdge.review_status, "APPROVED");
+  assert.equal(approvedDevEdge.evidence_kind, "reviewed_assertion");
+
+  // 3. Assert onlyReviewed filter EXCLUDES unreviewed robot and inventory nodes and edges
+  const filtered = filterGraph(graph, {}, {
+    showLowConfidence: true,
+    onlyReviewed: true,
+    showOwned: true,
+    showMedia: true,
+    showAcademic: true
+  });
+
+  assert.ok(
+    !filtered.nodes.some((n) => n.label === "Prototype Robot X"),
+    "onlyReviewed MUST exclude unreviewed robot model"
+  );
+  assert.ok(
+    !filtered.nodes.some((n) => n.label === "Prototype Unit #01"),
+    "onlyReviewed MUST exclude unreviewed inventory item"
+  );
+  assert.ok(
+    !filtered.edges.some((e) => e.source === unreviewedNode.id),
+    "onlyReviewed MUST exclude edges originating from unreviewed robot"
+  );
+  assert.ok(
+    !filtered.edges.some((e) => e.source === unreviewedInvNode.id),
+    "onlyReviewed MUST exclude edges originating from unreviewed inventory"
+  );
+
+  // Assert approved entities ARE retained
+  assert.ok(
+    filtered.nodes.some((n) => n.label === "Curated Robot Pro"),
+    "onlyReviewed MUST retain approved robot model"
+  );
+  assert.ok(
+    filtered.edges.some((e) => e.relation === "developed_by" && e.source === approvedNode.id),
+    "onlyReviewed MUST retain approved robot developer edge"
+  );
 });
 
 test("graph semantics: robot country of origin never becomes deployment location (Finding D08)", async () => {

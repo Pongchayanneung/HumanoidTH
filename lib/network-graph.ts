@@ -280,7 +280,7 @@ export function normalizeFileRecord(record: Record<string, unknown>, index: numb
   const rawStatus = clean(record.verification_status) ?? (clean(record.notes) === "APPROVED" ? "APPROVED" : null);
   const isReviewed = record.is_reviewed !== undefined
     ? Boolean(record.is_reviewed)
-    : Boolean(rawStatus === "APPROVED" || category === "robot_model" || category === "owned_inventory");
+    : Boolean(rawStatus === "APPROVED");
   const verificationStatus = rawStatus ?? (isReviewed ? "APPROVED" : null);
   const evidenceKind = (clean(record.evidence_kind) as EvidenceKind | null) ?? (isReviewed ? "reviewed_assertion" : "inferred_relation");
 
@@ -382,6 +382,7 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
   ]);
 
   for (const item of robots) {
+    const isReviewed = Boolean(item.lastVerifiedAt);
     records.push({
       id: item.id,
       category: "robot_model",
@@ -405,16 +406,17 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
       author: null,
       confidence: item.statusConfidence,
       evidence_excerpt: item.description,
-      notes: null,
+      notes: isReviewed ? "APPROVED" : null,
       data_origin: "database",
-      verification_status: "APPROVED",
-      is_reviewed: true,
-      evidence_kind: "reviewed_assertion"
+      verification_status: isReviewed ? "APPROVED" : null,
+      is_reviewed: isReviewed,
+      evidence_kind: isReviewed ? "reviewed_assertion" : "inferred_relation"
     });
   }
 
   for (const item of inventory) {
     if (item.visibility !== "public") continue;
+    const isReviewed = item.notes === "APPROVED";
     records.push({
       id: item.id,
       category: "owned_inventory",
@@ -438,11 +440,11 @@ export async function loadGraphRecordsFromPrisma(): Promise<AtlasRecord[]> {
       author: null,
       confidence: 0.82,
       evidence_excerpt: null,
-      notes: null,
+      notes: item.notes,
       data_origin: "database",
-      verification_status: "APPROVED",
-      is_reviewed: true,
-      evidence_kind: "reviewed_assertion"
+      verification_status: isReviewed ? "APPROVED" : null,
+      is_reviewed: isReviewed,
+      evidence_kind: isReviewed ? "reviewed_assertion" : "inferred_relation"
     });
   }
 
@@ -791,14 +793,10 @@ function addRecordNode(nodes: Map<string, NetworkNode>, record: AtlasRecord) {
   const type = graphNodeType(record);
   const label = record.canonical_name || record.title || record.subject || record.id;
   const originIds = recordOriginIds(record);
-  const isReviewed = Boolean(
-    record.is_reviewed ||
-    record.verification_status === "APPROVED" ||
-    record.notes === "APPROVED" ||
-    record.category === "robot_model" ||
-    record.category === "owned_inventory"
-  );
-  const reviewStatus = record.verification_status ?? (record.notes === "APPROVED" ? "APPROVED" : record.category === "robot_model" ? "APPROVED" : record.category === "owned_inventory" ? "APPROVED" : null);
+  const isReviewed = record.is_reviewed !== undefined
+    ? Boolean(record.is_reviewed)
+    : Boolean(record.verification_status === "APPROVED" || record.notes === "APPROVED");
+  const reviewStatus = record.verification_status ?? (record.notes === "APPROVED" ? "APPROVED" : isReviewed ? "APPROVED" : null);
   const evidenceKind = record.evidence_kind ?? (isReviewed ? "reviewed_assertion" : "inferred_relation");
   return mergeNode(nodes, {
     id: nodeId(type, label),
@@ -1023,10 +1021,11 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
 
     if (record.organization) {
       for (const org of splitNames(record.organization)) {
-        const isRobotModel = record.category === "robot_model";
-        const isOrgReviewed = isRobotModel || Boolean(record.is_reviewed || record.verification_status === "APPROVED" || record.notes === "APPROVED");
-        const orgReviewStatus = isOrgReviewed ? "APPROVED" : null;
-        const orgEvidenceKind = isOrgReviewed ? "reviewed_assertion" : "inferred_relation";
+        const isRecordReviewed = record.is_reviewed !== undefined
+          ? Boolean(record.is_reviewed)
+          : Boolean(record.verification_status === "APPROVED" || record.notes === "APPROVED");
+        const orgReviewStatus = record.verification_status ?? (record.notes === "APPROVED" ? "APPROVED" : isRecordReviewed ? "APPROVED" : null);
+        const orgEvidenceKind = isRecordReviewed ? "reviewed_assertion" : "inferred_relation";
 
         const orgId = mergeNode(nodes, {
           id: nodeId("organization", org),
@@ -1040,7 +1039,7 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
           source_count: 1,
           is_private: false,
           is_low_confidence: false,
-          is_reviewed: isOrgReviewed,
+          is_reviewed: isRecordReviewed,
           review_status: orgReviewStatus,
           evidence_kind: orgEvidenceKind,
           url: record.url,
@@ -1056,7 +1055,7 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
           description: `${record.canonical_name || record.title} is connected to ${org}.`,
           confidence: record.category === "robot_model" ? 0.88 : 0.74,
           weight: 1,
-          is_reviewed: isOrgReviewed,
+          is_reviewed: isRecordReviewed,
           review_status: orgReviewStatus,
           evidence_kind: orgEvidenceKind,
           evidence_excerpt: record.evidence_excerpt,
@@ -1110,7 +1109,10 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
       const description = isOriginCountry
         ? `${record.canonical_name || record.title} originates from ${record.country}.`
         : `${record.canonical_name || record.title} is associated with ${record.country}.`;
-      const isReviewed = isOriginCountry;
+      const isRecordReviewed = record.is_reviewed !== undefined
+        ? Boolean(record.is_reviewed)
+        : Boolean(record.verification_status === "APPROVED" || record.notes === "APPROVED");
+      const isReviewed = isOriginCountry && isRecordReviewed;
 
       const countryId = mergeNode(nodes, {
         id: nodeId("country", record.country),
@@ -1153,13 +1155,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
     }
 
     for (const author of splitNames(record.author)) {
-      const isRecordReviewed = Boolean(
-        record.is_reviewed ||
-        record.verification_status === "APPROVED" ||
-        record.notes === "APPROVED" ||
-        record.category === "robot_model" ||
-        record.category === "owned_inventory"
-      );
+      const isRecordReviewed = record.is_reviewed !== undefined
+        ? Boolean(record.is_reviewed)
+        : Boolean(record.verification_status === "APPROVED" || record.notes === "APPROVED");
       const authorReviewStatus = record.verification_status ?? (record.notes === "APPROVED" ? "APPROVED" : isRecordReviewed ? "APPROVED" : null);
       const authorEvidenceKind = isRecordReviewed ? "reviewed_assertion" : "inferred_relation";
 
@@ -1203,40 +1201,48 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
       });
     }
 
-    if (record.category === "owned_inventory" && record.object) {
-      const robotId = robotNodeByName.get(record.object.toLowerCase()) ?? recordNodeByName.get(record.object.toLowerCase());
-      if (robotId) {
-        addEdge(edges, {
-          source: currentId,
-          target: robotId,
-          relation: "instance_of",
-          description: `${record.title} is an instance of ${record.object}.`,
-          confidence: 0.92,
-          weight: 1,
-          is_reviewed: true,
-          review_status: "APPROVED",
-          evidence_kind: "reviewed_assertion",
-          evidence_excerpt: record.evidence_excerpt,
-          url: record.url,
-          source_platform: record.source_platform,
-          published_at: record.published_at,
-          data_origin: record.data_origin,
-          ...ids
-        });
+    if (record.category === "owned_inventory") {
+      const isRecordReviewed = record.is_reviewed !== undefined
+        ? Boolean(record.is_reviewed)
+        : Boolean(record.verification_status === "APPROVED" || record.notes === "APPROVED");
+      const inventoryReviewStatus = record.verification_status ?? (record.notes === "APPROVED" ? "APPROVED" : isRecordReviewed ? "APPROVED" : null);
+      const inventoryEvidenceKind = record.evidence_kind ?? (isRecordReviewed ? "reviewed_assertion" : "inferred_relation");
+
+      if (record.object) {
+        const robotId = robotNodeByName.get(record.object.toLowerCase()) ?? recordNodeByName.get(record.object.toLowerCase());
+        if (robotId) {
+          addEdge(edges, {
+            source: currentId,
+            target: robotId,
+            relation: "instance_of",
+            description: `${record.title} is an instance of ${record.object}.`,
+            confidence: 0.92,
+            weight: 1,
+            is_reviewed: isRecordReviewed,
+            review_status: inventoryReviewStatus,
+            evidence_kind: inventoryEvidenceKind,
+            evidence_excerpt: record.evidence_excerpt,
+            url: record.url,
+            source_platform: record.source_platform,
+            published_at: record.published_at,
+            data_origin: record.data_origin,
+            ...ids
+          });
+        }
       }
       const ownerLabel = record.organization || "Internal team";
       const rawStatus = (record.contribution_type || "owned").toLowerCase();
+      const isOwned = rawStatus === "owned" || rawStatus === "purchased";
       const isBorrowed = rawStatus === "borrowed" || rawStatus === "loaned";
       const isLeased = rawStatus === "leased";
-      const isOwned = !isBorrowed && !isLeased;
 
-      const relation = isOwned ? "owned_by" : isBorrowed ? "borrowed_by" : isLeased ? "leased_by" : "held_by";
+      const relation = isOwned ? "owned_by" : isBorrowed ? "borrowed_from" : isLeased ? "leased_from" : "held_by";
       const relationDesc = isOwned
         ? `${record.title} is owned by ${ownerLabel}.`
         : isBorrowed
-        ? `${record.title} is borrowed by ${ownerLabel}.`
+        ? `${record.title} is borrowed from ${ownerLabel}.`
         : isLeased
-        ? `${record.title} is leased by ${ownerLabel}.`
+        ? `${record.title} is leased from ${ownerLabel}.`
         : `${record.title} is held by ${ownerLabel}.`;
 
       const teamId = mergeNode(nodes, {
@@ -1251,9 +1257,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
         source_count: 0,
         is_private: record.category === "owned_inventory" && record.notes === "private",
         is_low_confidence: false,
-        is_reviewed: true,
-        review_status: "APPROVED",
-        evidence_kind: "reviewed_assertion",
+        is_reviewed: isRecordReviewed,
+        review_status: inventoryReviewStatus,
+        evidence_kind: inventoryEvidenceKind,
         url: null,
         evidence_excerpt: null,
         record_id: null,
@@ -1267,9 +1273,9 @@ export async function buildNetworkGraph(options: NetworkGraphOptions = {}): Prom
         description: relationDesc,
         confidence: 0.85,
         weight: 1,
-        is_reviewed: true,
-        review_status: "APPROVED",
-        evidence_kind: "reviewed_assertion",
+        is_reviewed: isRecordReviewed,
+        review_status: inventoryReviewStatus,
+        evidence_kind: inventoryEvidenceKind,
         evidence_excerpt: null,
         url: null,
         source_platform: "owned_inventory",

@@ -23,6 +23,7 @@ import {
   publicContributionWhere,
   publicPerspectiveWhere,
   isFreshPerspectiveAnnotation,
+  PUBLIC_DATASET_SCOPE_LABEL,
   isEligiblePublicRobot,
   isEligiblePublicContribution
 } from "../lib/public-projection";
@@ -961,4 +962,19 @@ test("Hybrid Graph: loadGraphRecordsHybrid propagates Prisma loader cap warnings
     prisma.perspectiveAnnotation.findMany = origPerspectives;
     prisma.triplet.findMany = origTriplets;
   }
+});
+
+test("Scope disclosure: analytics page notice renders the summary snapshot scope label with audit date", async () => {
+  const React = (await import("react")).default;
+  const { renderToStaticMarkup } = await import("react-dom/server");
+  const { default: DatasetScopeNotice } = await import("../app/analytics/DatasetScopeNotice");
+  const summary = buildCorpusAggregateSummary({
+    totalSources: 3, totalRobots: 0, totalContributions: 0, totalPerspectives: 0,
+    totalScoredSources: 0, sourcesWithPubDate: 0, robotsWithYear: 0,
+    analyzedSourcesCount: 3, analyzedRobotsCount: 0, analyzedContributionsCount: 0, analyzedPerspectivesCount: 0
+  });
+  const html = renderToStaticMarkup(React.createElement(DatasetScopeNotice, { scopeLabel: summary.datasetScopeLabel }));
+  assert.match(html, /2026-11-07/);
+  assert.ok(html.includes(PUBLIC_DATASET_SCOPE_LABEL));
+  assert.match(readFileSync(resolve(process.cwd(), "app/analytics/page.tsx"), "utf8"), /<DatasetScopeNotice scopeLabel=\{summary\.datasetScopeLabel\}/);
 });

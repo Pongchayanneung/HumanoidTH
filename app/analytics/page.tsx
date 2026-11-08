@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation, parseLanguage } from "@/lib/translations";
-import { PUBLIC_DATASET_SCOPE_LABEL } from "@/lib/public-projection";
 import { loadWholeCorpusAnalytics } from "@/lib/analytics/corpus-analytics";
 import AnalyticsPlayground from "./AnalyticsPlayground";
 import AnalyticsBpmn from "./AnalyticsBpmn";
+import DatasetScopeNotice from "./DatasetScopeNotice";
 
 export const dynamic = "force-dynamic";
 
@@ -48,9 +48,7 @@ export default async function AnalyticsPage() {
       <h1>{t.analyticsTitle}</h1>
       <p className="muted" style={{ marginBottom: "18px" }}>{t.analyticsDesc}</p>
       
-      <div className="notice" style={{ background: "rgba(59, 130, 246, 0.08)", borderColor: "var(--accent)", marginBottom: "16px" }}>
-        <strong>Dataset Scope:</strong> Whole Eligible Public Corpus. Analytics aggregate all eligible public records across the atlas (accepted sources, catalogued robot models, and approved contributions). Unreviewed submissions, private inventory, and excluded placeholders are strictly omitted.
-      </div>
+      <DatasetScopeNotice scopeLabel={summary.datasetScopeLabel} />
 
       <div className="notice" style={{ background: "rgba(100, 116, 139, 0.08)", borderColor: "#94a3b8", marginBottom: "16px" }}>
         <strong>Temporal Completeness:</strong> {summary.dateDisclosures.sourcesWithPublicationDate.toLocaleString()} of {summary.totalEligibleSources.toLocaleString()} internet sources ({((1 - summary.dateDisclosures.sourcesMissingPublicationDateRate) * 100).toFixed(1)}%) have explicit publication dates ({summary.dateDisclosures.sourcesMissingPublicationDate.toLocaleString()} undated, missing-date rate: {(summary.dateDisclosures.sourcesMissingPublicationDateRate * 100).toFixed(1)}%). {summary.dateDisclosures.robotsWithFirstSeenYear} of {summary.totalEligibleRobots} catalogued robots have recorded observation years (unverified foreign platforms require Thailand-specific deployment evidence).

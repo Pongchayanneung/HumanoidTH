@@ -4,8 +4,10 @@ import type { NormalizedSource } from "@/lib/ingest/types";
 import { canonicalizeUrl } from "@/lib/url";
 import { saveSources } from "@/lib/ingest/save";
 import { FileCheckpointStore } from "./checkpoint-store";
-import type {
-  IngestionJobRepository,
+import {
+  PartialBatchError,
+  type BatchSaveResult,
+  type IngestionJobRepository,
   IngestionJobRecord,
   IngestionCheckpoint
 } from "./contracts";
@@ -13,10 +15,16 @@ import type {
 export class PostgresIngestionJobRepository implements IngestionJobRepository {
   private client: typeof prisma;
   private checkpointStore: FileCheckpointStore;
+  private saveRecords: (records: NormalizedSource[]) => Promise<unknown>;
 
-  constructor(client: typeof prisma = prisma, checkpointStore?: FileCheckpointStore) {
+  constructor(
+    client: typeof prisma = prisma,
+    checkpointStore?: FileCheckpointStore,
+    saveRecords: (records: NormalizedSource[]) => Promise<unknown> = saveSources
+  ) {
     this.client = client;
     this.checkpointStore = checkpointStore ?? new FileCheckpointStore();
+    this.saveRecords = saveRecords;
   }
 
   async createJob(data: {
@@ -111,25 +119,12 @@ export class PostgresIngestionJobRepository implements IngestionJobRepository {
     return await this.checkpointStore.get(jobId);
   }
 
-  async saveBatch(
-    records: NormalizedSource[],
-    jobId: string
-  ): Promise<{
-    savedIds: string[];
-    newCount: number;
-    updatedCount: number;
-    skippedCount: number;
-    acceptedCount: number;
-    rejectedCount: number;
-    uncertainCount: number;
-  }> {
+  async saveBatch(records: NormalizedSource[], _jobId: string): Promise<BatchSaveResult> {
     let newCount = 0;
     let updatedCount = 0;
     let skippedCount = 0;
-    let acceptedCount = 0;
-    let rejectedCount = 0;
-    let uncertainCount = 0;
-    const savedIds: string[] = [];
+    const committedUrls: string[] = [];
+    const seenInBatch = new Set<string>();
 
     // Pre-check existing records to distinguish new from updated (Finding D13)
     const urls = records.map((r) => canonicalizeUrl(r.url)).filter(Boolean);
@@ -139,46 +134,54 @@ export class PostgresIngestionJobRepository implements IngestionJobRepository {
     });
     const existingUrlSet = new Set(existing.map((e) => e.url));
 
-    for (const record of records) {
-      const url = canonicalizeUrl(record.url);
-      if (!url) {
+    const summarize = async (): Promise<BatchSaveResult> => {
+      const saved = committedUrls.length
+        ? await this.client.sourceRecord.findMany({
+            select: { id: true, relevanceStatus: true },
+            where: { url: { in: committedUrls } }
+          })
+        : [];
+      return {
+        acceptedCount: saved.filter((r) => r.relevanceStatus === "ACCEPTED").length,
+        newCount,
+        rejectedCount: saved.filter((r) => r.relevanceStatus === "REJECTED").length,
+        savedIds: saved.map((r) => r.id),
+        skippedCount,
+        uncertainCount: saved.filter(
+          (r) => r.relevanceStatus !== "ACCEPTED" && r.relevanceStatus !== "REJECTED"
+        ).length,
+        updatedCount
+      };
+    };
+
+    // saveSources commits each record in its own transaction, so persist one record
+    // at a time and report exactly how many were committed if a later one fails.
+    for (let index = 0; index < records.length; index++) {
+      const url = canonicalizeUrl(records[index].url);
+      if (!url || seenInBatch.has(url)) {
         skippedCount++;
         continue;
       }
 
+      try {
+        await this.saveRecords([records[index]]);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        const partial = await summarize().catch(() => ({
+          acceptedCount: 0, newCount, rejectedCount: 0, savedIds: [], skippedCount, uncertainCount: 0, updatedCount
+        }));
+        throw new PartialBatchError(message, index, partial);
+      }
+
+      seenInBatch.add(url);
+      committedUrls.push(url);
       if (existingUrlSet.has(url)) {
         updatedCount++;
       } else {
         newCount++;
-        existingUrlSet.add(url);
       }
     }
 
-    // saveSources commits each record separately.
-    await saveSources(records);
-
-    // Fetch the persisted records to collect IDs and relevance breakdown
-    const savedRecords = await this.client.sourceRecord.findMany({
-      select: { id: true, relevanceStatus: true },
-      where: { url: { in: urls } }
-    });
-
-    for (const r of savedRecords) {
-      savedIds.push(r.id);
-      if (r.relevanceStatus === "ACCEPTED") acceptedCount++;
-      else if (r.relevanceStatus === "REJECTED") rejectedCount++;
-      else uncertainCount++;
-    }
-
-    return {
-      acceptedCount,
-      newCount,
-      rejectedCount,
-      savedIds,
-      skippedCount,
-      uncertainCount,
-      updatedCount
-    };
+    return await summarize();
   }
 }
-

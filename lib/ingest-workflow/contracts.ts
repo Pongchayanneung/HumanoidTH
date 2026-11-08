@@ -85,6 +85,33 @@ export type JobExecutionOutcome =
   | { ok: false; code: "JOB_NOT_FOUND"; message: string }
   | { ok: false; code: "EXECUTION_FAILED"; message: string; result?: IngestionJobResult };
 
+export interface BatchSaveResult {
+  savedIds: string[];
+  newCount: number;
+  updatedCount: number;
+  skippedCount: number;
+  acceptedCount: number;
+  rejectedCount: number;
+  uncertainCount: number;
+}
+
+/**
+ * Thrown by a repository when a batch fails midway. `partial` describes the
+ * leading `committed` records that were durably written before the failure so
+ * the executor can checkpoint the exact record boundary instead of replaying them.
+ */
+export class PartialBatchError extends Error {
+  readonly committed: number;
+  readonly partial: BatchSaveResult;
+
+  constructor(message: string, committed: number, partial: BatchSaveResult) {
+    super(message);
+    this.name = "PartialBatchError";
+    this.committed = committed;
+    this.partial = partial;
+  }
+}
+
 export interface IngestionJobRepository {
   createJob(data: {
     id?: string;
@@ -109,17 +136,6 @@ export interface IngestionJobRepository {
 
   getCheckpoint(jobId: string): Promise<IngestionCheckpoint | null>;
 
-  saveBatch(
-    records: NormalizedSource[],
-    jobId: string
-  ): Promise<{
-    savedIds: string[];
-    newCount: number;
-    updatedCount: number;
-    skippedCount: number;
-    acceptedCount: number;
-    rejectedCount: number;
-    uncertainCount: number;
-  }>;
+  saveBatch(records: NormalizedSource[], jobId: string): Promise<BatchSaveResult>;
 }
 

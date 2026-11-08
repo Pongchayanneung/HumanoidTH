@@ -24,13 +24,13 @@ Work in progress for **Issue #25** (`[R1] Make ingestion jobs recoverable and ac
   - `persistedRecordIds`: list of database record IDs created/updated.
 - For interruption and failure:
   - Caught batch failures update the job to `FAILED`; a process crash can leave it `RUNNING`. Provider fetches run outside this engine.
-  - Retrying checks the input against the checkpoint, but a partial batch commit or process crash between source writes and checkpoint persistence can cause replay and incorrect counts. Local checkpoints are not shared between instances.
+  - The PostgreSQL repository persists records one at a time and, when one fails, reports exactly how many were committed (`PartialBatchError`), so the checkpoint advances to that record and a retry does not replay or reclassify them as updates. A process crash between a source write and the checkpoint write can still cause replay and incorrect counts. A successful retry clears the earlier failure message. Local checkpoints are not shared between instances.
 
 ### 3. Outcome Reporting (Finding D13)
 - The in-memory result intends to distinguish the following, but the database and UI/API/CLI do not persist or expose this breakdown consistently:
   - `recordsNew`: newly inserted source records.
   - `recordsUpdated`: existing records whose metadata/relevance was refreshed.
-  - `recordsSkipped`: intended for malformed URLs or duplicates within a batch; the PostgreSQL repository currently miscounts duplicates.
+  - `recordsSkipped`: malformed URLs and duplicates within a batch (the PostgreSQL repository skips a repeated URL without writing it twice).
   - `recordsFailed`: records that encountered errors.
   - `acceptedCount`, `rejectedCount`, `uncertainCount`: relevance categorization.
 - Transparent credential handling:

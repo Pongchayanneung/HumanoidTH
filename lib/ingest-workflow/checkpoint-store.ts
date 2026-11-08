@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve, join } from "node:path";
 import type { IngestionCheckpoint } from "./contracts";
 
@@ -30,14 +30,7 @@ export class FileCheckpointStore {
   }
 
   async clear(jobId: string): Promise<void> {
-    const file = this.getFilePath(jobId);
-    if (existsSync(file)) {
-      try {
-        writeFileSync(file, "", "utf8");
-      } catch {
-        // ignore
-      }
-    }
+    rmSync(this.getFilePath(jobId), { force: true });
   }
 }
 

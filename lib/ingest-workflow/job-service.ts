@@ -6,6 +6,7 @@ import {
   type IngestionCheckpoint,
   type IngestionJobResult,
   type JobExecutionOutcome,
+  PartialBatchError,
   isPermittedAdapter
 } from "./contracts";
 
@@ -266,14 +267,30 @@ return async function executeIngestionJob(
     } catch (err) {
       // Ingestion batch failed (e.g. database abort or rate limit)
       const errorMsg = err instanceof Error ? err.message : String(err);
-      counts.recordsFailed += batch.length;
+      // Records committed before the failure stay counted; resume at the exact record boundary.
+      const committed = err instanceof PartialBatchError ? err.committed : 0;
+      if (err instanceof PartialBatchError) {
+        counts.recordsNew += err.partial.newCount;
+        counts.recordsUpdated += err.partial.updatedCount;
+        counts.recordsSkipped += err.partial.skippedCount;
+        counts.acceptedCount += err.partial.acceptedCount;
+        counts.rejectedCount += err.partial.rejectedCount;
+        counts.uncertainCount += err.partial.uncertainCount;
+        counts.recordsProcessed += committed;
+        counts.recordsSaved = counts.recordsNew + counts.recordsUpdated;
+        persistedRecordIds.push(...err.partial.savedIds);
+        for (const rec of batch.slice(0, committed)) {
+          completedUrls.push(rec.url);
+        }
+      }
+      counts.recordsFailed += batch.length - committed;
 
       const failedCheckpoint: IngestionCheckpoint = {
         adapter: typedAdapter,
         completedUrls,
         counts,
         jobId: finalJobId,
-        lastProcessedIndex: i,
+        lastProcessedIndex: i + committed,
         persistedRecordIds,
         query,
         recordsHash,
@@ -313,6 +330,7 @@ return async function executeIngestionJob(
 
   // 8. Successful completion
   await repository.updateJobStatus(finalJobId, {
+    errorMessage: null,
     finishedAt: new Date(),
     recordsFound: records.length,
     recordsSaved: counts.recordsSaved,

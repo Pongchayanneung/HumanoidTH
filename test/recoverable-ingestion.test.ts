@@ -407,3 +407,104 @@ test("R1: documentation states the current recovery and history limits", () => {
   assert.match(doc, /Provider fetching, distributed recovery, atomic batch progress, and unified history remain incomplete/);
   assert.doesNotMatch(doc, /All 300 test assertions pass/);
 });
+
+test("R1: PostgreSQL repository skips in-batch duplicates and separates new from updated", async () => {
+  const { PostgresIngestionJobRepository } = await import("../lib/ingest-workflow/postgres-repository");
+  const sources = makeSampleSources(3);
+  const duplicate = { ...sources[0] };
+  const saved: string[] = [];
+  const client = {
+    sourceRecord: {
+      findMany: async (args: { where: { url: { in: string[] } } }) =>
+        args.where.url.in
+          .filter((url) => url === sources[1].url || saved.includes(url))
+          .map((url) => ({ id: `id:${url}`, relevanceStatus: "ACCEPTED", url }))
+    }
+  };
+  const repo = new PostgresIngestionJobRepository(client as never, new FileCheckpointStore(mkdtempSync(join(tmpdir(), "ck-"))), async (records) => {
+    saved.push(...records.map((r) => r.url));
+  });
+
+  const result = await repo.saveBatch([sources[0], duplicate, sources[1], sources[2]], "job");
+  assert.equal(result.newCount, 2);
+  assert.equal(result.updatedCount, 1);
+  assert.equal(result.skippedCount, 1);
+  assert.deepEqual(saved, [sources[0].url, sources[1].url, sources[2].url]);
+  assert.equal(result.acceptedCount, 3);
+});
+
+test("R1: PostgreSQL repository reports the exact committed prefix when a later record fails", async () => {
+  const { PostgresIngestionJobRepository } = await import("../lib/ingest-workflow/postgres-repository");
+  const { PartialBatchError } = await import("../lib/ingest-workflow/contracts");
+  const sources = makeSampleSources(3);
+  const saved: string[] = [];
+  const client = {
+    sourceRecord: {
+      findMany: async (args: { where: { url: { in: string[] } } }) =>
+        args.where.url.in.filter((url) => saved.includes(url)).map((url) => ({ id: `id:${url}`, relevanceStatus: "UNCERTAIN", url }))
+    }
+  };
+  const repo = new PostgresIngestionJobRepository(client as never, new FileCheckpointStore(mkdtempSync(join(tmpdir(), "ck-"))), async (records) => {
+    if (records[0].url === sources[2].url) throw new Error("constraint violation");
+    saved.push(records[0].url);
+  });
+
+  await assert.rejects(
+    () => repo.saveBatch(sources, "job"),
+    (err: unknown) => {
+      assert.ok(err instanceof PartialBatchError);
+      assert.equal(err.committed, 2);
+      assert.equal(err.partial.newCount, 2);
+      assert.equal(err.partial.uncertainCount, 2);
+      assert.equal(err.partial.savedIds.length, 2);
+      assert.match(err.message, /constraint violation/);
+      return true;
+    }
+  );
+});
+
+test("R1: retry after a partial batch resumes at the committed record and counts it as new once", async () => {
+  const { PartialBatchError } = await import("../lib/ingest-workflow/contracts");
+  const repo = new InMemoryIngestRepository();
+  const sources = makeSampleSources(5);
+  let failOnce = true;
+  const baseSave = repo.saveBatch.bind(repo);
+  repo.saveBatch = async (records, id) => {
+    if (failOnce && records.length > 2) {
+      failOnce = false;
+      const committed = await baseSave(records.slice(0, 2), id);
+      throw new PartialBatchError("transient timeout on record 3", 2, committed);
+    }
+    return baseSave(records, id);
+  };
+  const input = { actor: "valid", adapter: "OPENALEX", batchSize: 5, jobId: "partial", query: "q", records: sources, repository: repo };
+
+  const first = await runAuthorized(input);
+  assert.equal(first.ok, false);
+  if (first.ok || first.code !== "EXECUTION_FAILED") return assert.fail("expected EXECUTION_FAILED");
+  assert.equal(first.result?.checkpoint?.lastProcessedIndex, 2);
+  assert.equal(first.result?.counts.recordsNew, 2);
+  assert.equal(first.result?.counts.recordsFailed, 3);
+  assert.equal(repo.jobs.get("partial")?.status, "FAILED");
+
+  const retry = await runAuthorized(input);
+  assert.equal(retry.ok, true);
+  if (!retry.ok) return;
+  assert.equal(retry.result.counts.recordsNew, 5);
+  assert.equal(retry.result.counts.recordsUpdated, 0);
+  assert.equal(retry.result.counts.recordsFailed, 0);
+  assert.equal(repo.savedBatches.flat().length, 5, "no record is written twice");
+  assert.equal(repo.jobs.get("partial")?.errorMessage, null, "success clears the earlier failure message");
+});
+
+test("R1: clearing a checkpoint removes it instead of leaving an unparseable file", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "ck-clear-"));
+  try {
+    const store = new FileCheckpointStore(dir);
+    const checkpoint = { jobId: "gone" } as IngestionCheckpoint;
+    await store.save(checkpoint);
+    assert.equal((await store.get("gone"))?.jobId, "gone");
+    await store.clear("gone");
+    assert.equal(await store.get("gone"), null);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});

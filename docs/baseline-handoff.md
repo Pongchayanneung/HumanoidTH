@@ -178,17 +178,21 @@ Not authored here. Owner: Pongchayanneung, in the missing runbook (see "Not run"
 - **Admin action needed (Pongchayanneung):** confirm whether these two accounts are team members. If not, remove or downgrade them
   (Settings, Collaborators). Also consider branch protection on `main`. I changed nothing.
 
+The original duplicate check accepted any error as a pass, so its unique-constraint result alone was inconclusive. The script now requires Prisma error `P2002`; rerun it to verify the result.
+
 ## Reproduce this page's numbers
 
+Use a freshly created disposable database named `m7_disposable_<suffix>` and independently verify the server and database identity before setting `M7_DISPOSABLE_DATABASE=yes`. A localhost URL can still be a tunnel; these checks cannot prove disposability.
+
 ```sh
-ATLAS_ALLOW_SEED=1 ./node_modules/.bin/tsx scripts/m7-crud-restart.ts crud            # 7 PASS lines
-ATLAS_ALLOW_SEED=1 ./node_modules/.bin/tsx scripts/m7-crud-restart.ts persist-write   # server up
+M7_DISPOSABLE_DATABASE=yes ATLAS_ALLOW_SEED=1 ./node_modules/.bin/tsx scripts/m7-crud-restart.ts crud            # 7 PASS lines
+M7_DISPOSABLE_DATABASE=yes ATLAS_ALLOW_SEED=1 ./node_modules/.bin/tsx scripts/m7-crud-restart.ts persist-write   # server up
 # stop the server, start it again, then:
-ATLAS_ALLOW_SEED=1 ./node_modules/.bin/tsx scripts/m7-crud-restart.ts persist-verify  # 3 PASS lines
-ATLAS_ALLOW_SEED=1 ./node_modules/.bin/tsx scripts/m7-crud-restart.ts persist-clean
+M7_DISPOSABLE_DATABASE=yes ATLAS_ALLOW_SEED=1 ./node_modules/.bin/tsx scripts/m7-crud-restart.ts persist-verify  # 3 PASS lines
+M7_DISPOSABLE_DATABASE=yes ATLAS_ALLOW_SEED=1 ./node_modules/.bin/tsx scripts/m7-crud-restart.ts persist-clean
 # production-mode spec: use an https OPERATOR_APP_ORIGIN, skip 4c
 PLAYWRIGHT_EXTERNAL_SERVER=1 ./node_modules/.bin/playwright test tests-node/m7-outcomes.spec.ts -g '^(?!.*4c controls)'
 ```
 
-The script refuses unless `ATLAS_ALLOW_SEED=1` and `DATABASE_URL` is a local database (the seed guard), and every row it writes carries the
+The script requires `ATLAS_ALLOW_SEED=1`, `M7_DISPOSABLE_DATABASE=yes`, a dedicated database name, and a local host in the URL. Every row it writes carries the
 `M7LANEB` marker.

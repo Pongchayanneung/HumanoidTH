@@ -2,6 +2,7 @@ import "../lib/load-env";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma";
 import { assertSeedAllowed } from "../lib/seed-guard";
+import { assertM7Disposable, isUniqueViolation } from "../lib/m7-test-guard";
 import { createPostgresSubmissionWorkflowRepository } from "../lib/submission-workflow/postgres-repository";
 
 // M7 (issue #12) runtime checks the unit suite does not make: real Prisma CRUD and restart preservation.
@@ -9,7 +10,7 @@ import { createPostgresSubmissionWorkflowRepository } from "../lib/submission-wo
 //   persist-write   write marker rows that must survive a server restart
 //   persist-verify  confirm the marker rows hold exactly what persist-write stored
 //   persist-clean   remove the marker rows
-// Refuses unless ATLAS_ALLOW_SEED=1 and DATABASE_URL is a local database (same guard as seeding).
+// Also requires explicit confirmation and an m7_disposable_* database name; localhost may still be a tunnel.
 // Every row it writes carries the M7LANEB marker; nothing else is touched.
 
 const MARK = "M7LANEB";
@@ -18,6 +19,7 @@ const MARK_EMAIL = `${MARK.toLowerCase()}-admin@example.invalid`;
 
 const connectionString = process.env.DATABASE_URL;
 assertSeedAllowed(connectionString);
+assertM7Disposable(connectionString, process.env);
 const prisma = new PrismaClient({ adapter: new PrismaPg(connectionString as string) });
 
 function must(condition: boolean, label: string): void {
@@ -47,7 +49,7 @@ async function crud() {
   must(edited.verificationStatus === "APPROVED" && fresh?.visibility === "public", "contribution: create, update, read by unique sourceUrl");
 
   // Unique constraint is enforced by the database.
-  const duplicate = await repo.createContribution({ ...contribution, id: undefined } as never).then(() => false, () => true);
+  const duplicate = await repo.createContribution({ ...contribution, id: undefined } as never).then(() => false, (error: unknown) => { if (!isUniqueViolation(error)) throw error; return true; });
   must(duplicate, "contribution: duplicate sourceUrl rejected by the database");
 
   // The repository has no delete, so use Prisma directly, plus a user and an inventory unit for the other tables.

@@ -1,7 +1,7 @@
 import { canonicalizeUrl } from "../url";
 import { validateSearchRequest } from "./types";
 import type { SearchBrowseResult, SearchContentType, SearchDocument, SearchMatch, SearchResultEvidence, SearchMatchedResult, SearchResponse, SearchResult, SearchResultGroup, SearchWarning } from "./types";
-import { fuseRankings, prepareQuery, rankKeyword, semanticRank } from "./ranking";
+import { fuseRankings, prepareQuery, rankKeyword, semanticFirstRanking, semanticRank } from "./ranking";
 import { FROZEN_SEMANTIC_POLICY, isProfileCompatibleWithPolicy, type SemanticRetrievalPolicy } from "./semantic-policy";
 import type { ModelProfile } from "./vector-types";
 
@@ -113,7 +113,7 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
       controller.signal.throwIfAborted();
       const index = loaded && { ...loaded };
       if (!index || !index.release?.id || !index.release?.generatedAt || !Array.isArray(index.documents)) return Response.json(unavailable, { status: 503 });
-      const policyReady = !options.requirePolicy || Boolean(options.policy?.isFrozen && options.policy.calibrationStatus === "calibrated_on_dev_split" && Number.isFinite(options.policy.semanticCutoffThreshold));
+      const policyReady = !options.requirePolicy || Boolean(options.policy?.isFrozen && (options.policy.calibrationStatus === "calibrated_on_dev_split" || options.policy.calibrationStatus === "demo_unvalidated") && Number.isFinite(options.policy.semanticCutoffThreshold));
       if (!prepared.isBrowse && policyReady && options.embedQuery && options.loadVectors) index.vectors = (await options.loadVectors(index, controller.signal)) ?? undefined;
       controller.signal.throwIfAborted();
       const policy = options.policy ?? FROZEN_SEMANTIC_POLICY;
@@ -188,7 +188,9 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
       const semanticSet = new Set(semanticIds);
 
       const matchedGroups = new Map<string, SearchMatchedResult[]>();
-      for (const id of fuseRankings(keyword, semanticIds, policy, (docId) => groupKeyFor(byId.get(docId)!, byId))) {
+      const demo = hybrid && policy.calibrationStatus === "demo_unvalidated";
+      const groupOf = (docId: string) => groupKeyFor(byId.get(docId)!, byId);
+      for (const id of demo ? semanticFirstRanking(keyword, semanticIds, groupOf) : fuseRankings(keyword, semanticIds, policy, groupOf)) {
         const doc = byId.get(id)!;
         const key = groupKeyFor(doc, byId);
         if (options.revalidate && checks >= policy.limits.maxCurrentRecordChecks) break;
@@ -203,7 +205,7 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
           : { methods: ["semantic"], evidence };
         addToGroup(matchedGroups, input.limit, key, { ...toResult(doc, evidenceOf.get(id)!), match });
       }
-      return Response.json({ ...common, warnings, mode: hybrid ? "hybrid" : "keyword", view: "results", groups: toGroups(matchedGroups) } satisfies SearchResponse);
+      return Response.json({ ...common, warnings, mode: hybrid ? "hybrid" : "keyword", ...(demo ? { policyStatus: "demo_unvalidated" as const } : {}), view: "results", groups: toGroups(matchedGroups) } satisfies SearchResponse);
     } catch { return Response.json(unavailable, { status: 503 }); }
     };
     try { return await Promise.race([work(), timeout]); } finally { clock.clearTimeout(totalTimer); }

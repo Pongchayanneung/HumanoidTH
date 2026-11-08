@@ -3,7 +3,7 @@ import type { SearchPostOptions } from "./api";
 import { resolveEmbeddingApiKey, resolveEmbeddingProtocol } from "./embedding-env";
 import { createQueryEmbedder } from "./query-embedder";
 import { createReleaseVectorLoader, withKeywordFallback } from "./vector-loader";
-import { FROZEN_SEMANTIC_POLICY } from "./semantic-policy";
+import { DEMO_SEMANTIC_POLICY, FROZEN_SEMANTIC_POLICY } from "./semantic-policy";
 import { DEFAULT_MODEL_PROFILE } from "./vector-types";
 
 export interface SemanticServingOptions {
@@ -20,9 +20,11 @@ export interface SemanticServingOptions {
  *  - EMBEDDING_SERVICE_PROTOCOL is set to something other than "proxy" or "tei" (logged; never guessed).
  * The key is EMBEDDING_SERVICE_API_KEY (legacy alias EMBEDDING_SERVICE_KEY). The protocol defaults
  * to "proxy"; set EMBEDDING_SERVICE_PROTOCOL=tei for a direct text-embeddings-inference server.
- * Even when configured, hybrid ranking only turns on if the policy is frozen AND calibrated
- * (`calibrationStatus: "calibrated_on_dev_split"` in semantic-policy.ts); until then the search API
- * ignores these dependencies and answers in keyword mode.
+ * Even when configured, semantic ranking only turns on if the policy is frozen AND calibrated
+ * (`calibrationStatus: "calibrated_on_dev_split"` in semantic-policy.ts), or the demo switch
+ * ATLAS_SEMANTIC_DEMO=1 selects DEMO_SEMANTIC_POLICY (`demo_unvalidated`, semantic-first, labelled
+ * as an unvalidated experiment). Otherwise the search API ignores these dependencies and answers
+ * in keyword mode.
  */
 export function createSemanticOptionsFromEnv(
   env: Record<string, string | undefined> = process.env,
@@ -45,6 +47,6 @@ export function createSemanticOptionsFromEnv(
       onFailure: (reason) => console.warn(`[atlas-search] query embedding failed (${reason}); serving keyword results`),
     }),
     loadVectors: withKeywordFallback(createReleaseVectorLoader({ searchDir })),
-    policy: FROZEN_SEMANTIC_POLICY,
+    policy: (env.ATLAS_SEMANTIC_DEMO ?? "").trim() === "1" ? DEMO_SEMANTIC_POLICY : FROZEN_SEMANTIC_POLICY,
   };
 }

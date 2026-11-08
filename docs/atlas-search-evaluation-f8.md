@@ -54,6 +54,8 @@ These values are pinned so F5 (Ranking) and F6 (API) read the same numbers. "Fro
 | **RRF Constant ($k$)** | **`60`** | Common default for reciprocal rank fusion ($1 / (60 + \text{rank})$); not tuned on this pilot |
 | **Lexical Weights** | Title: `4.0`, Body: `1.0` | Prioritizes title and canonical name matches over broad substantive excerpts; not tuned on this pilot |
 | **Candidate Limits** | 50 candidates / branch | Bounded latency budget (max 200 current-record revalidation checks) |
+
+> **Demo switch (2026-11-08).** `ATLAS_SEMANTIC_DEMO=1` (default off) makes `createSemanticOptionsFromEnv` pass `DEMO_SEMANTIC_POLICY` (`calibrationStatus: "demo_unvalidated"`, same 0.62 cutoff, still not calibrated) instead of the frozen policy. With it the semantic branch runs in **semantic-first** order: only records the cutoff admits are returned (an exact full-title keyword match goes first), because the dev evaluation above found semantic ranking ahead of the RRF blend and found that only the cutoff suppresses unrelated queries. The response carries `policyStatus: "demo_unvalidated"` and `/search` shows "Meaning-based search (experimental, not yet calibrated)" (Thai: "ค้นด้วยความหมาย (ทดลอง ยังไม่ได้ปรับเทียบ)"). If the embedder fails, the response is plain keyword mode with the existing keyword-only label. `FROZEN_SEMANTIC_POLICY` stays `provisional_uncalibrated`.
 | **Result Limits** | Default 10, Max 20 | Bounded result size |
 | **Task Instruction** | `"Given a Thai or English robotics information request, retrieve relevant public atlas records."` | Pinned query prefix for Qwen embedding instruction tuning |
 

@@ -155,6 +155,23 @@ export function semanticRank(input: {
 }
 
 /**
+ * Semantic-first order for the demo policy. The pilot evaluation found semantic ranking beat the
+ * keyword/RRF blend and that only the semantic cutoff can suppress unrelated queries, so ids the
+ * cutoff did not admit are dropped. An exact full title/name keyword match is kept in front.
+ * Returns each id once, with members of a group adjacent.
+ */
+export function semanticFirstRanking(
+  keyword: KeywordHit[],
+  semanticIds: string[],
+  groupOf: (id: string) => string = (id) => id,
+): string[] {
+  const ids = Array.from(new Set([...keyword.filter((hit) => hit.exactTitle).map((hit) => hit.id), ...semanticIds]));
+  const members = new Map<string, string[]>();
+  for (const id of ids) members.set(groupOf(id), [...(members.get(groupOf(id)) ?? []), id]);
+  return Array.from(members.values()).flat();
+}
+
+/**
  * Reciprocal rank fusion: sum of 1 / (k + rank) over the top candidates of each branch.
  * Ranks are taken over groups (`groupOf`, identity by default): in each branch a group is
  * ranked by its best-ranked member, so extra copies of one identity cannot take branch ranks or

@@ -19,7 +19,7 @@ type ContractChecks = [
   Assert<Equal<SearchContentType, "paper" | "repository" | "video" | "news_web" | "source" | "robot" | "contribution" | "perspective" | "inventory" | "relationship" | "entity">>,
   Assert<Equal<keyof SearchResultGroup, "groupKey" | "results">>,
   Assert<Equal<SearchMatchedResult["match"], SearchMatch>>,
-  Assert<Equal<keyof SearchResponse, "release" | "coverage" | "warnings" | "mode" | "view" | "groups">>,
+  Assert<Equal<keyof SearchResponse, "release" | "coverage" | "warnings" | "policyStatus" | "mode" | "view" | "groups">>,
   Assert<Equal<SearchResponse["release"], { id: string; generatedAt: string } | null>>,
   Assert<Equal<SearchResponse["coverage"], SearchCoverage>>,
   Assert<Equal<SearchResponse["warnings"], ("degraded_semantic" | "partial_vector_coverage" | "stale_index" | "unavailable")[]>>,

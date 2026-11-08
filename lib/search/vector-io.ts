@@ -119,33 +119,35 @@ export function computeRecordKeysHash(documents: SearchDocument[]): string {
  * If manifest and manifestDir are provided, verifies complete on-disk file checksums.
  */
 export function validateVectorRelease(params: {
-  buffer: Buffer;
+  buffer?: Buffer | null;
   documents: SearchDocument[];
-  expectedDimensions: number;
+  expectedDimensions?: number;
   expectedVectorCount?: number;
   profile?: ModelProfile | null;
   manifest?: VectorReleaseManifest;
   manifestDir?: string;
 }): VectorValidationResult {
-  const { buffer, documents, expectedDimensions, expectedVectorCount, manifest, manifestDir } = params;
+  const { documents, expectedVectorCount, manifest, manifestDir } = params;
+  const buf = params.buffer ?? Buffer.alloc(0);
+  const expectedDimensions = params.expectedDimensions ?? (manifest?.modelProfile?.dimensions || 1024);
   const checks: VectorValidationCheck[] = [];
   const errors: string[] = [];
 
   const rowBytes = expectedDimensions * BYTES_PER_FLOAT32;
-  const actualVectorCount = buffer.length === 0 ? 0 : buffer.length / rowBytes;
+  const actualVectorCount = buf.length === 0 ? 0 : buf.length / rowBytes;
   const isIntegerCount = Number.isInteger(actualVectorCount);
   const expectedBytes = (expectedVectorCount ?? actualVectorCount) * rowBytes;
 
   // 1. File size alignment check
-  const sizeCheck = isIntegerCount && buffer.length === expectedBytes;
+  const sizeCheck = isIntegerCount && buf.length === expectedBytes;
   checks.push({
     name: "file_size_alignment",
     passed: sizeCheck,
-    detail: `Buffer size is ${buffer.length} bytes for ${actualVectorCount} vectors of ${expectedDimensions} dims`
+    detail: `Buffer size is ${buf.length} bytes for ${actualVectorCount} vectors of ${expectedDimensions} dims`
   });
   if (!sizeCheck) {
     errors.push(
-      `Buffer length ${buffer.length} is not aligned to ${rowBytes} bytes/row (expected ${expectedBytes})`
+      `Buffer length ${buf.length} is not aligned to ${rowBytes} bytes/row (expected ${expectedBytes})`
     );
   }
 
@@ -156,7 +158,7 @@ export function validateVectorRelease(params: {
 
   for (let row = 0; row < actualVectorCount; row++) {
     try {
-      const vec = readVectorAtRow(buffer, row, expectedDimensions);
+      const vec = readVectorAtRow(buf, row, expectedDimensions);
       let sumSq = 0;
       for (let d = 0; d < vec.length; d++) {
         const val = vec[d];
@@ -272,7 +274,7 @@ export function validateVectorRelease(params: {
     dimensions: expectedDimensions,
     vectorCount: actualVectorCount,
     expectedBytes,
-    actualBytes: buffer.length,
+    actualBytes: buf.length,
     checks,
     errors
   };

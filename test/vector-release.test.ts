@@ -698,3 +698,14 @@ test("F4 Release Validation: rejects fractional vectorRow values", () => {
   const result = validateVectorRelease({ buffer: buf, documents: docs, expectedDimensions: dims, expectedVectorCount: 2 });
   assert.equal(result.isValid, false);
 });
+
+test("F4 Release Validation: safely handles keyword-only releases when buffer is omitted", () => {
+  const docs = [createDummyDocument("a"), createDummyDocument("b")];
+  // Keyword-only release has vectorRow: null for all docs
+  docs[0].vectorRow = null;
+  docs[1].vectorRow = null;
+  const result = validateVectorRelease({ documents: docs });
+  assert.equal(result.isValid, true);
+  assert.equal(result.vectorCount, 0);
+  assert.equal(result.actualBytes, 0);
+});

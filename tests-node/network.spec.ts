@@ -77,6 +77,8 @@ test("network page renders graph UI and core controls", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Arrows" })).toBeVisible();
   await expect(page.getByLabel("Network data source")).toBeVisible();
   await expect(page.getByLabel("Interactive network graph")).toBeVisible({ timeout: 20000 });
+  // The select exists in the server HTML before its React change handler is ready.
+  await expect(page.getByText(/Data source:/i)).toBeVisible({ timeout: 20000 });
 
   await page.getByLabel("Network data source").selectOption("file");
   await expect(page.getByText(/Data source: Import file/i)).toBeVisible({ timeout: 20000 });

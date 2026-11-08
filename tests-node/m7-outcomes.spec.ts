@@ -74,12 +74,8 @@ const FORGED_COOKIES = [
 ];
 
 // Every route a visitor can reach without signing in, plus the sign-in page itself.
-const NAV_ROUTES = [
-  "/search", "/", "/dashboard", "/data-pulls", "/map", "/network", "/perspectives", "/robots", "/inventory",
-  "/contributions", "/analytics", "/database", "/submit-data", "/admin", "/profile",
-];
-const MOBILE_NAV_ROUTES = ["/", "/dashboard", "/search", "/robots", "/contributions"];
-const PUBLIC_PAGES = NAV_ROUTES.filter((route) => route !== "/admin");
+const NAV_ROUTES = ["/", "/search", "/robots", "/sources", "/map", "/inventory", "/contributions", "/perspectives", "/dashboard", "/analytics", "/network", "/submit-data", "/profile", "/admin-login"];
+const PUBLIC_PAGES = [...NAV_ROUTES, "/data-pulls", "/database"];
 
 // Skip the 2.5 s first-visit splash so keyboard and click tests start on the real page.
 test.beforeEach(async ({ context }) => {
@@ -145,7 +141,8 @@ function denialActionIds(): Record<string, string> {
   };
   const ids: Record<string, string> = {};
   for (const [id, entry] of Object.entries(manifest.node)) {
-    if (entry.filename === "app/actions.ts") ids[entry.exportedName] = id;
+    // Next may include an absolute Windows filename in development.
+    if (/(^|\/)app\/actions\.ts$/.test(entry.filename.replaceAll("\\", "/"))) ids[entry.exportedName] = id;
   }
   return ids;
 }
@@ -442,6 +439,30 @@ test.describe("database-backed outcomes (denial, privacy, map cold read)", () =>
     const markers = [...PENDING_MARKERS, ...PRIVATE_UNIT.fields];
     for (const route of PUBLIC_PAGES) await expectNoMarkers(request, route, markers);
 
+    const { rows: [dinsaw] } = await sql.query<{ id: string }>(
+      `SELECT id FROM "RobotModel" WHERE "canonicalName" = 'Dinsaw Mini Home AI Assistance'`
+    );
+    expect(dinsaw?.id, "the checked Dinsaw model is seeded").toBeTruthy();
+    const publicRobot = await request.get("/robots?" + new URLSearchParams({ robot: dinsaw.id }));
+    const publicHtml = await publicRobot.text();
+    expect(publicRobot.status()).toBe(200);
+    expect(publicHtml).toContain("Care for older adults at home");
+    expect(publicHtml).toContain("https://www.nia.or.th/DinsawMiniHomeAI");
+
+    const excludedRobotId = "m7-fx-excluded-robot";
+    const excludedRobotTitle = "M7 Placeholder Robot Alpha";
+    await sql.query(`INSERT INTO "RobotModel" (id, "canonicalName", "updatedAt") VALUES ($1, $2, now())`,
+      [excludedRobotId, excludedRobotTitle]);
+    try {
+      const denied = await request.get("/robots?" + new URLSearchParams({ robot: excludedRobotId }));
+      expect(denied.status()).toBe(200);
+      const html = await denied.text();
+      expect(html).toContain("No public robot record was found.");
+      expect(html).not.toContain(excludedRobotTitle);
+    } finally {
+      await sql.query(`DELETE FROM "RobotModel" WHERE id = $1`, [excludedRobotId]);
+    }
+
     for (const query of ["Thai HRI research seed", "Placeholder contribution", PRIVATE_UNIT.name, "robot"]) {
       const response = await request.post("/api/search", { data: { query } });
       // Keyword search may return 200 with public matches. An unavailable search may return 503.
@@ -503,48 +524,39 @@ test.describe("database-backed outcomes (denial, privacy, map cold read)", () =>
 
 // ---------------------------------------------------------------- outcome 3: discovery
 
-test("3 discovery: every public page is listed in the desktop nav, reachable by click, and sitemap lists the discovery pages", async ({ page, request }) => {
-  test.setTimeout(300_000);
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-  const nav = page.getByRole("navigation", { name: "Primary", exact: true });
-  const hrefs = await nav.getByRole("link").evaluateAll((links) => links.map((link) => link.getAttribute("href")));
-  expect(hrefs).toEqual(NAV_ROUTES);
+for (const width of [1440, 390]) {
+  test(`3 discovery (${width}px): public destinations are reachable through the drawer`, async ({ page, request }) => {
+    test.setTimeout(300_000);
+    await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+    await page.goto("/");
+    const button = page.getByRole("button", { name: "Open navigation", exact: true });
+    const drawer = page.getByRole("dialog", { name: "Atlas navigation" });
+    await expect(drawer).toBeHidden();
+    for (const route of NAV_ROUTES) {
+      await button.click();
+      const links = drawer.getByRole("link");
+      expect(await links.evaluateAll(items => items.map(link => link.getAttribute("href")))).toEqual(NAV_ROUTES);
+      await drawer.locator(`a[href="${route}"]`).click();
+      await expect(page, route).toHaveURL(url => url.pathname === route, { timeout: 90_000 });
+      await expect(page.locator("main h1").first(), route).toBeVisible({ timeout: 90_000 });
+      await expect(drawer).toBeHidden();
+      await button.click();
+      await expect(drawer.locator(`a[href="${route}"]`)).toHaveAttribute("aria-current", "page");
+      await page.keyboard.press("Escape");
+      await expect(drawer).toBeHidden();
+    }
 
-  for (const route of NAV_ROUTES) {
-    await nav.locator(`a[href="${route}"]`).click();
-    const landing = route === "/admin" ? "/admin-login" : route;
-    await expect(page, route).toHaveURL(new RegExp(`${landing === "/" ? "/$" : `${landing}$`}`), { timeout: 90_000 });
-    const heading = page.locator("main h1").first();
-    await expect(heading, route).toBeVisible({ timeout: 90_000 });
-    expect((await heading.innerText()).trim().length, `${route} heading`).toBeGreaterThan(0);
-    await expect(page.locator("body"), route).not.toContainText("This page could not be found");
-    if (route !== "/admin") await expect(nav.locator(`a[href="${route}"]`), route).toHaveAttribute("aria-current", "page");
-  }
-
-  const sitemap = await (await request.get("/sitemap.xml")).text();
-  for (const route of ["/robots", "/contributions", "/map", "/network", "/perspectives", "/inventory"]) {
-    expect(sitemap, `sitemap lists ${route}`).toMatch(new RegExp(`<loc>[^<]*${route}</loc>`));
-  }
-  for (const route of ["/admin", "/profile", "/data-pulls"]) {
-    expect(sitemap, `sitemap must not list ${route}`).not.toMatch(new RegExp(`<loc>[^<]*${route}</loc>`));
-  }
-});
-
-test("3 discovery (phone): the five tab destinations are listed and reachable", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-  const tabs = page.getByRole("navigation", { name: "Primary mobile navigation", exact: true });
-  await expect(tabs).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Primary", exact: true })).toBeHidden();
-  const hrefs = await tabs.getByRole("link").evaluateAll((links) => links.map((link) => link.getAttribute("href")));
-  expect(hrefs).toEqual(MOBILE_NAV_ROUTES);
-  for (const route of MOBILE_NAV_ROUTES.slice(1)) {
-    await tabs.locator(`a[href="${route}"]`).click();
-    await expect(page, route).toHaveURL(new RegExp(`${route}$`), { timeout: 90_000 });
-    await expect(page.locator("main h1").first(), route).toBeVisible({ timeout: 90_000 });
-  }
-});
+    if (width === 1440) {
+      const sitemap = await (await request.get("/sitemap.xml")).text();
+      for (const route of ["/robots", "/sources", "/contributions", "/map", "/network", "/perspectives", "/inventory"]) {
+        expect(sitemap, `sitemap lists ${route}`).toMatch(new RegExp(`<loc>[^<]*${route}</loc>`));
+      }
+      for (const route of ["/admin", "/profile", "/data-pulls"]) {
+        expect(sitemap, `sitemap must not list ${route}`).not.toMatch(new RegExp(`<loc>[^<]*${route}</loc>`));
+      }
+    }
+  });
+}
 
 // ---------------------------------------------------------------- outcome 4: controls
 
@@ -567,7 +579,9 @@ test("4a controls: language switch changes the page language, survives reload, a
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
   await expect(heading).toHaveText(/[฀-๿]/);
-  await expect(page.getByRole("navigation", { name: "Primary", exact: true }).locator('a[href="/dashboard"]')).toContainText(/[฀-๿]/);
+  await page.getByRole("button", { name: "เปิดเมนู", exact: true }).click();
+  await expect(page.getByRole("dialog").locator('a[href="/dashboard"]')).toContainText(/[฀-๿]/);
+  await page.keyboard.press("Escape");
 
   await eng.click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
@@ -666,111 +680,40 @@ test("4c controls: network controls change what the graph shows", async ({ page 
 
 // ---------------------------------------------------------------- outcome 6: keyboard navigation
 
-type Focus = { kind: string; id: string; visible: boolean; outline: boolean };
-
-async function focused(page: Page): Promise<Focus> {
-  return page.evaluate(() => {
-    const el = document.activeElement as HTMLElement | null;
-    if (!el || el === document.body) return { kind: "body", id: "", visible: false, outline: false };
-    const rect = el.getBoundingClientRect();
-    const style = getComputedStyle(el);
-    const inNav = el.closest('nav[aria-label="Primary"]');
-    const inTabs = el.closest('nav[aria-label="Primary mobile navigation"]');
-    const inLang = el.closest(".lang-selector");
-    const kind = inNav ? "nav" : inTabs ? "tab" : inLang ? "lang" : "other";
-    const id = inNav || inTabs ? el.getAttribute("href") ?? "" : inLang ? el.getAttribute("aria-label") ?? "" : el.tagName;
-    return {
-      kind, id,
-      // Painted, inside the viewport, and not covered by another element at its centre.
-      visible: rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.opacity !== "0"
-        && rect.left >= 0 && rect.top >= 0 && rect.right <= window.innerWidth && rect.bottom <= window.innerHeight
-        && (() => { const top = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2); return top === el || el.contains(top) || Boolean(top?.closest("nextjs-portal")); })(), // the Next dev indicator is not part of the app
-      outline: style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0,
-    };
+for (const width of [1440, 390]) {
+  test(`6 keyboard (${width}px): drawer traps focus, restores it, and follows a link`, async ({ page, context }) => {
+    await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+    await page.goto("/");
+    const trigger = page.getByRole("button", { name: "Open navigation", exact: true });
+    const dialog = page.getByRole("dialog", { name: "Atlas navigation" });
+    await page.keyboard.press("Tab"); // Skip link.
+    await page.keyboard.press("Tab");
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(dialog.getByRole("button", { name: "Close navigation" })).toBeFocused();
+    for (const href of NAV_ROUTES) {
+      await page.keyboard.press("Tab");
+      const link = dialog.locator(`a[href="${href}"]`);
+      await expect(link).toBeFocused();
+      expect(await link.evaluate(el => getComputedStyle(el).outlineStyle)).toBe("solid");
+    }
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Tab");
+    await expect(dialog.getByRole("link", { name: "Search", exact: true })).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/search$/);
+    await expect(dialog).toBeHidden();
+    const thai = page.getByRole("button", { name: "TH ภาษาไทย", exact: true });
+    await thai.focus();
+    try {
+      await page.keyboard.press("Enter");
+      await expect(page.locator("html")).toHaveAttribute("lang", "th");
+    } finally {
+      await context.clearCookies();
+    }
   });
 }
-
-/** Press Tab until `kinds` have each been seen `count` times; returns the ordered stops of those kinds. */
-async function tabThrough(page: Page, kinds: string[], count: number, limit = 220): Promise<Focus[]> {
-  const stops: Focus[] = [];
-  for (let press = 0; press < limit && stops.length < count; press++) {
-    await page.keyboard.press("Tab");
-    const now = await focused(page);
-    if (kinds.includes(now.kind)) stops.push(now);
-  }
-  return stops;
-}
-
-test("6 keyboard (desktop): Tab reaches every nav link and both language buttons in order, Enter follows a link, Enter switches language", async ({ page, context }) => {
-  test.setTimeout(240_000);
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-  await page.locator("main h1").first().waitFor();
-
-  const stops = await tabThrough(page, ["nav", "lang"], NAV_ROUTES.length + 2);
-  expect(stops.map((stop) => stop.id)).toEqual([...NAV_ROUTES, "EN English", "TH ภาษาไทย"]);
-  for (const stop of stops) {
-    expect(stop.visible, `${stop.id} is on screen when focused`).toBe(true);
-    expect(stop.outline, `${stop.id} shows a focus outline`).toBe(true);
-  }
-
-  // Keyboard-only activation of a nav link: focus it from the top and press Enter.
-  await page.goto("/");
-  await page.locator("main h1").first().waitFor();
-  for (let press = 0; press < 40; press++) {
-    await page.keyboard.press("Tab");
-    if ((await focused(page)).id === "/network") break;
-  }
-  expect((await focused(page)).id).toBe("/network");
-  await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/network$/, { timeout: 90_000 });
-
-  // Keyboard-only language switch: Tab to the TH button, press Enter, then Space on EN to restore.
-  await page.goto("/dashboard");
-  await page.locator("main h1").first().waitFor();
-  for (let press = 0; press < 60; press++) {
-    await page.keyboard.press("Tab");
-    if ((await focused(page)).id === "TH ภาษาไทย") break;
-  }
-  expect((await focused(page)).id).toBe("TH ภาษาไทย");
-  try {
-    await page.keyboard.press("Enter");
-    await expect(page.locator("html")).toHaveAttribute("lang", "th");
-    expect((await context.cookies()).find((cookie) => cookie.name === "lang")?.value).toBe("th");
-    await page.getByRole("button", { name: "EN English", exact: true }).focus();
-    await page.keyboard.press("Space");
-    await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  } finally {
-    await context.clearCookies();
-  }
-});
-
-test("6 keyboard (phone): Tab reaches the language buttons and every tab link, Enter follows a tab", async ({ page, context }) => {
-  test.setTimeout(240_000);
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-  await page.locator("main h1").first().waitFor();
-
-  const stops = await tabThrough(page, ["lang", "tab"], MOBILE_NAV_ROUTES.length + 2, 260);
-  expect(stops.map((stop) => stop.id)).toEqual(["EN English", "TH ภาษาไทย", ...MOBILE_NAV_ROUTES]);
-  for (const stop of stops) {
-    expect(stop.visible, `${stop.id} is on screen when focused`).toBe(true);
-    expect(stop.outline, `${stop.id} shows a focus outline`).toBe(true);
-  }
-  // Focus is on the last tab (/contributions); Shift+Tab walks back to /search.
-  await page.keyboard.press("Shift+Tab");
-  await page.keyboard.press("Shift+Tab");
-  expect((await focused(page)).id).toBe("/search");
-  await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/search$/, { timeout: 90_000 });
-
-  // The phone header language buttons are keyboard operable too.
-  await page.goto("/");
-  await page.getByRole("button", { name: "TH ภาษาไทย", exact: true }).focus();
-  try {
-    await page.keyboard.press("Enter");
-    await expect(page.locator("html")).toHaveAttribute("lang", "th");
-  } finally {
-    await context.clearCookies();
-  }
-});

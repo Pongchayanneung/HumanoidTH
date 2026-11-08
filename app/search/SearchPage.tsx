@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import type { SearchContentType, SearchResponse, SearchResult, SearchResultEvidence } from '../../lib/search/types';
 import { contentTypes, safeSourceUrl, searchClient, validRanges } from './searchClient';
 
@@ -33,17 +34,66 @@ function evidenceLabel(item: SearchResultEvidence, result: SearchResult, lang: '
  if(item.fieldName==='description' && result.contentType==='video') return t.limits[2];
  return item.label;
 }
-export function Card({result,lang,results=[result]}: {result:SearchResult;lang:'en'|'th';results?:SearchResult[]}) {
- const t=copy[lang]; const [open,setOpen]=useState(false); const index=contentTypes.indexOf(result.contentType);
- const language=(item:SearchResult)=>item.language==='th'||item.language==='en'?item.language:undefined;
- const languageTag=(item:SearchResult)=>item.language==='th'?(lang==='th'?'ต้นฉบับ: ไทย':'Original: Thai'):item.language==='en'?(lang==='th'?'ต้นฉบับ: อังกฤษ':'Original: English'):(lang==='th'?'ภาษาไม่ระบุหรือผสม':'Language unknown or mixed');
- return <article className="search-card"><header><span className="search-badge">{t.labels[index] ?? result.contentType}</span><h3 lang={language(result)}>{result.title}</h3></header>
- {results.map((member,i)=>{const match=member.match; const evidence=match?.evidence ?? member.evidence.find(item=>item.fieldName!=='title' && item.originalText!==member.title) ?? member.evidence[0]; const memberIndex=contentTypes.indexOf(member.contentType); const url=safeSourceUrl(member.url); return <div key={member.reference.kind+':'+member.reference.id}>
- <div className="search-evidence">{i>0 && <span className="search-badge">{t.labels[memberIndex] ?? member.contentType}</span>}<span className="search-tag">{languageTag(member)}</span>{evidence ? <><span className="search-tag">{evidenceLabel(evidence,member,lang)}</span><span className="search-tag">{evidence.evidenceKind==='derived'?(lang==='th'?'ข้อความที่สร้างขึ้น':'Derived text'):(lang==='th'?'ข้อความต้นฉบับ':'Source text')}</span>{match?.methods.length === 1 && match.methods[0] === 'semantic' && <span className="search-tag">{t.related}</span>}<p lang={language(member)}><Highlight text={evidence.originalText} ranges={match && (match.methods as string[]).includes('keyword') && 'ranges' in match ? match.ranges ?? [] : []}/></p></> : <span className="search-tag">{t.titleOnly}</span>}</div>
- {url && <div className="search-actions"><a href={url} target="_blank" rel="noopener noreferrer">{t.source} ↗</a></div>}
- {open && member.evidence.map((item,j)=><p className="search-original" lang={language(member)} key={j}><strong>{item.evidenceKind==='derived'?(lang==='th'?'ข้อความที่สร้างขึ้น':'Derived text'):item.label}: </strong>{item.originalText}</p>)}
- </div>})}
- {results.some(member=>member.evidence.length>0) && <div className="search-actions"><button type="button" onClick={() => setOpen(!open)} aria-expanded={open}>{open?t.hide:t.show}</button></div>}</article>;
+export function Card({ result, lang, results = [result] }: { result: SearchResult; lang: 'en' | 'th'; results?: SearchResult[] }) {
+  const t = copy[lang];
+  const thai = lang === 'th';
+  const typeLabel = (member: SearchResult) => t.labels[contentTypes.indexOf(member.contentType)] ?? member.contentType;
+  const language = (member: SearchResult) => member.language === 'th' || member.language === 'en' ? member.language : undefined;
+  const languageLabel = (member: SearchResult) => {
+    if (member.language === 'th') return thai ? 'ต้นฉบับ: ไทย' : 'Original: Thai';
+    if (member.language === 'en') return thai ? 'ต้นฉบับ: อังกฤษ' : 'Original: English';
+    return thai ? 'ภาษาไม่ระบุหรือผสม' : 'Language unknown or mixed';
+  };
+  const derived = thai ? 'ข้อความที่สร้างขึ้น' : 'Derived text';
+  const original = thai ? 'ข้อความต้นฉบับ' : 'Source text';
+  const [open, setOpen] = useState(false);
+
+  return (
+    <article className="search-card">
+      <header>
+        <span className="search-badge">{typeLabel(result)}</span>
+        <h3 lang={language(result)}>{result.title}</h3>
+      </header>
+      {results.map((member, index) => {
+        const match = member.match;
+        const evidence = match?.evidence ??
+          member.evidence.find(item => item.fieldName !== 'title' && item.originalText !== member.title) ??
+          member.evidence[0];
+        const semanticOnly = match?.methods.length === 1 && match.methods[0] === 'semantic';
+        const ranges = match && !semanticOnly ? match.ranges ?? [] : [];
+        const url = safeSourceUrl(member.url);
+        const reference = member.reference;
+        const robotId = reference.kind === 'robot' && reference.id.startsWith('robot:') ? reference.id.slice(6) : '';
+
+        return (
+          <div key={reference.kind + ':' + reference.id}>
+            <div className="search-evidence">
+              {index > 0 && <><span className="search-badge">{typeLabel(member)}</span><h4 lang={language(member)}>{member.title}</h4></>}
+              <span className="search-tag">{languageLabel(member)}</span>
+              {evidence ? <>
+                <span className="search-tag">{evidenceLabel(evidence, member, lang)}</span>
+                <span className="search-tag">{evidence.evidenceKind === 'derived' ? derived : original}</span>
+                {semanticOnly && <span className="search-tag">{t.related}</span>}
+                <p lang={language(member)}><Highlight text={evidence.originalText} ranges={ranges} /></p>
+              </> : <span className="search-tag">{t.titleOnly} · {thai ? 'ไม่มีข้อความหลักฐาน' : 'Evidence excerpt unavailable'}</span>}
+            </div>
+            {(url || robotId) && <div className="search-actions">
+              {robotId && <Link href={{ pathname: '/robots', query: { robot: robotId } }}>{thai ? 'ดูระเบียนหุ่นยนต์' : 'View robot record'}</Link>}
+              {url && <a href={url} target="_blank" rel="noopener noreferrer">{t.source} ↗</a>}
+            </div>}
+            {open && member.evidence.map((item, itemIndex) => (
+              <p className="search-original" lang={language(member)} key={itemIndex}>
+                <strong>{item.evidenceKind === 'derived' ? derived : item.label}: </strong>{item.originalText}
+              </p>
+            ))}
+          </div>
+        );
+      })}
+      {results.some(member => member.evidence.length > 0) && <div className="search-actions">
+        <button type="button" onClick={() => setOpen(!open)} aria-expanded={open}>{open ? t.hide : t.show}</button>
+      </div>}
+    </article>
+  );
 }
 export default function SearchPage({lang}: {lang:'en'|'th'}) {
  const t=copy[lang]; const [query,setQuery]=useState(''); const [request,setRequest]=useState<{query:string;type:Filter}|null>(null); const [response,setResponse]=useState<SearchResponse|null>(null); const [loading,setLoading]=useState(true); const [failed,setFailed]=useState(false); const input=useRef<HTMLInputElement>(null); const sequence=useRef(0); const active=useRef<AbortController|null>(null);

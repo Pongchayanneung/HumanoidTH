@@ -472,6 +472,8 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
     const filtered = filterGraph(graph, filters, { showLowConfidence, onlyReviewed, showOwned, showMedia, showAcademic });
     return localMode ? localGraph(filtered, selectedNodeId, localDepth) : filtered;
   }, [filters, graph, localDepth, localMode, onlyReviewed, selectedNodeId, showAcademic, showLowConfidence, showMedia, showOwned]);
+  const nodeLabels = useMemo(() => new Map(visibleGraph?.nodes.map(node => [node.id, node.label])), [visibleGraph]);
+  const [relationshipLimit, setRelationshipLimit] = useState(12);
 
   const setNodeDetail = useCallback((node: NetworkNode, sourceGraph: NetworkGraph) => {
     const incoming = sourceGraph.edges.filter((edge) => edge.target === node.id);
@@ -828,18 +830,29 @@ export default function NetworkGraphClient({ lang = "en" }: { lang?: "en" | "th"
         </aside>}
 
         <section className={styles.canvasPanel}>
+          {!loading && !error && visibleGraph && (
+            <div className={styles.relationshipList}>
+              <h2>{lang === "th" ? "ความสัมพันธ์ในข้อมูลที่เลือก" : "Relationships in this view"}</h2>
+              {visibleGraph.edges.length ? <>
+                <ul>{visibleGraph.edges.slice(0, relationshipLimit).map(edge => (
+                  <li key={edge.id}>
+                    {nodeLabels.get(edge.source) ?? edge.source} <strong>{edge.relation.replaceAll("_", " ")}</strong> {nodeLabels.get(edge.target) ?? edge.target}
+                  </li>
+                ))}</ul>
+                {visibleGraph.edges.length > relationshipLimit && (
+                  <button type="button" onClick={() => setRelationshipLimit(limit => limit + 12)}>
+                    {lang === "th" ? "แสดงความสัมพันธ์เพิ่มเติม" : "Show more relationships"}
+                  </button>
+                )}
+              </> : <p>{localT[lang].noRelationships}</p>}
+            </div>
+          )}
           <div ref={containerRef} className={styles.graphCanvas} role="group" aria-label="Interactive network graph" />
           {loading && <div className={styles.loading}><CircularProgress aria-label="Loading network graph" color="inherit" /><span>{localT[lang].fetchingGraph}</span></div>}
           {error && <div className={styles.error}><strong>{localT[lang].graphFailedLoad}</strong><span>{error}</span></div>}
           {!loading && !error && visibleGraph && visibleGraph.nodes.length === 0 && (
             <div className={styles.empty}>
               <strong>{localT[lang].noRelationships}</strong>
-              <div>
-                <code>python -m openatlas analyze nlp</code>
-                <code>python -m openatlas analyze graph</code>
-                <code>Add seed relationships in data/seeds/relationships.yaml</code>
-                <code>Import thailand_humanoid_atlas_seed_records.json</code>
-              </div>
             </div>
           )}
         </section>

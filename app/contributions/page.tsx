@@ -182,7 +182,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
   }[lang];
 
   return (
-    <>
+    <div className="atlas-workspace">
       <div className="topline">
         <div>
           <h1>{t.contributorsTitle}</h1>
@@ -309,6 +309,7 @@ export default async function ContributionsPage({ searchParams }: { searchParams
       {/* Contributions Table */}
       <div className="table-wrap">
         <table>
+          <caption className="atlas-table-caption">{lang === "th" ? "ผลงานที่เผยแพร่แล้ว" : "Published contributions"}</caption>
           <thead>
             <tr>
               <th>{localT.thTitle}</th>
@@ -375,6 +376,6 @@ export default async function ContributionsPage({ searchParams }: { searchParams
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 }

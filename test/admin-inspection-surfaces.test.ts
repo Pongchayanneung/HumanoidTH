@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { renderToReadableStream } from "react-dom/server";
 import ts from "typescript";
+import { createElement } from "react";
 
 import type { InspectionInput, InspectionResult } from "@/lib/admin-inspection/contracts";
 import type { SessionResult } from "../lib/operator-auth/contracts";
@@ -52,6 +53,7 @@ async function renderRoute(route: "" | "/cms" | "/submitted-data", searchParams:
         case "./AdminConsolePage":
         case "../AdminConsolePage": return load("app/admin/AdminConsolePage.tsx");
         case "./ReadOnlyRecordView": return load("app/admin/ReadOnlyRecordView.tsx");
+        case "./PublicProjection": return { __esModule: true, default: () => createElement("h2", null, "Public projection") };
         case "next/link":
         case "react/jsx-runtime": return require(name);
         default: throw new Error("Unexpected admin UI dependency: " + name);
@@ -93,7 +95,7 @@ for (const route of ["", "/cms", "/submitted-data"] as const) {
       authorize: async () => ({ ok: false, code: "UNAVAILABLE" }),
     });
     assert.match(html, /Authentication unavailable/);
-    assert.doesNotMatch(html, /Verified session|name="selectedId"|Sign out/);
+    assert.doesNotMatch(html, /Verified session|name="selectedId"|Sign out|Public projection/);
   });
 
   test("the " + (route || "/admin") + " route renders the exact returned record", async () => {
@@ -109,6 +111,7 @@ for (const route of ["", "/cms", "/submitted-data"] as const) {
     });
     assert.match(html, />exact-Aa-007</);
     assert.match(html, />Exact fixture title</);
+    assert.match(html, />Public projection</);
     assert.match(html, />pending</);
     assert.doesNotMatch(html, /href="https:\/\/example.invalid\/record"/);
   });

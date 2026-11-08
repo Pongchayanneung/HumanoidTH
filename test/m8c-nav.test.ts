@@ -11,42 +11,37 @@ test("U1: translations have matching keys and navigation copy", () => {
     for (const key of ["sourceLink", "opensInNewTab", "robotsEmpty", "robotsUnavailable", "robotsLimitNote"] as const) assert.ok(lang[key].trim());
   }
 });
-test("U2: mobile tabs include contributions", () => {
-  const source = read("app/components/MobileTabNav.tsx");
-  assert.match(source, /href: "\/contributions"/);
-  assert.doesNotMatch(source, /href: "\/profile"/);
-  assert.equal((source.match(/href: "[^\"]+"/g) ?? []).length, 5);
+test("U2: the shared drawer includes contributions and public sources", () => {
+  const source = read("app/components/AtlasNavigation.tsx");
+  assert.match(source, /\["\/contributions", "Research contributions", "ผลงานวิจัย"\]/);
+  assert.match(source, /\["\/sources", "Sources", "แหล่งข้อมูล"\]/);
 });
-test("U3: mobile header has language and named profile controls", () => {
-  const source = read("app/components/MobileHeader.tsx");
-  assert.match(source, /<LanguageSelector\s+currentLang=\{currentLang\}/);
-  assert.match(source, /<Link\s+href="\/profile"[^>]*aria-label=/);
-  assert.match(read("app/layout.tsx"), /<MobileHeader\s+currentLang=\{lang\}/);
+test("U3: the shared header provides a language switch and a named drawer button", () => {
+  const source = read("app/components/AtlasNavigation.tsx");
+  assert.match(source, /<LanguageSelector\s+currentLang=\{lang\}/);
+  assert.match(source, /aria-label=\{thai \? "เปิดเมนู" : "Open navigation"\}/);
+  assert.match(read("app/layout.tsx"), /<AtlasNavigation\s+lang=\{lang\}/);
 });
 test("U4: layout does not cast the language cookie", () => {
   assert.doesNotMatch(read("app/layout.tsx"), /as\s+"en"\s*\|\s*"th"/);
 });
-test("U5: focus and Thai label styles", () => {
-  const css = read("app/globals.css");
-  assert.match(css, /--focus-ring-dark:\s*#d6be67/);
-  assert.doesNotMatch(css, /\.nav a:focus(?!-visible)/);
-  assert.match(css, /html\[lang="th"\] \.tab-label/);
+test("U5: the drawer styles retain visible keyboard focus", () => {
+  const css = read("app/components/AtlasNavigation.module.css");
+  assert.match(css, /\.drawer a:focus-visible\s*\{\s*outline:\s*2px solid/);
 });
 test("U6: robot list uses its named limit without seed instructions", () => {
   const source = read("app/robots/page.tsx");
   assert.doesNotMatch(source, /pnpm db:seed/);
-  assert.match(source, /take:\s*ROBOT_LIST_LIMIT/);
+  assert.match(source, /take:\s*selected \? 1 : ROBOT_LIST_LIMIT/);
 });
 test("U7: later FAB override does not set position offsets", () => {
   const rule = read("app/globals.css").match(/\/\* Custom FAB Button Override \*\/\s*\.data-pull-fab\s*\{([^}]*)\}/);
   assert.ok(rule);
   assert.doesNotMatch(rule[1], /(?:^|;)\s*(?:bottom|right)\s*:/);
 });
-test("U8: Thai tab labels disable text transformation", () => {
-  const rule = read("app/globals.css").match(/html\[lang="th"\] \.tab-label\s*\{([^}]*)\}/);
-  assert.ok(rule);
-  assert.match(rule[1], /(?:^|;)\s*text-transform\s*:\s*none\s*;/);
+test("U8: drawer labels are rendered in the selected language", () => {
+  assert.match(read("app/components/AtlasNavigation.tsx"), /\{thai \? th : en\}/);
 });
-test("U9: sidebar marks only the exact current page with aria-current", () => {
-  assert.match(read("app/components/SidebarNav.tsx"), /aria-current=\{pathname === item\.href \? "page" : undefined\}/);
+test("U9: drawer marks only the exact current page with aria-current", () => {
+  assert.match(read("app/components/AtlasNavigation.tsx"), /aria-current=\{href === pathname \? "page" : undefined\}/);
 });

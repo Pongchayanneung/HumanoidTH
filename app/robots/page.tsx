@@ -2,7 +2,10 @@ import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslation, parseLanguage } from "@/lib/translations";
-import { isEligiblePublicRobot } from "@/lib/public-projection";
+import { isEligiblePublicRobot, publicRobotWhere } from "@/lib/public-projection";
+import Link from "next/link";
+import { dinsawIntendedUse, dinsawSourceForRobot } from "@/lib/atlas-evidence";
+import { safeSourceUrl } from "@/app/search/searchClient";
 
 export const dynamic = "force-dynamic";
 
@@ -34,169 +37,78 @@ export const metadata: Metadata = {
     description: "Comprehensive catalog of humanoid, social, and service robot models deployed, researched, or active in Thailand. Track specifications, developers, and source links.",
     images: ["/logo.png"]
   }
-};type SourceLike = {
-  title: string;
-  url: string;
-  platform: string | null;
-  rawMeta: unknown;
 };
 
-type RobotLike = {
-  canonicalName: string;
-  officialUrl: string | null;
-  sourceMeta: unknown;
-};
+type SearchParams = Promise<{ robot?: string | string[] }>;
 
-const imageMetaKeys = [
-  "thumbnail",
-  "thumbnailUrl",
-  "thumbnail_url",
-  "image",
-  "imageUrl",
-  "image_url",
-  "banner",
-  "bannerUrl",
-  "banner_url",
-  "ogImage",
-  "og:image",
-  "coverImage",
-  "cover_image"
-];
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
-}
-
-function getStringField(meta: unknown, keys: string[]) {
-  const record = asRecord(meta);
-  if (!record) return null;
-  for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "string" && value.trim()) return value.trim();
-  }
-  return null;
-}
-
-function extractYoutubeVideoId(url: string | null) {
-  if (!url) return null;
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname.includes("youtu.be")) return parsed.pathname.replace("/", "") || null;
-    if (parsed.hostname.includes("youtube.com")) return parsed.searchParams.get("v") || parsed.pathname.split("/").filter(Boolean).pop() || null;
-  } catch {
-    return null;
-  }
-  return null;
-}
-
-function getSourceImageUrl(url: string | null, meta: unknown) {
-  const explicitImage = getStringField(meta, imageMetaKeys);
-  if (explicitImage) return explicitImage;
-
-  const videoId = getStringField(meta, ["videoId", "video_id"]) ?? extractYoutubeVideoId(url);
-  if (videoId) return `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`;
-
-  return null;
-}
-
-function findRobotSource(robot: RobotLike, sources: SourceLike[]) {
-  const robotName = robot.canonicalName.toLowerCase();
-  const officialUrl = robot.officialUrl?.toLowerCase() ?? null;
-  const metaTitle = getStringField(robot.sourceMeta, ["title"])?.toLowerCase() ?? null;
-
-  return sources.find((source) => {
-    const raw = asRecord(source.rawMeta);
-    const canonicalName = typeof raw?.canonicalName === "string" ? raw.canonicalName.toLowerCase() : null;
-    const sourceUrl = source.url.toLowerCase();
-    const sourceTitle = source.title.toLowerCase();
-
-    return (
-      (officialUrl && sourceUrl === officialUrl) ||
-      (canonicalName && canonicalName === robotName) ||
-      (metaTitle && sourceTitle === metaTitle) ||
-      sourceTitle.includes(robotName)
-    );
-  }) ?? null;
-}
-
-function getRobotSourceImage(robot: RobotLike, sources: SourceLike[]) {
-  const robotMetaImage = getSourceImageUrl(robot.officialUrl, robot.sourceMeta);
-  if (robotMetaImage) return robotMetaImage;
-
-  const source = findRobotSource(robot, sources);
-  return getSourceImageUrl(source?.url ?? robot.officialUrl, source?.rawMeta ?? null);
-}
-
-export default async function RobotsPage() {
-  const cookieStore = await cookies();
-  const lang = parseLanguage(cookieStore.get("lang")?.value);
+export default async function RobotsPage({ searchParams }: { searchParams: SearchParams }) {
+  const { robot } = await searchParams;
+  const lang = parseLanguage((await cookies()).get("lang")?.value);
   const t = getTranslation(lang);
+  const thai = lang === "th";
+  const selected = robot !== undefined;
+  const id = typeof robot === "string" && robot.trim() === robot && robot.length > 0 && robot.length <= 200 ? robot : null;
 
-  let robots: Array<{
-    id: string;
-    canonicalName: string;
-    description: string | null;
-    robotType: string;
-    thailandStatus: string;
-    manufacturer: string | null;
-    developerOrg: string | null;
-    primaryUseCase: string | null;
-    officialUrl: string | null;
-    sourceMeta: unknown;
-  }> = [];
-  let sources: SourceLike[] = [];
-  let dbOffline = false;
-
-  try {
-    [robots, sources] = await Promise.all([
-      prisma.robotModel.findMany({ orderBy: { canonicalName: "asc" }, take: ROBOT_LIST_LIMIT }),
-      prisma.sourceRecord.findMany({
-        orderBy: [{ relevanceConfidence: "desc" }, { updatedAt: "desc" }],
-        select: { title: true, url: true, platform: true, rawMeta: true },
-        take: 1000
-      })
-    ]);
-    // Public projection (M3): Exclude placeholders and unverified foreign robots from public registry
-    robots = robots.filter((r) => isEligiblePublicRobot(r.canonicalName));
-  } catch (error) {
-    console.error("Database query failed in robots page:", error);
-    dbOffline = true;
-    robots = [];
-    sources = [];
-  }
+  const loadRobots = async () => {
+    if (selected && !id) return { robots: [], evidence: null };
+    const robots = (await prisma.robotModel.findMany({
+      where: { ...publicRobotWhere, ...(id ? { id } : {}) },
+      orderBy: { canonicalName: "asc" },
+      take: selected ? 1 : ROBOT_LIST_LIMIT,
+      select: {
+        id: true, canonicalName: true, developerOrg: true, manufacturer: true, primaryUseCase: true,
+        robotType: true, thailandStatus: true, officialUrl: true
+      }
+    })).filter(row => isEligiblePublicRobot(row.canonicalName));
+    const evidence = selected && robots[0] ? await dinsawSourceForRobot(robots[0].canonicalName) : null;
+    return { robots, evidence };
+  };
+  const result = await loadRobots().catch(error => {
+    console.error("Public robot registry unavailable:", error);
+    return null;
+  });
 
   return (
-    <>
-      <h1>{t.robotsTitle}</h1>
-      <p className="muted" style={{ marginBottom: "18px" }}>{t.robotsDesc}</p>
-      {dbOffline && (
-        <div className="notice" style={{ marginBottom: 16 }}>
-          {t.robotsUnavailable}
-        </div>
+    <div className="atlas-workspace">
+      {selected && <Link className="atlas-text-link" href="/robots">{thai ? "กลับไปยังทะเบียนหุ่นยนต์" : "Back to robot registry"}</Link>}
+      <h1>{selected && result?.robots[0] ? result.robots[0].canonicalName : t.robotsTitle}</h1>
+      {!selected && <p className="muted">{t.robotsDesc}</p>}
+      {!result && <p className="notice" role="alert">{t.robotsUnavailable}</p>}
+      {result && !result.robots.length && (
+        <p className="notice">{selected ? (thai ? "ไม่พบระเบียนหุ่นยนต์สาธารณะ" : "No public robot record was found.") : t.robotsEmpty}</p>
       )}
-      {!dbOffline && <p className="muted">{t.robotsLimitNote.replace("{limit}", String(ROBOT_LIST_LIMIT))}</p>}
-      <div className="cards">
-        {robots.map((robot) => {
-          const bannerUrl = getRobotSourceImage(robot, sources);
-          return (
-            <article className="card" key={robot.id}>
-              <div className="card-banner">
-                {bannerUrl ? (
-                  <img src={bannerUrl} alt={robot.canonicalName} loading="lazy" />
-                ) : (
-                  <div className="source-thumbnail-empty">No source thumbnail</div>
-                )}
+      {result && !selected && <p className="muted">{t.robotsLimitNote.replace("{limit}", String(ROBOT_LIST_LIMIT))}</p>}
+      {result?.robots.map(row => {
+        const official = safeSourceUrl(row.officialUrl);
+        return (
+          <article className="atlas-record" key={row.id}>
+            <div>
+              {!selected && <h2><Link href={{ pathname: "/robots", query: { robot: row.id } }}>{row.canonicalName}</Link></h2>}
+              <dl>
+                <dt>{thai ? "ผู้พัฒนา" : "Developer"}</dt>
+                <dd>{row.developerOrg ?? row.manufacturer ?? (thai ? "ไม่ระบุ" : "Unlisted")}</dd>
+                <dt>{result.evidence ? (thai ? "การใช้งานตามที่ NIA ระบุ" : "Intended use, as described by NIA") : (thai ? "การใช้งาน" : "Intended use")}</dt>
+                <dd>{result.evidence ? dinsawIntendedUse[lang] : row.primaryUseCase ?? (thai ? "ไม่ระบุ" : "Unlisted")}</dd>
+                <dt>{thai ? "ประเภท" : "Type"}</dt>
+                <dd>{row.robotType.replaceAll("_", " ")}</dd>
+                <dt>{thai ? "สถานะในประเทศไทย" : "Thailand status"}</dt>
+                <dd>{row.thailandStatus.replaceAll("_", " ")}</dd>
+              </dl>
+            </div>
+            {selected && (
+              <div>
+                <h2>{thai ? "หลักฐานและแหล่งข้อมูล" : "Evidence and sources"}</h2>
+                {result.evidence ? (
+                  <p><a href={result.evidence.url} target="_blank" rel="noopener noreferrer">
+                    {thai ? "อ่านบทความจากสำนักงานนวัตกรรมแห่งชาติ" : "Read the National Innovation Agency article (Thai)"} ({t.opensInNewTab})
+                  </a></p>
+                ) : <p className="muted">{thai ? "ระเบียนนี้ยังไม่มีแหล่งอ้างอิงที่ตรวจสอบแล้ว" : "No verified supporting source is attached to this record."}</p>}
+                {official && official !== result.evidence?.url && <a href={official} target="_blank" rel="noopener noreferrer">{thai ? "เว็บไซต์ทางการ" : "Official site"} ({t.opensInNewTab})</a>}
               </div>
-              <h2>{robot.canonicalName}</h2>
-              <p className="muted">{robot.description ?? "No description yet."}</p>
-              <p><span className="badge">{robot.robotType}</span> <span className="badge">{robot.thailandStatus}</span></p>
-              <p><strong>{robot.manufacturer ?? robot.developerOrg ?? "Unknown developer"}</strong><br />{robot.primaryUseCase ?? "Use case unclassified"}</p>
-              {robot.officialUrl && <a href={robot.officialUrl} target="_blank" rel="noopener noreferrer" aria-label={`${t.sourceLink}: ${robot.canonicalName} (${t.opensInNewTab})`}>{t.sourceLink}</a>}
-            </article>
-          );
-        })}
-        {!dbOffline && !robots.length && <div className="empty">{t.robotsEmpty}</div>}
-      </div>
-    </>
+            )}
+          </article>
+        );
+      })}
+    </div>
   );
 }

@@ -33,7 +33,10 @@ export function createSemanticOptionsFromEnv(
   if ((env.ATLAS_SEMANTIC ?? "").trim().toLowerCase() === "off") return {};
   const endpoint = (env.EMBEDDING_SERVICE_URL ?? "").trim() || (env.TEI_ENDPOINT ?? "").trim();
   if (!endpoint) return {};
-  const protocol = resolveEmbeddingProtocol(env);
+  // TEI_ENDPOINT is the legacy name for a direct text-embeddings-inference server, which does not speak the proxy
+  // format. Alone, it implies the "tei" protocol; an explicit EMBEDDING_SERVICE_PROTOCOL always wins.
+  const legacyTeiOnly = !(env.EMBEDDING_SERVICE_URL ?? "").trim() && Boolean((env.TEI_ENDPOINT ?? "").trim());
+  const protocol = legacyTeiOnly && !(env.EMBEDDING_SERVICE_PROTOCOL ?? "").trim() ? "tei" : resolveEmbeddingProtocol(env);
   if (!protocol) {
     console.warn("[atlas-search] EMBEDDING_SERVICE_PROTOCOL must be \"proxy\" or \"tei\"; serving keyword results");
     return {};

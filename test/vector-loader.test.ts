@@ -73,6 +73,45 @@ test("loader throws on a corrupted vector file and keyword fallback turns that i
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
+test("loader retries a failed load after the delay instead of staying in keyword mode until restart", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "vector-loader-"));
+  try {
+    const searchDir = await buildRelease(dir, [doc("a"), doc("b")]);
+    const vectorsPath = join(searchDir, "releases", "search-v1-hybrid", "vectors.f32");
+    const good = readFileSync(vectorsPath);
+    const bad = Buffer.from(good);
+    bad[10] = bad[10] ^ 0xff;
+    writeFileSync(vectorsPath, bad);
+    let clock = 1_000;
+    const loader = createReleaseVectorLoader({ searchDir, retryAfterMs: 30_000, now: () => clock });
+    await assert.rejects(() => loader(indexOf([doc("a")]), signal), /invalid|checksum/i);
+    writeFileSync(vectorsPath, good); // the file is healthy again
+    clock += 10_000;
+    await assert.rejects(() => loader(indexOf([doc("a")]), signal), /invalid|checksum/i, "within the delay the cached failure is reused");
+    clock += 25_000;
+    const live = [doc("a")];
+    const vectors = await loader(indexOf(live), signal);
+    assert.ok(vectors, "after the delay the release is read again and now loads");
+    assert.equal(live[0].vectorRow, 0);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("semantic config: TEI_ENDPOINT alone means the direct TEI protocol; an explicit protocol still wins", async () => {
+  const bodies: unknown[] = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+    bodies.push(JSON.parse(String(init?.body)));
+    return new Response(JSON.stringify([[1, 0, 0]]), { status: 200 });
+  }) as typeof fetch;
+  try {
+    await createSemanticOptionsFromEnv({ TEI_ENDPOINT: "http://127.0.0.1:8080" }).embedQuery?.("q");
+    assert.match(String((bodies[0] as { inputs: string[] }).inputs[0]), /^Instruct: .*\nQuery:q$/, "a bare TEI server gets the prefixed text, not the proxy format");
+    assert.equal((bodies[0] as { kind?: string }).kind, undefined);
+    await createSemanticOptionsFromEnv({ TEI_ENDPOINT: "http://127.0.0.1:8080", EMBEDDING_SERVICE_PROTOCOL: "proxy" }).embedQuery?.("q");
+    assert.deepEqual(bodies[1], { inputs: ["q"], kind: "query" });
+  } finally { globalThis.fetch = realFetch; }
+});
+
 test("semantic config is empty without an endpoint or with the kill switch, and complete when configured", () => {
   assert.deepEqual(createSemanticOptionsFromEnv({}), {});
   assert.deepEqual(createSemanticOptionsFromEnv({ EMBEDDING_SERVICE_URL: "http://127.0.0.1:8080", ATLAS_SEMANTIC: "off" }), {});

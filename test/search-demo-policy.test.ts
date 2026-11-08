@@ -51,6 +51,28 @@ test("demo is semantic-first: an unrelated embedding suppresses keyword-only hit
   assert.equal(blend.policyStatus, undefined);
 });
 
+test("demo keeps keyword hits for records with no vector, but still drops vectored records under the cutoff", async () => {
+  const unrelated = async () => axis(docs.length + 5);
+  const keywordOnly = ids(await run(setup({ policy: DEMO_SEMANTIC_POLICY }), "robot"));
+  assert.ok(keywordOnly.length >= 1, "fixture must have a keyword hit for the query");
+  const rowOf = (typedId: string) => docs.findIndex((d) => d.typedId === typedId);
+  const withRows = (vectored: string): SearchFixtureIndex["documents"] => docs.map((d) => ({ ...d, vectorRow: d.typedId === vectored ? rowOf(vectored) : null }));
+  const handlerFor = (documents: SearchFixtureIndex["documents"]) => setup({ loadCorpus: async () => ({ ...index(), documents }), policy: DEMO_SEMANTIC_POLICY, embedQuery: unrelated });
+
+  // Only a record that does not match the query has a vector: every keyword hit lacks a vector and must still be shown.
+  const nonMatching = docs.find((d) => !keywordOnly.includes(d.typedId))!;
+  const noVectorHits = await run(handlerFor(withRows(nonMatching.typedId)), "robot");
+  assert.equal(noVectorHits.mode, "hybrid");
+  assert.equal(noVectorHits.policyStatus, "demo_unvalidated");
+  assert.deepEqual([...ids(noVectorHits)].sort(), [...keywordOnly].sort());
+
+  // The top keyword hit has a vector that falls under the cutoff for an unrelated query: it stays suppressed.
+  const scored = keywordOnly[0];
+  const suppressed = await run(handlerFor(withRows(scored)), "robot");
+  assert.ok(!ids(suppressed).includes(scored));
+  assert.deepEqual([...ids(suppressed)].sort(), keywordOnly.filter((id) => id !== scored).sort());
+});
+
 test("demo switch on but the embedder fails: keyword results with no demo label", async () => {
   for (const embedQuery of [async () => null, async () => { throw new Error("proxy down"); }]) {
     const data = await run(setup({ policy: DEMO_SEMANTIC_POLICY, embedQuery }), "robot");

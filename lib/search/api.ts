@@ -190,7 +190,11 @@ export function createSearchPost(loadIndex: SearchIndexLoader, options: SearchPo
       const matchedGroups = new Map<string, SearchMatchedResult[]>();
       const demo = hybrid && policy.calibrationStatus === "demo_unvalidated";
       const groupOf = (docId: string) => groupKeyFor(byId.get(docId)!, byId);
-      for (const id of demo ? semanticFirstRanking(keyword, semanticIds, groupOf) : fuseRankings(keyword, semanticIds, policy, groupOf)) {
+      const canScore = (id: string) => {
+        const row = byId.get(id)?.vectorRow;
+        return row !== null && row !== undefined && Boolean(index.vectors?.rows.get(row));
+      };
+      for (const id of demo ? semanticFirstRanking(keyword, semanticIds, groupOf, canScore) : fuseRankings(keyword, semanticIds, policy, groupOf)) {
         const doc = byId.get(id)!;
         const key = groupKeyFor(doc, byId);
         if (options.revalidate && checks >= policy.limits.maxCurrentRecordChecks) break;

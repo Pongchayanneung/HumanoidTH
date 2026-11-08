@@ -158,14 +158,19 @@ export function semanticRank(input: {
  * Semantic-first order for the demo policy. The pilot evaluation found semantic ranking beat the
  * keyword/RRF blend and that only the semantic cutoff can suppress unrelated queries, so ids the
  * cutoff did not admit are dropped. An exact full title/name keyword match is kept in front.
+ * A record that has no usable vector (`canScore` is false) cannot be judged by the cutoff, so its
+ * keyword hits are kept after the semantic results instead of vanishing; a record that does have a
+ * vector and fell under the cutoff stays dropped, which is what suppresses unrelated queries.
  * Returns each id once, with members of a group adjacent.
  */
 export function semanticFirstRanking(
   keyword: KeywordHit[],
   semanticIds: string[],
   groupOf: (id: string) => string = (id) => id,
+  canScore: (id: string) => boolean = () => true,
 ): string[] {
-  const ids = Array.from(new Set([...keyword.filter((hit) => hit.exactTitle).map((hit) => hit.id), ...semanticIds]));
+  const unscorable = keyword.filter((hit) => !canScore(hit.id)).map((hit) => hit.id);
+  const ids = Array.from(new Set([...keyword.filter((hit) => hit.exactTitle).map((hit) => hit.id), ...semanticIds, ...unscorable]));
   const members = new Map<string, string[]>();
   for (const id of ids) members.set(groupOf(id), [...(members.get(groupOf(id)) ?? []), id]);
   return Array.from(members.values()).flat();

@@ -1,0 +1,510 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { mkdtempSync, writeFileSync, rmSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { FileCheckpointStore } from "../lib/ingest-workflow/checkpoint-store";
+import type { NormalizedSource } from "../lib/ingest/types";
+import {
+  executeIngestionJob,
+  createIngestionJobExecutor,
+} from "../lib/ingest-workflow/job-service";
+import { isPermittedAdapter, type IngestionJobRepository, type IngestionJobRecord, type IngestionCheckpoint } from "../lib/ingest-workflow/contracts";
+
+/**
+ * In-memory test repository for testing recoverable ingestion jobs.
+ */
+class InMemoryIngestRepository implements IngestionJobRepository {
+  public jobs = new Map<string, IngestionJobRecord>();
+  public checkpoints = new Map<string, IngestionCheckpoint>();
+  public existingUrls = new Set<string>();
+  public savedBatches: NormalizedSource[][] = [];
+  public shouldFailNextBatch = false;
+
+  async createJob(data: { id?: string; adapter: any; query: string }): Promise<IngestionJobRecord> {
+    const id = data.id ?? `job_${Math.random().toString(36).substring(2, 9)}`;
+    const job: IngestionJobRecord = {
+      adapter: data.adapter,
+      createdAt: new Date(),
+      errorMessage: null,
+      finishedAt: null,
+      id,
+      query: data.query,
+      recordsFound: 0,
+      recordsSaved: 0,
+      startedAt: new Date(),
+      status: "QUEUED"
+    };
+    this.jobs.set(id, job);
+    return { ...job };
+  }
+
+  async getJob(jobId: string): Promise<IngestionJobRecord | null> {
+    const job = this.jobs.get(jobId);
+    return job ? { ...job } : null;
+  }
+
+  async updateJobStatus(
+    jobId: string,
+    update: {
+      status: any;
+      recordsFound?: number;
+      recordsSaved?: number;
+      errorMessage?: string | null;
+      finishedAt?: Date | null;
+    }
+  ): Promise<IngestionJobRecord> {
+    const job = this.jobs.get(jobId);
+    if (!job) throw new Error(`Job ${jobId} not found`);
+
+    const updated: IngestionJobRecord = {
+      ...job,
+      ...update,
+      recordsFound: update.recordsFound !== undefined ? update.recordsFound : job.recordsFound,
+      recordsSaved: update.recordsSaved !== undefined ? update.recordsSaved : job.recordsSaved
+    };
+    this.jobs.set(jobId, updated);
+    return { ...updated };
+  }
+
+  async saveCheckpoint(checkpoint: IngestionCheckpoint): Promise<void> {
+    this.checkpoints.set(checkpoint.jobId, { ...checkpoint });
+  }
+
+  async getCheckpoint(jobId: string): Promise<IngestionCheckpoint | null> {
+    const cp = this.checkpoints.get(jobId);
+    return cp ? { ...cp } : null;
+  }
+
+  async saveBatch(records: NormalizedSource[], jobId: string) {
+    if (this.shouldFailNextBatch) {
+      this.shouldFailNextBatch = false;
+      throw new Error("Simulated network partition during batch persistence");
+    }
+
+    this.savedBatches.push([...records]);
+    let newCount = 0;
+    let updatedCount = 0;
+    let skippedCount = 0;
+    const savedIds: string[] = [];
+
+    for (const r of records) {
+      if (!r.url) {
+        skippedCount++;
+        continue;
+      }
+      if (this.existingUrls.has(r.url)) {
+        updatedCount++;
+      } else {
+        newCount++;
+        this.existingUrls.add(r.url);
+      }
+      savedIds.push(`src_${Math.random().toString(36).substring(2, 9)}`);
+    }
+
+    return {
+      acceptedCount: records.length,
+      newCount,
+      rejectedCount: 0,
+      savedIds,
+      skippedCount,
+      uncertainCount: 0,
+      updatedCount
+    };
+  }
+}
+
+function makeSampleSources(count: number): NormalizedSource[] {
+  const sources: NormalizedSource[] = [];
+  for (let i = 1; i <= count; i++) {
+    sources.push({
+      author: `Author ${i}`,
+      excerpt: `Research paper on Thai medical humanoid robot system iteration ${i}.`,
+      platform: "openalex",
+      publishedAt: new Date("2026-01-15T00:00:00Z"),
+      sourceType: "OPENALEX",
+      title: `Chula Healthcare Robot Study #${i}`,
+      url: `https://doi.org/10.1000/th-humanoid-${i}`
+    });
+  }
+  return sources;
+}
+
+test("R1: rejects fabricated actors before any job is created", async () => {
+  const repo = new InMemoryIngestRepository();
+  for (const actor of [{ email: "unauthorized@example.com" }, { kind: "operator", email: "user@example.com" }]) {
+    const result = await executeIngestionJob({ actor, adapter: "OPENALEX", query: "test", records: [], repository: repo });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "UNAUTHORIZED");
+  }
+  assert.equal(repo.jobs.size, 0);
+});
+
+const runAuthorized = createIngestionJobExecutor(async () => ({ ok: true, principal: { kind: "operator", email: "test@example.com" } }));
+
+test("R1: rejects changed inputs on resume", async () => {
+  const repo = new InMemoryIngestRepository();
+  const input = { actor: "valid", adapter: "OPENALEX", query: "test", records: makeSampleSources(3), repository: repo, jobId: "identity", batchSize: 1 };
+  await runAuthorized({ ...input, simulateInterruptionAtBatch: 2 });
+  for (const change of [{ adapter: "GITHUB" }, { query: "changed" }, { records: input.records.slice(0, 1) }, { records: input.records.map((r, i) => i === 0 ? { ...r, title: "changed" } : r) }]) {
+    const result = await runAuthorized({ ...input, ...change });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "INVALID_INPUT");
+  }
+});
+
+test("R1: M2 Operator Authorization & Permitted Provider Policy", async () => {
+  const repo = new InMemoryIngestRepository();
+  const sources = makeSampleSources(3);
+
+  // 1. Missing or non-operator actor is rejected fail-closed
+  const unauthOutcome = await executeIngestionJob({
+    actor: { email: "guest@external.com", role: "USER" },
+    adapter: "OPENALEX",
+    query: "humanoid robot",
+    records: sources,
+    repository: repo
+  });
+  assert.equal(unauthOutcome.ok, false);
+  assert.equal(unauthOutcome.code, "UNAUTHORIZED");
+
+  // 2. Unpermitted adapter is rejected
+  const invalidAdapterOutcome = await runAuthorized({
+    actor: "valid",
+    adapter: "UNSUPPORTED_ADAPTER",
+    query: "humanoid robot",
+    records: sources,
+    repository: repo
+  });
+  assert.equal(invalidAdapterOutcome.ok, false);
+  assert.equal(invalidAdapterOutcome.code, "INVALID_PROVIDER");
+
+  // 3. Permitted adapters helper check
+  assert.equal(isPermittedAdapter("OPENALEX"), true);
+  assert.equal(isPermittedAdapter("GITHUB"), true);
+  assert.equal(isPermittedAdapter("GDELT"), true);
+  assert.equal(isPermittedAdapter("YOUTUBE"), true);
+  assert.equal(isPermittedAdapter("UNKNOWN_FEED"), false);
+});
+
+test("R1: Ingestion distinguishes new records, updates, and duplicates (Finding D13)", async () => {
+  const repo = new InMemoryIngestRepository();
+  const operator = "valid";
+  const initialSources = makeSampleSources(4);
+
+  // Initial pull: all 4 records are new
+  const firstRun = await runAuthorized({
+    actor: operator,
+    adapter: "OPENALEX",
+    batchSize: 2,
+    query: "humanoid Thailand",
+    records: initialSources,
+    repository: repo
+  });
+
+  assert.equal(firstRun.ok, true);
+  if (!firstRun.ok) return;
+  assert.equal(firstRun.result.status, "SUCCEEDED");
+  assert.equal(firstRun.result.counts.recordsFound, 4);
+  assert.equal(firstRun.result.counts.recordsNew, 4);
+  assert.equal(firstRun.result.counts.recordsUpdated, 0);
+  assert.equal(firstRun.result.counts.recordsSaved, 4);
+
+  // Repeat pull with identical records + 2 new records
+  const mixedSources = [...initialSources, ...makeSampleSources(2).map((s, idx) => ({ ...s, url: `https://doi.org/10.1000/th-humanoid-new-${idx}` }))];
+
+  const secondRun = await runAuthorized({
+    actor: operator,
+    adapter: "OPENALEX",
+    batchSize: 2,
+    query: "humanoid Thailand",
+    records: mixedSources,
+    repository: repo
+  });
+
+  assert.equal(secondRun.ok, true);
+  if (!secondRun.ok) return;
+  assert.equal(secondRun.result.status, "SUCCEEDED");
+  assert.equal(secondRun.result.counts.recordsFound, 6);
+  assert.equal(secondRun.result.counts.recordsUpdated, 4); // 4 existing updated
+  assert.equal(secondRun.result.counts.recordsNew, 2);     // 2 new added
+  assert.equal(secondRun.result.counts.recordsSaved, 6);
+});
+
+test("R1: Interruption saves checkpoint and allows safe, non-duplicating resume (Finding T06)", async () => {
+  const repo = new InMemoryIngestRepository();
+  const operator = "valid";
+  const sources = makeSampleSources(10); // 10 records, batchSize = 3 -> 4 batches (3, 3, 3, 1)
+
+  const jobId = "job_recoverable_demo_01";
+
+  // Simulate interruption during batch 2
+  const interruptedRun = await runAuthorized({
+    actor: operator,
+    adapter: "OPENALEX",
+    batchSize: 3,
+    jobId,
+    query: "hospital humanoid robot",
+    records: sources,
+    repository: repo,
+    simulateInterruptionAtBatch: 2
+  });
+
+  assert.equal(interruptedRun.ok, false);
+  if (interruptedRun.ok) return;
+  assert.equal(interruptedRun.code, "EXECUTION_FAILED");
+  assert.equal(interruptedRun.result?.status, "FAILED");
+  // Batch 1 (3 records) was committed before batch 2 interruption
+  assert.equal(interruptedRun.result?.counts.recordsProcessed, 3);
+  assert.equal(interruptedRun.result?.counts.recordsNew, 3);
+
+  // Checkpoint is persisted in repository
+  const cp = await repo.getCheckpoint(jobId);
+  assert.notEqual(cp, null);
+  assert.equal(cp?.lastProcessedIndex, 3);
+  assert.equal(cp?.completedUrls.length, 3);
+
+  // Status in database is FAILED with exact progress, NOT indefinitely RUNNING
+  const jobState = await repo.getJob(jobId);
+  assert.equal(jobState?.status, "FAILED");
+  assert.equal(jobState?.recordsSaved, 3);
+
+  // Resume the job with the same jobId
+  const resumedRun = await runAuthorized({
+    actor: operator,
+    adapter: "OPENALEX",
+    batchSize: 3,
+    jobId,
+    query: "hospital humanoid robot",
+    records: sources,
+    repository: repo
+  });
+
+  assert.equal(resumedRun.ok, true);
+  if (!resumedRun.ok) return;
+  assert.equal(resumedRun.result.status, "SUCCEEDED");
+  assert.equal(resumedRun.result.isResumed, true);
+  assert.equal(resumedRun.result.counts.recordsFound, 10);
+  assert.equal(resumedRun.result.counts.recordsProcessed, 10);
+  assert.equal(resumedRun.result.counts.recordsNew, 10);
+  assert.equal(resumedRun.result.counts.recordsSaved, 10);
+
+  // Confirmed that batches 2, 3, 4 were executed and completed without repeating batch 1
+  const finalJobState = await repo.getJob(jobId);
+  assert.equal(finalJobState?.status, "SUCCEEDED");
+  assert.equal(finalJobState?.recordsSaved, 10);
+});
+
+test("R1: Batch execution failure marks job FAILED and preserves partial progress", async () => {
+  const repo = new InMemoryIngestRepository();
+  const operator = "valid";
+  const sources = makeSampleSources(6); // 2 batches of 3
+  const jobId = "job_fault_test_01";
+
+  // Tell repo to fail on batch 2
+  let batchCount = 0;
+  const originalSave = repo.saveBatch.bind(repo);
+  repo.saveBatch = async (records, id) => {
+    batchCount++;
+    if (batchCount === 2) {
+      throw new Error("Simulated transient connection timeout");
+    }
+    return originalSave(records, id);
+  };
+
+  const failedRun = await runAuthorized({
+    actor: operator,
+    adapter: "OPENALEX",
+    batchSize: 3,
+    jobId,
+    query: "humanoid Thai survey",
+    records: sources,
+    repository: repo
+  });
+
+  assert.equal(failedRun.ok, false);
+  if (failedRun.ok) return;
+  assert.equal(failedRun.code, "EXECUTION_FAILED");
+  assert.equal(failedRun.result?.status, "FAILED");
+  assert.match(failedRun.result?.errorMessage ?? "", /Simulated transient connection timeout/);
+
+  // Batch 1 (3 records) progress is safely preserved
+  assert.equal(failedRun.result?.counts.recordsNew, 3);
+  assert.equal(failedRun.result?.counts.recordsFailed, 3);
+});
+
+test("R1: Optional provider credentials produce warning, not false SKIPPED_MISSING_KEY (Finding D13)", async () => {
+  const repo = new InMemoryIngestRepository();
+  const operator = "valid";
+  const githubSources = makeSampleSources(3).map((s) => ({ ...s, sourceType: "GITHUB" as const, platform: "github" }));
+
+  // GitHub pull without token: has missingKeys: ["GITHUB_TOKEN optional"]
+  const githubOutcome = await runAuthorized({
+    actor: operator,
+    adapter: "GITHUB",
+    missingKeys: ["GITHUB_TOKEN optional"],
+    query: "thailand-robotics",
+    records: githubSources,
+    repository: repo
+  });
+
+  assert.equal(githubOutcome.ok, true);
+  if (!githubOutcome.ok) return;
+  // MUST NOT be SKIPPED_MISSING_KEY when records were fetched
+  assert.equal(githubOutcome.result.status, "SUCCEEDED");
+  assert.equal(githubOutcome.result.hasOptionalKeyWarning, true);
+  assert.equal(githubOutcome.result.counts.recordsSaved, 3);
+  assert.match(githubOutcome.result.warnings[0], /Optional provider credentials omitted/);
+
+  // True mandatory missing key (e.g. YouTube API key absent with 0 records)
+  const youtubeOutcome = await runAuthorized({
+    actor: operator,
+    adapter: "YOUTUBE",
+    missingKeys: ["YOUTUBE_API_KEY"],
+    query: "humanoid demonstration",
+    records: [],
+    repository: repo
+  });
+
+  assert.equal(youtubeOutcome.ok, true);
+  if (!youtubeOutcome.ok) return;
+  assert.equal(youtubeOutcome.result.status, "SKIPPED_MISSING_KEY");
+  assert.equal(youtubeOutcome.result.counts.recordsSaved, 0);
+});
+
+
+
+test("R1: corrupt checkpoint is reported and missing checkpoint cannot recreate a job", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "ingest-checkpoint-"));
+  try {
+    const store = new FileCheckpointStore(dir);
+    writeFileSync(join(dir, "checkpoint-broken.json"), "{");
+    await assert.rejects(store.get("broken"), SyntaxError);
+    const repo = new InMemoryIngestRepository();
+    await repo.createJob({ id: "missing", adapter: "OPENALEX", query: "test" });
+    const result = await runAuthorized({ actor: "valid", jobId: "missing", adapter: "OPENALEX", query: "test", records: [], repository: repo });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "INVALID_INPUT");
+    assert.equal(repo.jobs.size, 1);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("R1: successful retry clears the failed attempt count", async () => {
+  const repo = new InMemoryIngestRepository();
+  repo.shouldFailNextBatch = true;
+  const input = { actor: "valid", adapter: "OPENALEX", query: "test", records: makeSampleSources(2), repository: repo, jobId: "retry" };
+  const first = await runAuthorized(input);
+  assert.equal(first.ok, false);
+  const retry = await runAuthorized(input);
+  assert.equal(retry.ok, true);
+  if (retry.ok) assert.equal(retry.result.counts.recordsFailed, 0);
+});
+
+test("R1: documentation states the current recovery and history limits", () => {
+  const doc = readFileSync(new URL("../docs/recoverable-ingestion-r1.md", import.meta.url), "utf8");
+  assert.match(doc, /separate transaction/);
+  assert.match(doc, /not shared between instances/);
+  assert.match(doc, /Provider fetching, distributed recovery, atomic batch progress, and unified history remain incomplete/);
+  assert.doesNotMatch(doc, /All 300 test assertions pass/);
+});
+
+test("R1: PostgreSQL repository skips in-batch duplicates and separates new from updated", async () => {
+  const { PostgresIngestionJobRepository } = await import("../lib/ingest-workflow/postgres-repository");
+  const sources = makeSampleSources(3);
+  const duplicate = { ...sources[0] };
+  const saved: string[] = [];
+  const client = {
+    sourceRecord: {
+      findMany: async (args: { where: { url: { in: string[] } } }) =>
+        args.where.url.in
+          .filter((url) => url === sources[1].url || saved.includes(url))
+          .map((url) => ({ id: `id:${url}`, relevanceStatus: "ACCEPTED", url }))
+    }
+  };
+  const repo = new PostgresIngestionJobRepository(client as never, new FileCheckpointStore(mkdtempSync(join(tmpdir(), "ck-"))), async (records) => {
+    saved.push(...records.map((r) => r.url));
+  });
+
+  const result = await repo.saveBatch([sources[0], duplicate, sources[1], sources[2]], "job");
+  assert.equal(result.newCount, 2);
+  assert.equal(result.updatedCount, 1);
+  assert.equal(result.skippedCount, 1);
+  assert.deepEqual(saved, [sources[0].url, sources[1].url, sources[2].url]);
+  assert.equal(result.acceptedCount, 3);
+});
+
+test("R1: PostgreSQL repository reports the exact committed prefix when a later record fails", async () => {
+  const { PostgresIngestionJobRepository } = await import("../lib/ingest-workflow/postgres-repository");
+  const { PartialBatchError } = await import("../lib/ingest-workflow/contracts");
+  const sources = makeSampleSources(3);
+  const saved: string[] = [];
+  const client = {
+    sourceRecord: {
+      findMany: async (args: { where: { url: { in: string[] } } }) =>
+        args.where.url.in.filter((url) => saved.includes(url)).map((url) => ({ id: `id:${url}`, relevanceStatus: "UNCERTAIN", url }))
+    }
+  };
+  const repo = new PostgresIngestionJobRepository(client as never, new FileCheckpointStore(mkdtempSync(join(tmpdir(), "ck-"))), async (records) => {
+    if (records[0].url === sources[2].url) throw new Error("constraint violation");
+    saved.push(records[0].url);
+  });
+
+  await assert.rejects(
+    () => repo.saveBatch(sources, "job"),
+    (err: unknown) => {
+      assert.ok(err instanceof PartialBatchError);
+      assert.equal(err.committed, 2);
+      assert.equal(err.partial.newCount, 2);
+      assert.equal(err.partial.uncertainCount, 2);
+      assert.equal(err.partial.savedIds.length, 2);
+      assert.match(err.message, /constraint violation/);
+      return true;
+    }
+  );
+});
+
+test("R1: retry after a partial batch resumes at the committed record and counts it as new once", async () => {
+  const { PartialBatchError } = await import("../lib/ingest-workflow/contracts");
+  const repo = new InMemoryIngestRepository();
+  const sources = makeSampleSources(5);
+  let failOnce = true;
+  const baseSave = repo.saveBatch.bind(repo);
+  repo.saveBatch = async (records, id) => {
+    if (failOnce && records.length > 2) {
+      failOnce = false;
+      const committed = await baseSave(records.slice(0, 2), id);
+      throw new PartialBatchError("transient timeout on record 3", 2, committed);
+    }
+    return baseSave(records, id);
+  };
+  const input = { actor: "valid", adapter: "OPENALEX", batchSize: 5, jobId: "partial", query: "q", records: sources, repository: repo };
+
+  const first = await runAuthorized(input);
+  assert.equal(first.ok, false);
+  if (first.ok || first.code !== "EXECUTION_FAILED") return assert.fail("expected EXECUTION_FAILED");
+  assert.equal(first.result?.checkpoint?.lastProcessedIndex, 2);
+  assert.equal(first.result?.counts.recordsNew, 2);
+  assert.equal(first.result?.counts.recordsFailed, 3);
+  assert.equal(repo.jobs.get("partial")?.status, "FAILED");
+
+  const retry = await runAuthorized(input);
+  assert.equal(retry.ok, true);
+  if (!retry.ok) return;
+  assert.equal(retry.result.counts.recordsNew, 5);
+  assert.equal(retry.result.counts.recordsUpdated, 0);
+  assert.equal(retry.result.counts.recordsFailed, 0);
+  assert.equal(repo.savedBatches.flat().length, 5, "no record is written twice");
+  assert.equal(repo.jobs.get("partial")?.errorMessage, null, "success clears the earlier failure message");
+});
+
+test("R1: clearing a checkpoint removes it instead of leaving an unparseable file", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "ck-clear-"));
+  try {
+    const store = new FileCheckpointStore(dir);
+    const checkpoint = { jobId: "gone" } as IngestionCheckpoint;
+    await store.save(checkpoint);
+    assert.equal((await store.get("gone"))?.jobId, "gone");
+    await store.clear("gone");
+    assert.equal(await store.get("gone"), null);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});

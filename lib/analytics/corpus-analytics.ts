@@ -327,7 +327,6 @@ export async function loadWholeCorpusAnalytics(sampleLimit = DEFAULT_ANALYTICS_S
       totalSources,
       totalRobots,
       totalContributions,
-      totalPerspectives,
       totalScoredSources,
       sourcesWithPubDate,
       robotsWithYear
@@ -335,14 +334,16 @@ export async function loadWholeCorpusAnalytics(sampleLimit = DEFAULT_ANALYTICS_S
       prisma.sourceRecord.count({ where: publicSourceRecordWhere }),
       prisma.robotModel.count({ where: publicRobotWhere }),
       prisma.contribution.count({ where: publicContributionWhere }),
-      prisma.perspectiveAnnotation.count({ where: publicPerspectiveWhere }),
       prisma.sourceRecord.count({ where: { ...publicSourceRecordWhere, relevanceConfidence: { gt: 0 } } }),
       prisma.sourceRecord.count({ where: { ...publicSourceRecordWhere, publishedAt: { not: null } } }),
       prisma.robotModel.count({ where: { ...publicRobotWhere, firstSeenYear: { not: null } } })
     ]);
 
     // 2. Fetch Sampled Events for Visualization (capped at sampleLimit per domain)
-    const [sources, robots, contributions, perspectives] = await Promise.all([
+    // For perspectives, load candidates to evaluate freshness against parent source excerpts.
+    // Reconcile both total count and visualization sample against the same freshness rule
+    // (isFreshPerspectiveAnnotation) so stale annotations never inflate totals or crowd out fresh ones.
+    const [sources, robots, contributions, rawPerspectives] = await Promise.all([
       prisma.sourceRecord.findMany({
         where: publicSourceRecordWhere,
         select: {
@@ -406,10 +407,17 @@ export async function loadWholeCorpusAnalytics(sampleLimit = DEFAULT_ANALYTICS_S
             }
           }
         },
-        orderBy: { createdAt: "desc" },
-        take: sampleLimit
+        orderBy: { createdAt: "desc" }
       })
     ]);
+
+    // Reconcile perspective freshness: filter out stale annotations whose excerpts
+    // are missing from re-ingested source text or whose parent is not accepted.
+    const freshPerspectives = rawPerspectives.filter((item) =>
+      isFreshPerspectiveAnnotation(item, item.source)
+    );
+    const totalPerspectives = freshPerspectives.length;
+    const perspectives = freshPerspectives.slice(0, sampleLimit);
 
     const events = buildAnalyticsEvents({
       sources: sources as RawAnalyticsSource[],

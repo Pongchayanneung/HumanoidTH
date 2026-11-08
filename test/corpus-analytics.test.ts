@@ -2,6 +2,8 @@ process.env.DATABASE_URL = process.env.DATABASE_URL || "postgresql://mock:mock@l
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { readFileSync, existsSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   formatTimeBucketKey,
   parseIngestionDateSemantics,
@@ -20,7 +22,9 @@ import {
   publicRobotWhere,
   publicContributionWhere,
   publicPerspectiveWhere,
-  isFreshPerspectiveAnnotation
+  isFreshPerspectiveAnnotation,
+  isEligiblePublicRobot,
+  isEligiblePublicContribution
 } from "../lib/public-projection";
 import { prisma } from "../lib/prisma";
 
@@ -238,10 +242,6 @@ test("Audit D11 Acceptance: loadWholeCorpusAnalytics exercises database loader w
       capturedCountWheres.push({ domain: "contribution", where: args?.where });
       return 15;
     };
-    (prisma.perspectiveAnnotation as any).count = async (args: any) => {
-      capturedCountWheres.push({ domain: "perspectiveAnnotation", where: args?.where });
-      return 30;
-    };
 
     // 2. Mock findMany queries returning a sample bounded by take (sampleLimit = 5,000)
     (prisma.sourceRecord as any).findMany = async (args: any) => {
@@ -278,7 +278,22 @@ test("Audit D11 Acceptance: loadWholeCorpusAnalytics exercises database loader w
     };
     (prisma.perspectiveAnnotation as any).findMany = async (args: any) => {
       capturedFindManyArgs.push({ domain: "perspectiveAnnotation", ...args });
-      return [];
+      return Array.from({ length: 30 }, (_, i) => ({
+        perspectiveTheme: `healthcare_trust_${i}`,
+        stance: "supportive",
+        sentiment: "positive",
+        targetEntity: "CU-Robo",
+        confidence: 0.9,
+        createdAt: new Date("2024-01-01"),
+        evidenceExcerpt: "CU-Robo telepresence and medication delivery robot deployed across hospital wards",
+        method: "human_review",
+        source: {
+          title: "CU-Robo in hospital",
+          excerpt: "CU-Robo telepresence and medication delivery robot deployed across hospital wards",
+          relevanceStatus: "ACCEPTED",
+          updatedAt: new Date("2024-01-01")
+        }
+      }));
     };
 
     // 3. Call the actual database loader with 5,000 sampleLimit
@@ -291,7 +306,7 @@ test("Audit D11 Acceptance: loadWholeCorpusAnalytics exercises database loader w
     assert.equal(result.summary.sampleLimit, 5000);
     assert.ok(result.summary.coveragePercent < 100);
     assert.equal(result.summary.totalVerifiedPublicRecords, 6714 + 20 + 15 + 30);
-    assert.equal(result.summary.totalAnalyzedEvents, 5001);
+    assert.equal(result.summary.totalAnalyzedEvents, 5031); // 5000 sources + 1 robot + 30 perspectives
 
     // Verify that the query filters applied the approved public WHERE clauses
     const sourceCountCall = capturedCountWheres.find(
@@ -307,8 +322,8 @@ test("Audit D11 Acceptance: loadWholeCorpusAnalytics exercises database loader w
     const contribCountCall = capturedCountWheres.find((c) => c.domain === "contribution");
     assert.deepEqual(contribCountCall.where, publicContributionWhere);
 
-    const perspCountCall = capturedCountWheres.find((c) => c.domain === "perspectiveAnnotation");
-    assert.deepEqual(perspCountCall.where, publicPerspectiveWhere);
+    const perspFindCall = capturedFindManyArgs.find((a) => a.domain === "perspectiveAnnotation");
+    assert.deepEqual(perspFindCall.where, publicPerspectiveWhere);
 
     const sourceFindCall = capturedFindManyArgs.find((a) => a.domain === "sourceRecord");
     assert.equal(sourceFindCall.take, 5000);
@@ -387,6 +402,251 @@ test("Perspective Freshness: isFreshPerspectiveAnnotation and buildAnalyticsEven
 
   assert.equal(events.length, 1);
   assert.equal(events[0].label, "healthcare_trust");
+});
+
+test("Perspective Freshness Reconciliation: stale annotations do not inflate totals and cannot crowd out fresh annotations beyond the sample limit", async () => {
+  const origFindMany = prisma.perspectiveAnnotation.findMany;
+  const origSourceCount = prisma.sourceRecord.count;
+  const origRobotCount = prisma.robotModel.count;
+  const origContribCount = prisma.contribution.count;
+  const origSourceFindMany = prisma.sourceRecord.findMany;
+  const origRobotFindMany = prisma.robotModel.findMany;
+  const origContribFindMany = prisma.contribution.findMany;
+
+  try {
+    (prisma.sourceRecord.count as any) = async () => 0;
+    (prisma.robotModel.count as any) = async () => 0;
+    (prisma.contribution.count as any) = async () => 0;
+    (prisma.sourceRecord.findMany as any) = async () => [];
+    (prisma.robotModel.findMany as any) = async () => [];
+    (prisma.contribution.findMany as any) = async () => [];
+
+    const acceptedSource = {
+      title: "Active Humanoid Robotics Project in Thailand",
+      excerpt: "Demonstrating autonomous navigation and interaction in real hospitals.",
+      relevanceStatus: "ACCEPTED",
+      updatedAt: new Date("2026-11-07")
+    };
+
+    // Construct 2 stale annotations with recent timestamps (ahead in desc order)
+    const staleAhead = [
+      {
+        perspectiveTheme: "stale_theme_1",
+        stance: "supportive",
+        sentiment: "positive",
+        targetEntity: "robot_1",
+        confidence: 0.9,
+        createdAt: new Date("2026-11-08T10:00:00Z"), // Most recent
+        evidenceExcerpt: "Removed obsolete excerpt that is no longer in parent text",
+        method: "rules_with_evidence",
+        source: acceptedSource
+      },
+      {
+        perspectiveTheme: "stale_theme_2",
+        stance: "supportive",
+        sentiment: "positive",
+        targetEntity: "robot_2",
+        confidence: 0.85,
+        createdAt: new Date("2026-11-08T09:00:00Z"),
+        evidenceExcerpt: "Another deleted obsolete excerpt",
+        method: "rules_with_evidence",
+        source: acceptedSource
+      }
+    ];
+
+    // Construct 4 fresh annotations with older timestamps
+    const freshBeyond = Array.from({ length: 4 }, (_, i) => ({
+      perspectiveTheme: `fresh_theme_${i + 1}`,
+      stance: "supportive",
+      sentiment: "positive",
+      targetEntity: `robot_fresh_${i + 1}`,
+      confidence: 0.88,
+      createdAt: new Date(`2026-11-01T0${i + 1}:00:00Z`), // Older
+      evidenceExcerpt: "Demonstrating autonomous navigation", // Matches parent excerpt!
+      method: "human_review",
+      source: acceptedSource
+    }));
+
+    // In descending createdAt order: 2 stale annotations are ahead of the 4 fresh annotations
+    (prisma.perspectiveAnnotation.findMany as any) = async (args: any) => {
+      // Reconciled loader fetches all candidates to evaluate freshness without premature limit cutoffs
+      return [...staleAhead, ...freshBeyond];
+    };
+
+    // Call loadWholeCorpusAnalytics with sampleLimit = 3
+    // Under the old bug: take: 3 would fetch 2 stale + 1 fresh, leaving only 1 fresh annotation
+    // in the sample while crowding out the remaining 3 fresh annotations.
+    // Under the reconciled engine: stale annotations are filtered out before slicing the sample,
+    // so all 3 slots of sampleLimit are filled by fresh annotations and totals strictly reflect
+    // the 4 fresh annotations (never inflated to 6).
+    const { summary, events } = await loadWholeCorpusAnalytics(3);
+
+    // 1. Total count must reconcile to ONLY fresh annotations (4), NOT inflated by stale annotations (6)
+    assert.equal(summary.totalEligiblePerspectives, 4);
+
+    // 2. Analyzed sample count must equal the sampleLimit (3), proving fresh annotations were NOT crowded out
+    assert.equal(summary.analyzedPerspectivesCount, 3);
+    assert.equal(events.length, 3);
+    assert.equal(summary.isSampleTruncated, true);
+    assert.equal(summary.sampleLimit, 3);
+
+    // 3. Every single analyzed event must be fresh
+    for (const ev of events) {
+      assert.ok(ev.label.startsWith("fresh_theme_"), `Expected fresh theme, got: ${ev.label}`);
+    }
+  } finally {
+    prisma.perspectiveAnnotation.findMany = origFindMany;
+    prisma.sourceRecord.count = origSourceCount;
+    prisma.robotModel.count = origRobotCount;
+    prisma.contribution.count = origContribCount;
+    prisma.sourceRecord.findMany = origSourceFindMany;
+    prisma.robotModel.findMany = origRobotFindMany;
+    prisma.contribution.findMany = origContribFindMany;
+  }
+});
+
+test("Whole-Corpus Fixture Reconciliation: verifies loader metrics directly against real thailand_humanoid_atlas_seed_records.json fixture (6,749 records)", async () => {
+  const fixturePath = resolve(process.cwd(), "data/imports/thailand_humanoid_atlas_seed_records.json");
+  assert.ok(existsSync(fixturePath), "Real seed fixture file must exist");
+  const rawContent = readFileSync(fixturePath, "utf8");
+  const seedRecords = JSON.parse(rawContent) as any[];
+
+  // 1. Reconcile raw record counts from the real fixture file
+  const sourceRecords = seedRecords.filter((r) => r.category === "source_record");
+  const robotModels = seedRecords.filter((r) => r.category === "robot_model");
+  const contributions = seedRecords.filter((r) => r.category === "contribution");
+  const perspectiveAnnotations = seedRecords.filter((r) => r.category === "perspective_annotation");
+
+  assert.equal(seedRecords.length, 6749, "Real seed fixture must have 6,749 records");
+  assert.equal(sourceRecords.length, 6714, "Real seed fixture must contain exactly 6,714 source records");
+  assert.equal(robotModels.length, 16, "Real seed fixture must contain 16 robot models");
+  assert.equal(contributions.length, 3, "Real seed fixture must contain 3 contributions");
+  assert.equal(perspectiveAnnotations.length, 4, "Real seed fixture must contain 4 perspective annotations");
+
+  // 2. Reconcile public eligibility policies on the real fixture
+  const eligibleRobots = robotModels.filter((r) => isEligiblePublicRobot(r.canonical_name || ""));
+  assert.equal(eligibleRobots.length, 15, "Exactly 15 of 16 robots are eligible (Bumi humanoid robot excluded)");
+
+  const eligibleContributions = contributions.filter((c) =>
+    isEligiblePublicContribution({ visibility: "public", verificationStatus: "APPROVED", sourceUrl: c.url })
+  );
+  assert.equal(eligibleContributions.length, 3, "All 3 contributions are eligible public records");
+
+  const sourcesWithPubDate = sourceRecords.filter((s) => s.published_at !== null && s.published_at !== undefined);
+  assert.equal(sourcesWithPubDate.length, 6705, "Exactly 6,705 sources have published_at");
+  const missingPubDates = sourceRecords.length - sourcesWithPubDate.length;
+  assert.equal(missingPubDates, 9, "Exactly 9 sources are missing publication date");
+
+  // 3. Connect real fixture records into the loader execution
+  const origSourceCount = prisma.sourceRecord.count;
+  const origRobotCount = prisma.robotModel.count;
+  const origContribCount = prisma.contribution.count;
+  const origSourceFindMany = prisma.sourceRecord.findMany;
+  const origRobotFindMany = prisma.robotModel.findMany;
+  const origContribFindMany = prisma.contribution.findMany;
+  const origPerspFindMany = prisma.perspectiveAnnotation.findMany;
+
+  try {
+    (prisma.sourceRecord as any).count = async (args: any) => {
+      if (args?.where?.publishedAt?.not !== undefined) return sourcesWithPubDate.length;
+      if (args?.where?.relevanceConfidence?.gt !== undefined) return sourceRecords.length;
+      return sourceRecords.length;
+    };
+    (prisma.robotModel as any).count = async (args: any) => {
+      if (args?.where?.firstSeenYear?.not !== undefined) {
+        return eligibleRobots.filter((r) => r.first_seen_year !== null && r.first_seen_year !== undefined).length;
+      }
+      return eligibleRobots.length;
+    };
+    (prisma.contribution as any).count = async () => eligibleContributions.length;
+
+    // Loader queries mapped directly from real fixture data
+    (prisma.sourceRecord as any).findMany = async (args: any) => {
+      const take = args?.take ?? 5000;
+      return sourceRecords.slice(0, take).map((s) => ({
+        sourceType: s.source_platform ? "WEB" : "NEWS",
+        relevanceStatus: "ACCEPTED",
+        platform: s.source_platform,
+        publishedAt: s.published_at ? new Date(s.published_at) : null,
+        createdAt: new Date("2024-01-01"),
+        relevanceConfidence: s.confidence ?? 0.5,
+        title: s.title,
+        rawMeta: {}
+      }));
+    };
+    (prisma.robotModel as any).findMany = async (args: any) => {
+      const take = args?.take ?? 5000;
+      return eligibleRobots.slice(0, take).map((r) => ({
+        canonicalName: r.canonical_name,
+        robotType: r.robot_type || "unknown",
+        thailandStatus: "observed_in_thailand",
+        countryOfOrigin: r.country,
+        statusConfidence: r.confidence ?? 0.5,
+        firstSeenYear: null,
+        createdAt: new Date("2024-01-01")
+      }));
+    };
+    (prisma.contribution as any).findMany = async () => {
+      return eligibleContributions.map((c) => ({
+        title: c.title,
+        contributionType: c.contribution_type || "research_paper",
+        verificationStatus: "APPROVED",
+        visibility: "public",
+        organization: c.organization,
+        createdAt: new Date("2024-01-01"),
+        sourceUrl: c.url
+      }));
+    };
+    (prisma.perspectiveAnnotation as any).findMany = async () => {
+      return perspectiveAnnotations.map((p) => ({
+        perspectiveTheme: p.perspective_theme || "robotics_adoption",
+        stance: p.stance || "neutral",
+        sentiment: p.sentiment || "neutral",
+        targetEntity: p.canonical_name || "robot",
+        confidence: p.confidence ?? 0.8,
+        createdAt: new Date("2024-01-01"),
+        evidenceExcerpt: p.evidence_excerpt || p.description || "",
+        method: "seed_json",
+        source: {
+          title: p.title,
+          excerpt: p.evidence_excerpt || p.description || "",
+          relevanceStatus: "ACCEPTED",
+          updatedAt: new Date("2024-01-01")
+        }
+      }));
+    };
+
+    const { summary } = await loadWholeCorpusAnalytics(5000);
+
+    // Verify complete reconciliation against real seed fixture
+    assert.equal(summary.totalEligibleSources, 6714);
+    assert.equal(summary.analyzedSourcesCount, 5000);
+    assert.equal(summary.isSampleTruncated, true);
+    assert.equal(summary.sampleLimit, 5000);
+    assert.equal(summary.totalEligibleRobots, 15);
+    assert.equal(summary.totalEligibleContributions, 3);
+    assert.equal(summary.totalEligiblePerspectives, 4);
+    assert.equal(summary.totalVerifiedPublicRecords, 6714 + 15 + 3 + 4); // 6,736
+    assert.equal(summary.dateDisclosures.sourcesWithPublicationDate, 6705);
+    assert.equal(summary.dateDisclosures.sourcesMissingPublicationDate, 9);
+    assert.ok(Math.abs(summary.dateDisclosures.sourcesMissingPublicationDateRate - (9 / 6714)) < 0.0001);
+  } finally {
+    prisma.sourceRecord.count = origSourceCount;
+    prisma.robotModel.count = origRobotCount;
+    prisma.contribution.count = origContribCount;
+    prisma.sourceRecord.findMany = origSourceFindMany;
+    prisma.robotModel.findMany = origRobotFindMany;
+    prisma.contribution.findMany = origContribFindMany;
+    prisma.perspectiveAnnotation.findMany = origPerspFindMany;
+  }
+});
+
+test("Live Database Whole-Corpus Reconciliation: verifies live database snapshot when seeded", { skip: !process.env.ATLAS_LIVE_DB_TEST }, async () => {
+  const { summary } = await loadWholeCorpusAnalytics();
+  assert.ok(summary.totalEligibleSources >= 6714);
+  assert.ok(summary.totalEligibleRobots >= 15);
+  assert.ok(summary.totalEligibleContributions >= 3);
+  assert.ok(summary.totalEligiblePerspectives >= 4);
 });
 
 test("Timeline Date Segregation: formatTimeBucketKey distinguishes chronological periods from year_only and undated", () => {

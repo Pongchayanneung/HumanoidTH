@@ -72,13 +72,14 @@ Record Attributes
 
 ### 4.1 Server-Side Aggregation (`lib/analytics/corpus-analytics.ts`)
 
-The aggregator executes parallel count queries scoped to public eligible records:
+The aggregator executes parallel count queries scoped to public eligible records, while perspective annotations are evaluated for freshness against their parent source records to reconcile both totals and visualization samples:
+
 ```ts
+// 1. Whole-Corpus Aggregation (count queries across complete public snapshot)
 const [
   totalSources,
   totalRobots,
   totalContributions,
-  totalPerspectives,
   totalScoredSources,
   sourcesWithPubDate,
   robotsWithYear
@@ -86,11 +87,28 @@ const [
   prisma.sourceRecord.count({ where: publicSourceRecordWhere }),
   prisma.robotModel.count({ where: publicRobotWhere }),
   prisma.contribution.count({ where: publicContributionWhere }),
-  prisma.perspectiveAnnotation.count({ where: publicPerspectiveWhere }),
   prisma.sourceRecord.count({ where: { ...publicSourceRecordWhere, relevanceConfidence: { gt: 0 } } }),
   prisma.sourceRecord.count({ where: { ...publicSourceRecordWhere, publishedAt: { not: null } } }),
   prisma.robotModel.count({ where: { ...publicRobotWhere, firstSeenYear: { not: null } } })
 ]);
+
+// 2. Fetch Sampled Events for Visualization (capped at sampleLimit per domain)
+// For perspectives, load candidates to evaluate freshness against parent source excerpts.
+// Reconcile both total count and visualization sample against the same freshness rule
+// (isFreshPerspectiveAnnotation) so stale annotations never inflate totals or crowd out fresh ones.
+const [sources, robots, contributions, rawPerspectives] = await Promise.all([
+  prisma.sourceRecord.findMany({ where: publicSourceRecordWhere, orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }], take: sampleLimit }),
+  prisma.robotModel.findMany({ where: publicRobotWhere, orderBy: { createdAt: "desc" }, take: sampleLimit }),
+  prisma.contribution.findMany({ where: publicContributionWhere, orderBy: { createdAt: "desc" }, take: sampleLimit }),
+  prisma.perspectiveAnnotation.findMany({ where: publicPerspectiveWhere, orderBy: { createdAt: "desc" } })
+]);
+
+// Reconcile perspective freshness: filter out stale annotations
+const freshPerspectives = rawPerspectives.filter((item) =>
+  isFreshPerspectiveAnnotation(item, item.source)
+);
+const totalPerspectives = freshPerspectives.length;
+const perspectives = freshPerspectives.slice(0, sampleLimit);
 ```
 
 ### 4.2 Explicit Sample Warning and Date Disclosures in UI
@@ -117,12 +135,14 @@ When `isSampleTruncated === true` (`analyzedCount < totalEligibleCount`):
 | **Confidence Scatter Chart Precision** | **PASSED** | Year-only robot observation dates are excluded from the exact-date scatter axis under publication dimension, avoiding fake Jan 1 points, while year-only counts are disclosed in summary metrics. |
 | **Non-date Timeline Segregation** | **PASSED** | Monthly `year_only` and `undated` categories are segregated from the continuous AreaChart time axis, with counts disclosed separately to preserve chronological scale. |
 | **Matrix Selector Synchronization** | **PASSED** | Matrix row and column dropdown selectors stay bound to resolved fields and re-synchronize on scope changes (e.g. Sources $\leftrightarrow$ Robots). |
-| **Perspective Annotation Freshness** | **PASSED** | `isFreshPerspectiveAnnotation` validates that perspective evidence remains aligned with re-ingested source text, excluding stale annotations from analytics events. |
+| **Perspective Freshness & Limit Reconciliation** | **PASSED** | Both aggregate count and visualization sample are reconciled against `isFreshPerspectiveAnnotation`. Verified that stale annotations ahead of fresh records beyond the sample limit do not crowd out fresh records or inflate totals. |
 | **Rejected/private records stay excluded** | **PASSED** | Counts, samples, and in-memory event builders enforce `publicRobotWhere`, `publicContributionWhere`, `publicSourceRecordWhere`, and `publicPerspectiveWhere`. |
 | **Hybrid Graph Warning Propagation** | **PASSED** | `loadGraphRecordsHybrid()` propagates Prisma loader cap warnings, ensuring `truncated: true` and warning banners are displayed when database queries hit row limits. |
 | **Disclose snapshot/scope and missing data** | **PASSED** | UI displays scope notice, sample truncation warning, coverage percentage, and missing publication date rate banner. |
-| **Loader-level >5,000-row fixture reconciliation** | **PASSED** | Tested via `loadWholeCorpusAnalytics()` with mocked 6,714-record corpus queries; verifies that `prisma.*.count` reflects the full 6,714 corpus while `findMany` correctly applies `sampleLimit: 5000` and sets `isSampleTruncated: true`. |
+| **Real Fixture & >5,000-row Reconciliation** | **PASSED** | Reconciled directly against `data/imports/thailand_humanoid_atlas_seed_records.json` (6,749 items, 6,714 sources, 16 robots with 15 eligible, 3 contributions, 4 perspectives) and verified loader `sampleLimit: 5000` with truncation disclosure. |
 
 ### Test Suite Execution
-- `pnpm test`: **83/83 tests passed** (including 11 comprehensive tests in `test/corpus-analytics.test.ts`).
-- `pnpm typecheck`: **0 errors**.
+- `pnpm exec tsx --test test/corpus-analytics.test.ts`: **16/16 tests passing** (1 live DB test skipped when DB offline).
+- `pnpm test`: **299/299 tests passing** repository-wide.
+- `pnpm run check:no-mock-data`: **0 violations**.
+- `pnpm run typecheck`: **0 errors**.
